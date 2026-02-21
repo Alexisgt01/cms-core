@@ -187,7 +187,7 @@ class MediaLibrary extends Page
                         ->disk('public')
                         ->directory('tmp-uploads')
                         ->acceptedFileTypes([
-                            'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+                            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
                             'application/pdf',
                         ])
                         ->maxSize(10240)
@@ -634,8 +634,9 @@ class MediaLibrary extends Page
                 $sourceUrl = $media->url;
 
                 $url = "{$baseUrl}/unsafe/{$optionsPath}/plain/{$sourceUrl}";
+                $escapedUrl = \Illuminate\Support\Js::from($url);
 
-                $this->js("window.open('{$url}', '_blank')");
+                $this->js("window.open({$escapedUrl}, '_blank')");
             })
             ->visible(fn (): bool => config('cms-media.proxy.url') !== null && config('cms-media.proxy.url') !== '');
     }

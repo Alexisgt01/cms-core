@@ -69,6 +69,10 @@ class CmsCoreServiceProvider extends ServiceProvider
             ->prefix(config('cms-core.path', 'admin') . '/cms/api')
             ->group(function (): void {
                 Route::get('unsplash/search', function (Request $request) {
+                    if (! $request->user()?->can('create media')) {
+                        abort(403);
+                    }
+
                     if (! config('cms-media.unsplash.enabled')) {
                         return response()->json(['results' => [], 'total' => 0, 'total_pages' => 0]);
                     }

@@ -12,9 +12,11 @@ class MediaService
 {
     public function storeUploadedFile(UploadedFile $file, ?int $folderId = null): CmsMedia
     {
+        $safeName = basename($file->getClientOriginalName());
+
         $media = CmsMedia::create([
-            'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-            'file_name' => $file->getClientOriginalName(),
+            'name' => pathinfo($safeName, PATHINFO_FILENAME),
+            'file_name' => $safeName,
             'mime_type' => $file->getMimeType(),
             'disk' => 'public',
             'conversions_disk' => 'public',
@@ -29,7 +31,7 @@ class MediaService
             'folder_id' => $folderId,
         ]);
 
-        $file->storeAs((string) $media->id, $file->getClientOriginalName(), 'public');
+        $file->storeAs((string) $media->id, $safeName, 'public');
 
         $media->update([
             'model_id' => $media->id,
@@ -63,12 +65,14 @@ class MediaService
 
     public function replaceFile(CmsMedia $media, UploadedFile $file): void
     {
+        $safeName = basename($file->getClientOriginalName());
+
         Storage::disk($media->disk)->deleteDirectory((string) $media->id);
 
-        $file->storeAs((string) $media->id, $file->getClientOriginalName(), 'public');
+        $file->storeAs((string) $media->id, $safeName, 'public');
 
         $media->update([
-            'file_name' => $file->getClientOriginalName(),
+            'file_name' => $safeName,
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
         ]);
@@ -157,7 +161,7 @@ class MediaService
             ->when($typeFilter === 'images', fn ($q) => $q->where('mime_type', 'like', 'image/%'))
             ->when($typeFilter === 'pdf', fn ($q) => $q->where('mime_type', 'application/pdf'))
             ->when($typeFilter === 'other', fn ($q) => $q->where('mime_type', 'not like', 'image/%')->where('mime_type', '!=', 'application/pdf'))
-            ->when($tagFilter, fn ($q, $tag) => $q->where('custom_properties', 'like', "%\"{$tag}\"%"))
+            ->when($tagFilter, fn ($q, $tag) => $q->whereJsonContains('custom_properties->tags', $tag))
             ->when($dateFrom, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
             ->when($dateTo, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))
             ->orderByDesc('created_at');

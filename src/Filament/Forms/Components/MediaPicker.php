@@ -135,7 +135,7 @@ class MediaPicker extends Field
                     ->disk('public')
                     ->directory('tmp-uploads')
                     ->acceptedFileTypes(config('cms-media.media.accepted_types', [
-                        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+                        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
                         'application/pdf',
                     ]))
                     ->maxSize((int) config('cms-media.media.max_upload_size', 10240))
