@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore;
+namespace Alexisgt01\CmsCore;
 
 use App\Models\User;
 use Filament\Panel;
@@ -10,15 +10,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Vendor\CmsCore\Filament\CmsCorePlugin;
-use Vendor\CmsCore\Models\CmsMedia;
-use Vendor\CmsCore\Policies\CmsMediaPolicy;
-use Vendor\CmsCore\Policies\PermissionPolicy;
-use Vendor\CmsCore\Policies\RolePolicy;
-use Vendor\CmsCore\Policies\UserPolicy;
-use Vendor\CmsCore\Console\Commands\PublishScheduledPosts;
-use Vendor\CmsCore\Filament\Actions\CmsMediaAction;
-use Vendor\CmsCore\Services\UnsplashClient;
+use Alexisgt01\CmsCore\Filament\CmsCorePlugin;
+use Alexisgt01\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
+use Alexisgt01\CmsCore\Policies\PermissionPolicy;
+use Alexisgt01\CmsCore\Policies\RolePolicy;
+use Alexisgt01\CmsCore\Policies\UserPolicy;
+use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
+use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
+use Alexisgt01\CmsCore\Services\UnsplashClient;
 
 class CmsCoreServiceProvider extends ServiceProvider
 {

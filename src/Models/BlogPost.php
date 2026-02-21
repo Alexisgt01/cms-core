@@ -1,13 +1,14 @@
 <?php
 
-namespace Vendor\CmsCore\Models;
+namespace Alexisgt01\CmsCore\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use Spatie\ModelStates\HasStates;
-use Vendor\CmsCore\Casts\MediaSelectionCast;
-use Vendor\CmsCore\Models\States\PostState;
+use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
+use Alexisgt01\CmsCore\Models\States\PostState;
 
 class BlogPost extends Model
 {
@@ -41,6 +42,16 @@ class BlogPost extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(BlogAuthor::class, 'author_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(BlogCategory::class, 'category_id');
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(BlogTag::class, 'blog_post_tag');
     }
 
     public static function generateSlug(string $title): string

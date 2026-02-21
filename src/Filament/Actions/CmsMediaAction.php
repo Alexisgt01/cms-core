@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Actions;
+namespace Alexisgt01\CmsCore\Filament\Actions;
 
 use Filament\Forms\ComponentContainer;
 use Filament\Forms\Components\Actions\Action;
@@ -14,7 +14,7 @@ use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use Vendor\CmsCore\Services\MediaService;
+use Alexisgt01\CmsCore\Services\MediaService;
 
 class CmsMediaAction extends Action
 {

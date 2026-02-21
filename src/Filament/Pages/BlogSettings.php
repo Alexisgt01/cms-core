@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Pages;
+namespace Alexisgt01\CmsCore\Filament\Pages;
 
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Section;
@@ -13,9 +13,9 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Vendor\CmsCore\Filament\Forms\Components\MediaPicker;
-use Vendor\CmsCore\Models\BlogAuthor;
-use Vendor\CmsCore\Models\BlogSetting;
+use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
+use Alexisgt01\CmsCore\Models\BlogAuthor;
+use Alexisgt01\CmsCore\Models\BlogSetting;
 
 class BlogSettings extends Page implements HasForms
 {

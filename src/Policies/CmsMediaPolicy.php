@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\CmsCore\Policies;
+namespace Alexisgt01\CmsCore\Policies;
 
 use App\Models\User;
-use Vendor\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Models\CmsMedia;
 
 class CmsMediaPolicy
 {

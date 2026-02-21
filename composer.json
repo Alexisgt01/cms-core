@@ -1,5 +1,5 @@
 {
-    "name": "vendor/cms-core",
+    "name": "alexisgt01/cms-core",
     "description": "Headless CMS core package with Filament admin panel",
     "type": "library",
     "license": "MIT",
@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Vendor\\CmsCore\\": "src/"
+            "Alexisgt01\\CmsCore\\": "src/"
         },
         "files": [
             "src/helpers.php"
@@ -22,7 +22,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Vendor\\CmsCore\\CmsCoreServiceProvider"
+                "Alexisgt01\\CmsCore\\CmsCoreServiceProvider"
             ]
         }
     },

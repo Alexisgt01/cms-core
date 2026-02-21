@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Models;
+namespace Alexisgt01\CmsCore\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Pages;
+namespace Alexisgt01\CmsCore\Filament\Pages;
 
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -13,9 +13,9 @@ use Filament\Pages\Page;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
-use Vendor\CmsCore\Models\CmsMedia;
-use Vendor\CmsCore\Models\CmsMediaFolder;
-use Vendor\CmsCore\Services\MediaService;
+use Alexisgt01\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Models\CmsMediaFolder;
+use Alexisgt01\CmsCore\Services\MediaService;
 
 class MediaLibrary extends Page
 {

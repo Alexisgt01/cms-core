@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\BlogPostResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\BlogPostResource\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use Vendor\CmsCore\Filament\Resources\BlogPostResource;
-use Vendor\CmsCore\Models\States\Published;
+use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
+use Alexisgt01\CmsCore\Models\States\Published;
 
 class CreateBlogPost extends CreateRecord
 {

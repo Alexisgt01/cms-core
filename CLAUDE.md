@@ -1,21 +1,23 @@
 # CMS Core — Agent Context
 
-This is the `vendor/cms-core` package (namespace `Vendor\CmsCore`), a Filament v3 admin panel package for Laravel 12.
-Everything lives in `packages/cms/core/`. The host app at the root is a sandbox for testing only.
+This is the `alexisgt01/cms-core` package (namespace `Alexisgt01\CmsCore`), a Filament v3 admin panel package for Laravel 12.
+Everything lives in `packages/cms/core/`. The host app at the root is a sandbox for development and testing only.
 
 ## Architecture
 
-- **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`), auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies and commands
+- **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`), overrides Tiptap media_action config, auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies and commands
 - **Plugin**: `CmsCorePlugin` — registers all Filament resources and pages
 - **Views namespace**: `cms-core` (e.g. `cms-core::filament.pages.blog-settings`)
-- **Helpers**: `src/helpers.php` loaded via Composer `files` autoload. After modifying, run `composer update vendor/cms-core`
+- **Helpers**: `src/helpers.php` loaded via Composer `files` autoload. After modifying, run `composer update alexisgt01/cms-core`
 
 ## Models
 
 | Model | Table | Key features |
 |-------|-------|-------------|
-| `BlogPost` | `blog_posts` | HasStates (Draft/Scheduled/Published), Tiptap content, featured_images (JSON array), exhaustive SEO fields, MediaSelectionCast on og_image/twitter_image |
+| `BlogPost` | `blog_posts` | HasStates (Draft/Scheduled/Published), Tiptap content, featured_images (JSON array), belongs to BlogCategory, many-to-many BlogTag, exhaustive SEO fields, MediaSelectionCast on og_image/twitter_image |
 | `BlogAuthor` | `blog_authors` | Optional user linking, social profiles, avatar (MediaSelectionCast), SEO fields |
+| `BlogCategory` | `blog_categories` | Hierarchical (parent/children), has many BlogPost, SEO fields, MediaSelectionCast on og_image/twitter_image |
+| `BlogTag` | `blog_tags` | Many-to-many with BlogPost (pivot: blog_post_tag), SEO fields, MediaSelectionCast on og_image/twitter_image |
 | `BlogSetting` | `blog_settings` | Singleton via `BlogSetting::instance()`, 70+ config fields, MediaSelectionCast on image fallbacks |
 | `CmsMedia` | `media` (Spatie) | Extends Spatie Media, belongs to CmsMediaFolder, appends url/human_readable_size |
 | `CmsMediaFolder` | `cms_media_folders` | Hierarchical (parent/children), has many CmsMedia |
@@ -34,7 +36,7 @@ Transition: `$post->state->transitionTo(Published::class)`
 ## Value Objects & Casts
 
 - `MediaSelection` (`src/ValueObjects/`) — immutable VO with source, url, originalUrl, mediaId, alt, unsplash metadata. Use `fromArray()` / `toArray()` / `jsonSerialize()`.
-- `MediaSelectionCast` (`src/Casts/`) — Eloquent cast for JSON ↔ MediaSelection. Used on: BlogPost.og_image, BlogPost.twitter_image, BlogAuthor.avatar/og_image/twitter_image, BlogSetting.og_image_fallback/twitter_image_fallback/schema_publisher_logo.
+- `MediaSelectionCast` (`src/Casts/`) — Eloquent cast for JSON ↔ MediaSelection. Used on: BlogPost.og_image, BlogPost.twitter_image, BlogAuthor.avatar/og_image/twitter_image, BlogCategory.og_image/twitter_image, BlogTag.og_image/twitter_image, BlogSetting.og_image_fallback/twitter_image_fallback/schema_publisher_logo.
 
 ## Helpers
 
@@ -53,7 +55,7 @@ Signing: HMAC-SHA256 when `cms-media.proxy.key` and `cms-media.proxy.salt` are s
 
 Reusable field for any form:
 ```php
-use Vendor\CmsCore\Filament\Forms\Components\MediaPicker;
+use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 
 MediaPicker::make('featured_image')
     ->label('Image')
@@ -87,6 +89,8 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 | PermissionResource | Administration | Spatie Permission | super_admin only, read-only |
 | BlogPostResource | Blog | BlogPost | view/create/edit/delete blog posts, publish blog posts |
 | BlogAuthorResource | Blog | BlogAuthor | view/create/edit/delete blog authors |
+| BlogCategoryResource | Blog | BlogCategory | view/create/edit/delete blog categories |
+| BlogTagResource | Blog | BlogTag | view/create/edit/delete blog tags |
 
 ## Filament Pages
 
@@ -98,9 +102,11 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 
 ## Blog Post Form Structure
 
-Tabs: Contenu (title, slug, excerpt, Tiptap content) → Images & Auteur (featured images, author, reading time) → Publication (state select, conditional dates) → SEO → Open Graph → Twitter → Schema.
+Tabs: Contenu (title, slug, excerpt, category, tags, Tiptap content) → Images & Auteur (featured images, author, reading time) → Publication (state select, conditional dates) → SEO → Open Graph → Twitter → Schema.
 
 Without `publish blog posts` permission, state select only shows "Brouillon" (Draft).
+
+Tags can be created inline from the post form (createOptionForm with name + auto-slug).
 
 Tiptap uploads go through `MediaService::storeUploadedFile()` via `CmsMediaAction` (custom Tiptap media action registered globally in ServiceProvider).
 
@@ -116,11 +122,11 @@ Key features:
 
 ## Permissions
 
-All created via migrations (NOT seeders). Pattern: `Permission::create()` + role assignment.
+All created via migrations (NOT seeders). Pattern: `Permission::create()` + role assignment. Roles also created in migrations only.
 
-**Blog permissions**: manage blog settings, view/create/edit/delete blog authors, view/create/edit/delete blog posts, publish blog posts.
+**Blog permissions**: manage blog settings, view/create/edit/delete blog authors, view/create/edit/delete blog posts, publish blog posts, view/create/edit/delete blog categories, view/create/edit/delete blog tags.
 
-super_admin = all. editor = view/create/edit authors + view/create/edit/publish posts (no delete, no settings). viewer = none.
+super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings). viewer = none.
 
 ## Commands
 
@@ -128,7 +134,7 @@ super_admin = all. editor = view/create/edit authors + view/create/edit/publish 
 
 ## Config
 
-- `config/cms-core.php` — admin path, roles/permissions reference
+- `config/cms-core.php` — admin path
 - `config/cms-media.php` — proxy (imgproxy), unsplash, media upload settings
 
 Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `UNSPLASH_APP_ID`, `UNSPLASH_APP_KEY`, `UNSPLASH_SECRET_KEY`.
@@ -138,6 +144,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 - French UI labels throughout (Filament resources, form fields, table columns)
 - Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
+- Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
 - `$guarded = ['id']` on models (not `$fillable`)
 - Casts defined in `casts()` method (not `$casts` property)
@@ -148,4 +155,4 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 Test files in host app `tests/Feature/Filament/`:
 - `MediaLibraryTest.php` — media CRUD, folders, bulk ops, filters
 - `MediaPickerTest.php` — MediaSelection, MediaSelectionCast, media_url(), UnsplashClient
-- `BlogTest.php` — BlogSetting, BlogAuthor, BlogPost, states/transitions, publish-scheduled command, permissions
+- `BlogTest.php` — BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions

@@ -1,17 +1,19 @@
 <?php
 
-namespace Vendor\CmsCore\Filament;
+namespace Alexisgt01\CmsCore\Filament;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use Vendor\CmsCore\Filament\Pages\BlogSettings;
-use Vendor\CmsCore\Filament\Pages\EditProfile;
-use Vendor\CmsCore\Filament\Pages\MediaLibrary;
-use Vendor\CmsCore\Filament\Resources\BlogAuthorResource;
-use Vendor\CmsCore\Filament\Resources\BlogPostResource;
-use Vendor\CmsCore\Filament\Resources\PermissionResource;
-use Vendor\CmsCore\Filament\Resources\RoleResource;
-use Vendor\CmsCore\Filament\Resources\UserResource;
+use Alexisgt01\CmsCore\Filament\Pages\BlogSettings;
+use Alexisgt01\CmsCore\Filament\Pages\EditProfile;
+use Alexisgt01\CmsCore\Filament\Pages\MediaLibrary;
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
+use Alexisgt01\CmsCore\Filament\Resources\PermissionResource;
+use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 
 class CmsCorePlugin implements Plugin
 {
@@ -33,7 +35,9 @@ class CmsCorePlugin implements Plugin
                 RoleResource::class,
                 PermissionResource::class,
                 BlogAuthorResource::class,
+                BlogCategoryResource::class,
                 BlogPostResource::class,
+                BlogTagResource::class,
             ])
             ->pages([
                 MediaLibrary::class,

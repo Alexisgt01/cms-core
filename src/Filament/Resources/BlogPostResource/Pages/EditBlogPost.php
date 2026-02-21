@@ -1,11 +1,11 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\BlogPostResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\BlogPostResource\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Vendor\CmsCore\Filament\Resources\BlogPostResource;
-use Vendor\CmsCore\Models\States\Published;
+use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
+use Alexisgt01\CmsCore\Models\States\Published;
 
 class EditBlogPost extends EditRecord
 {

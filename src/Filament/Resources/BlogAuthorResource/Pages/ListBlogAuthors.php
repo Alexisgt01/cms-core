@@ -1,13 +1,13 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
-use Vendor\CmsCore\Filament\Resources\BlogAuthorResource;
-use Vendor\CmsCore\Models\BlogAuthor;
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
+use Alexisgt01\CmsCore\Models\BlogAuthor;
 
 class ListBlogAuthors extends ListRecords
 {

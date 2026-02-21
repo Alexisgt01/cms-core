@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\BlogPostResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\BlogPostResource\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Vendor\CmsCore\Filament\Resources\BlogPostResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
 
 class ListBlogPosts extends ListRecords
 {

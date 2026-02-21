@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources;
+namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use App\Models\User;
 use Filament\Forms;
@@ -9,7 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
-use Vendor\CmsCore\Filament\Resources\UserResource\Pages;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 
 class UserResource extends Resource
 {

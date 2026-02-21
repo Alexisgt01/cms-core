@@ -1,16 +1,16 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Forms\Components;
+namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Set;
 use Illuminate\Support\Facades\Storage;
-use Vendor\CmsCore\Models\CmsMedia;
-use Vendor\CmsCore\Services\MediaService;
-use Vendor\CmsCore\Services\UnsplashClient;
-use Vendor\CmsCore\ValueObjects\MediaSelection;
+use Alexisgt01\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Services\MediaService;
+use Alexisgt01\CmsCore\Services\UnsplashClient;
+use Alexisgt01\CmsCore\ValueObjects\MediaSelection;
 
 class MediaPicker extends Field
 {

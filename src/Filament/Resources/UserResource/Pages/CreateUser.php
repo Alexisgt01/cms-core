@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\UserResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use Vendor\CmsCore\Filament\Resources\UserResource;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 
 class CreateUser extends CreateRecord
 {

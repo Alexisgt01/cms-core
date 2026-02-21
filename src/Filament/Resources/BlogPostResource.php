@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources;
+namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -8,14 +8,16 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
-use Vendor\CmsCore\Filament\Forms\Components\MediaPicker;
-use Vendor\CmsCore\Filament\Resources\BlogPostResource\Pages;
-use Vendor\CmsCore\Models\BlogAuthor;
-use Vendor\CmsCore\Models\BlogPost;
-use Vendor\CmsCore\Models\BlogSetting;
-use Vendor\CmsCore\Models\States\Draft;
-use Vendor\CmsCore\Models\States\Published;
-use Vendor\CmsCore\Models\States\Scheduled;
+use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
+use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource\Pages;
+use Alexisgt01\CmsCore\Models\BlogAuthor;
+use Alexisgt01\CmsCore\Models\BlogCategory;
+use Alexisgt01\CmsCore\Models\BlogPost;
+use Alexisgt01\CmsCore\Models\BlogSetting;
+use Alexisgt01\CmsCore\Models\BlogTag;
+use Alexisgt01\CmsCore\Models\States\Draft;
+use Alexisgt01\CmsCore\Models\States\Published;
+use Alexisgt01\CmsCore\Models\States\Scheduled;
 use Illuminate\Database\Eloquent\Model;
 
 class BlogPostResource extends Resource
@@ -83,6 +85,34 @@ class BlogPostResource extends Resource
                                     ->label('Extrait')
                                     ->required()
                                     ->rows(3),
+                                Forms\Components\Select::make('category_id')
+                                    ->label('Catégorie')
+                                    ->options(function (): array {
+                                        return self::buildCategoryOptions();
+                                    })
+                                    ->searchable()
+                                    ->nullable(),
+                                Forms\Components\Select::make('tags')
+                                    ->label('Tags')
+                                    ->multiple()
+                                    ->relationship('tags', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->label('Nom')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(function (Forms\Set $set, ?string $state): void {
+                                                $set('slug', BlogTag::generateSlug($state ?? ''));
+                                            }),
+                                        Forms\Components\TextInput::make('slug')
+                                            ->label('Slug')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->unique(BlogTag::class, 'slug'),
+                                    ]),
                                 TiptapEditor::make('content')
                                     ->label('Contenu')
                                     ->profile('default')
@@ -263,6 +293,14 @@ class BlogPostResource extends Resource
                 Tables\Columns\TextColumn::make('author.display_name')
                     ->label('Auteur')
                     ->placeholder('Aucun'),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Catégorie')
+                    ->placeholder('Aucune')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('tags.name')
+                    ->label('Tags')
+                    ->badge()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('state')
                     ->label('Statut')
                     ->badge()
@@ -292,6 +330,14 @@ class BlogPostResource extends Resource
                 Tables\Filters\SelectFilter::make('author_id')
                     ->label('Auteur')
                     ->options(fn (): array => BlogAuthor::query()->pluck('display_name', 'id')->toArray()),
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->label('Catégorie')
+                    ->options(fn (): array => BlogCategory::query()->pluck('name', 'id')->toArray()),
+                Tables\Filters\SelectFilter::make('tags')
+                    ->label('Tags')
+                    ->relationship('tags', 'name')
+                    ->multiple()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -302,6 +348,31 @@ class BlogPostResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * @return array<int|string, string>
+     */
+    protected static function buildCategoryOptions(): array
+    {
+        $options = [];
+
+        $roots = BlogCategory::query()
+            ->whereNull('parent_id')
+            ->orderBy('position')
+            ->orderBy('name')
+            ->with('children')
+            ->get();
+
+        foreach ($roots as $root) {
+            $options[$root->id] = $root->name;
+
+            foreach ($root->children->sortBy('position')->sortBy('name') as $child) {
+                $options[$child->id] = '— ' . $child->name;
+            }
+        }
+
+        return $options;
     }
 
     public static function getPages(): array

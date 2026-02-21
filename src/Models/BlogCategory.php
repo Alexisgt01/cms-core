@@ -2,13 +2,14 @@
 
 namespace Alexisgt01\CmsCore\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
-class BlogAuthor extends Model
+class BlogCategory extends Model
 {
     protected $guarded = ['id'];
 
@@ -18,22 +19,34 @@ class BlogAuthor extends Model
     protected function casts(): array
     {
         return [
-            'avatar' => MediaSelectionCast::class,
-            'indexing' => 'boolean',
             'og_image' => MediaSelectionCast::class,
             'twitter_image' => MediaSelectionCast::class,
             'schema_json' => 'array',
         ];
     }
 
-    public function user(): BelongsTo
+    public function parent(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     public function posts(): HasMany
     {
-        return $this->hasMany(BlogPost::class, 'author_id');
+        return $this->hasMany(BlogPost::class, 'category_id');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeRoots(Builder $query): Builder
+    {
+        return $query->whereNull('parent_id');
     }
 
     public static function generateSlug(string $name): string

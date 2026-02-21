@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\CmsCore\Models;
+namespace Alexisgt01\CmsCore\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Vendor\CmsCore\Casts\MediaSelectionCast;
+use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogSetting extends Model
 {

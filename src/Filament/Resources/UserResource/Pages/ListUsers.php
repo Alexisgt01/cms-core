@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\UserResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Vendor\CmsCore\Filament\Resources\UserResource;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 
 class ListUsers extends ListRecords
 {

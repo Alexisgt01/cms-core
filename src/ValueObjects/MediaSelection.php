@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\ValueObjects;
+namespace Alexisgt01\CmsCore\ValueObjects;
 
 class MediaSelection implements \JsonSerializable
 {

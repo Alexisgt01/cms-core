@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Vendor\CmsCore\Filament\Resources\BlogAuthorResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
 
 class EditBlogAuthor extends EditRecord
 {

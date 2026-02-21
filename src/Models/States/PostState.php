@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Models\States;
+namespace Alexisgt01\CmsCore\Models\States;
 
 use Spatie\ModelStates\State;
 use Spatie\ModelStates\StateConfig;

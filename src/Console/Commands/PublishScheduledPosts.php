@@ -1,11 +1,11 @@
 <?php
 
-namespace Vendor\CmsCore\Console\Commands;
+namespace Alexisgt01\CmsCore\Console\Commands;
 
 use Illuminate\Console\Command;
-use Vendor\CmsCore\Models\BlogPost;
-use Vendor\CmsCore\Models\States\Published;
-use Vendor\CmsCore\Models\States\Scheduled;
+use Alexisgt01\CmsCore\Models\BlogPost;
+use Alexisgt01\CmsCore\Models\States\Published;
+use Alexisgt01\CmsCore\Models\States\Scheduled;
 
 class PublishScheduledPosts extends Command
 {

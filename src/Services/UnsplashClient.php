@@ -1,12 +1,12 @@
 <?php
 
-namespace Vendor\CmsCore\Services;
+namespace Alexisgt01\CmsCore\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Vendor\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Models\CmsMedia;
 
 class UnsplashClient
 {

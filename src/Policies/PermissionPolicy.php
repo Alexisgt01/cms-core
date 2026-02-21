@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Policies;
+namespace Alexisgt01\CmsCore\Policies;
 
 use App\Models\User;
 use Spatie\Permission\Models\Permission;

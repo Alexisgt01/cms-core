@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources;
+namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -8,9 +8,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Vendor\CmsCore\Filament\Forms\Components\MediaPicker;
-use Vendor\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
-use Vendor\CmsCore\Models\BlogAuthor;
+use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
+use Alexisgt01\CmsCore\Models\BlogAuthor;
 
 class BlogAuthorResource extends Resource
 {

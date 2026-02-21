@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Pages;
+namespace Alexisgt01\CmsCore\Filament\Pages;
 
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;

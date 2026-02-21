@@ -1,9 +1,9 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\RoleResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\RoleResource\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use Vendor\CmsCore\Filament\Resources\RoleResource;
+use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
 
 class CreateRole extends CreateRecord
 {

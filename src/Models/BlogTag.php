@@ -3,12 +3,11 @@
 namespace Alexisgt01\CmsCore\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
-class BlogAuthor extends Model
+class BlogTag extends Model
 {
     protected $guarded = ['id'];
 
@@ -18,22 +17,15 @@ class BlogAuthor extends Model
     protected function casts(): array
     {
         return [
-            'avatar' => MediaSelectionCast::class,
-            'indexing' => 'boolean',
             'og_image' => MediaSelectionCast::class,
             'twitter_image' => MediaSelectionCast::class,
             'schema_json' => 'array',
         ];
     }
 
-    public function user(): BelongsTo
+    public function posts(): BelongsToMany
     {
-        return $this->belongsTo(\App\Models\User::class);
-    }
-
-    public function posts(): HasMany
-    {
-        return $this->hasMany(BlogPost::class, 'author_id');
+        return $this->belongsToMany(BlogPost::class, 'blog_post_tag');
     }
 
     public static function generateSlug(string $name): string

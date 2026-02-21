@@ -30,7 +30,7 @@ In your Laravel project's `composer.json`:
 ### 2. Require the package
 
 ```bash
-composer require vendor/cms-core:@dev
+composer require alexisgt01/cms-core:@dev
 ```
 
 ### 3. Install Filament
@@ -203,8 +203,19 @@ Complete blog engine with:
 - Avatar via MediaPicker
 - Full SEO per author (meta, OG, Twitter, Schema)
 
+**Categories**:
+- Hierarchical (parent/child) with position ordering
+- Name, slug (auto-generated), description
+- Full SEO per category (meta, OG, Twitter, Schema)
+
+**Tags**:
+- Flat taxonomy, many-to-many with posts
+- Name, slug (auto-generated), description
+- Tags can be created inline from the post form
+- Full SEO per tag (meta, OG, Twitter, Schema)
+
 **Posts**:
-- Content: title, slug (auto-generated), excerpt (required), rich content via Tiptap editor
+- Content: title, slug (auto-generated), excerpt (required), category, tags, rich content via Tiptap editor
 - Featured images via MediaPicker (count controlled by settings)
 - Author assignment (fallback to default author)
 - State machine via spatie/laravel-model-states:
@@ -249,6 +260,8 @@ $schedule->command('blog:publish-scheduled')->hourly();
 | view/create/edit/delete blog authors | x | view/create/edit | |
 | view/create/edit/delete blog posts | x | view/create/edit | |
 | publish blog posts | x | x | |
+| view/create/edit/delete blog categories | x | view/create/edit | |
+| view/create/edit/delete blog tags | x | view/create/edit | |
 
 Without `publish blog posts` permission, only "Brouillon" (Draft) is available — no publish or schedule.
 
@@ -267,7 +280,12 @@ packages/cms/core/
 │   ├── 500000_create_blog_authors_table
 │   ├── 500001_create_blog_settings_table
 │   ├── 500002_create_blog_posts_table
-│   └── 500003_add_blog_permissions
+│   ├── 500003_add_blog_permissions
+│   ├── 500004_create_blog_categories_table
+│   ├── 500005_add_category_id_to_blog_posts
+│   ├── 500006_create_blog_tags_table
+│   ├── 500007_create_blog_post_tag_pivot
+│   └── 500008_add_tag_category_permissions
 ├── resources/views/filament/
 │   ├── forms/components/media-picker.blade.php
 │   └── pages/
@@ -289,14 +307,18 @@ packages/cms/core/
     │   │   └── MediaLibrary.php
     │   └── Resources/
     │       ├── BlogAuthorResource.php (+Pages)
+    │       ├── BlogCategoryResource.php (+Pages)
     │       ├── BlogPostResource.php (+Pages)
+    │       ├── BlogTagResource.php (+Pages)
     │       ├── PermissionResource.php
     │       ├── RoleResource.php
     │       └── UserResource.php (+Pages)
     ├── Models/
     │   ├── BlogAuthor.php
+    │   ├── BlogCategory.php
     │   ├── BlogPost.php
     │   ├── BlogSetting.php
+    │   ├── BlogTag.php
     │   ├── CmsMedia.php
     │   ├── CmsMediaFolder.php
     │   └── States/ (Draft, Scheduled, Published, PostState)

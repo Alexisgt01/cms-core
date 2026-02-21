@@ -1,12 +1,12 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources;
+namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Spatie\Permission\Models\Permission;
-use Vendor\CmsCore\Filament\Resources\PermissionResource\Pages;
+use Alexisgt01\CmsCore\Filament\Resources\PermissionResource\Pages;
 
 class PermissionResource extends Resource
 {

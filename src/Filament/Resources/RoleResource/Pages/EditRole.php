@@ -1,10 +1,10 @@
 <?php
 
-namespace Vendor\CmsCore\Filament\Resources\RoleResource\Pages;
+namespace Alexisgt01\CmsCore\Filament\Resources\RoleResource\Pages;
 
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Vendor\CmsCore\Filament\Resources\RoleResource;
+use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
 
 class EditRole extends EditRecord
 {

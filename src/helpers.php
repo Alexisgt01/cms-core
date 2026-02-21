@@ -1,6 +1,6 @@
 <?php
 
-use Vendor\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Models\CmsMedia;
 
 if (! function_exists('media_url')) {
     /**

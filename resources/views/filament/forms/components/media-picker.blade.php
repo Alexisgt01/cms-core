@@ -115,7 +115,7 @@
                     <div style="min-width: 0; flex: 1;">
                         <div style="font-size: 13px; font-weight: 500; color: rgb(17, 24, 39); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             @if ($currentMediaId)
-                                {{ \Vendor\CmsCore\Models\CmsMedia::find($currentMediaId)?->name ?? 'Média' }}
+                                {{ \Alexisgt01\CmsCore\Models\CmsMedia::find($currentMediaId)?->name ?? 'Média' }}
                             @else
                                 Média sélectionné
                             @endif
