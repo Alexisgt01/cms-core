@@ -16,6 +16,7 @@ use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
 use Alexisgt01\CmsCore\Policies\PermissionPolicy;
 use Alexisgt01\CmsCore\Policies\RolePolicy;
 use Alexisgt01\CmsCore\Policies\UserPolicy;
+use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
@@ -57,6 +58,7 @@ class CmsCoreServiceProvider extends ServiceProvider
         Gate::policy(CmsMedia::class, CmsMediaPolicy::class);
 
         $this->commands([
+            MakeAdminCommand::class,
             PublishScheduledPosts::class,
         ]);
 

@@ -130,6 +130,7 @@ super_admin = all. editor = view/create/edit authors/categories/tags + view/crea
 
 ## Commands
 
+- `cms:make-admin` — creates an admin user with `super_admin` role. Prompts for first_name, last_name, email, password. Supports `--first-name`, `--last-name`, `--email`, `--password` options for non-interactive use. Replaces `make:filament-user` (which doesn't work with first_name/last_name fields).
 - `blog:publish-scheduled` — finds Scheduled posts with `scheduled_for <= now()`, transitions to Published, sets published_at/first_published_at. Run hourly via scheduler.
 
 ## Config

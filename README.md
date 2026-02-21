@@ -160,20 +160,20 @@ Add the `HasRoles` trait and `FilamentUser` interface to `app/Models/User.php`:
 namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'first_name',
         'last_name',
-        'name',
         'email',
         'password',
     ];
@@ -191,6 +191,11 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    public function getFilamentName(): string
+    {
+        return "$this->first_name $this->last_name";
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return true; // or add your own logic
@@ -198,7 +203,7 @@ class User extends Authenticatable implements FilamentUser
 }
 ```
 
-> The package migration `200001_add_name_fields_to_users_table` adds `first_name` and `last_name` columns. Make sure they are in `$fillable`.
+**Critical:** The `HasName` interface and `getFilamentName()` method are **required**. Without them, Filament will throw `TypeError: getUserName(): Return value must be of type string, null returned` because the package migration removes the `name` column (replaced by `first_name` and `last_name`).
 
 ---
 
@@ -316,19 +321,18 @@ The package ships **13 migrations** that run in sequence:
 ## Step 10 — Create an admin user
 
 ```bash
-php artisan make:filament-user
+php artisan cms:make-admin
 ```
 
-Then assign the `super_admin` role to the user. Use tinker:
+The command prompts for first name, last name, email, and password, then creates the user with the `super_admin` role.
+
+For non-interactive use (CI, scripts):
 
 ```bash
-php artisan tinker
+php artisan cms:make-admin --first-name=Admin --last-name=User --email=admin@example.com --password=your-password
 ```
 
-```php
-$user = App\Models\User::where('email', 'your@email.com')->first();
-$user->assignRole('super_admin');
-```
+> Do **not** use `make:filament-user` — it expects a `name` field which does not exist (the CMS uses `first_name` and `last_name`).
 
 ---
 
@@ -372,6 +376,7 @@ Run through this after installation to confirm everything works:
 - [ ] Create a blog tag
 - [ ] Create a blog post — select category, tags, upload featured image, use Tiptap editor
 - [ ] Publish the post — state changes from Draft to Published
+- [ ] `php artisan cms:make-admin` — creates admin user with super_admin role
 - [ ] `php artisan blog:publish-scheduled` — command runs without error
 - [ ] Blog Settings page loads — General, RSS, Images, SEO, OG, Twitter, Schema tabs
 
@@ -1264,6 +1269,7 @@ packages/cms/core/
     ├── Casts/
     │   └── MediaSelectionCast.php
     ├── Console/Commands/
+    │   ├── MakeAdminCommand.php
     │   └── PublishScheduledPosts.php
     ├── Filament/
     │   ├── Actions/
