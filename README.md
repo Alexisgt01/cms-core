@@ -122,7 +122,7 @@ php artisan vendor:publish --tag=cms-core-config
 ```
 
 This publishes:
-- `config/cms-core.php` — admin panel path, default roles/permissions reference
+- `config/cms-core.php` — admin panel path
 - `config/cms-media.php` — imgproxy, Unsplash, upload settings
 
 ### Environment variables
