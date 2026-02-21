@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use App\Models\User;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogAuthor extends Model
@@ -28,7 +29,7 @@ class BlogAuthor extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function posts(): HasMany
