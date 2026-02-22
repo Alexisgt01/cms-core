@@ -2,13 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use FilamentTiptapEditor\TiptapEditor;
+use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
+use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource\Pages;
 use Alexisgt01\CmsCore\Models\BlogAuthor;
 use Alexisgt01\CmsCore\Models\BlogCategory;
@@ -18,10 +14,18 @@ use Alexisgt01\CmsCore\Models\BlogTag;
 use Alexisgt01\CmsCore\Models\States\Draft;
 use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Database\Eloquent\Model;
 
 class BlogPostResource extends Resource
 {
+    use HasSeoFields;
+
     protected static ?string $model = BlogPost::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -76,6 +80,13 @@ class BlogPostResource extends Resource
                                             $set('slug', BlogPost::generateSlug($state ?? ''));
                                         }
                                     }),
+                                Forms\Components\TextInput::make('h1')
+                                    ->label('H1')
+                                    ->maxLength(255)
+                                    ->helperText('Laissez vide pour utiliser le titre'),
+                                Forms\Components\TextInput::make('subtitle')
+                                    ->label('Sous-titre')
+                                    ->maxLength(255),
                                 Forms\Components\TextInput::make('slug')
                                     ->label('Slug')
                                     ->required()
@@ -85,8 +96,12 @@ class BlogPostResource extends Resource
                                     ->label('Extrait')
                                     ->required()
                                     ->rows(3),
+                                Forms\Components\Textarea::make('seo_excerpt')
+                                    ->label('Extrait SEO')
+                                    ->rows(3)
+                                    ->helperText('Distinct de l\'extrait principal, utilise pour les meta descriptions automatiques'),
                                 Forms\Components\Select::make('category_id')
-                                    ->label('Catégorie')
+                                    ->label('Categorie')
                                     ->options(function (): array {
                                         return self::buildCategoryOptions();
                                     })
@@ -113,12 +128,42 @@ class BlogPostResource extends Resource
                                             ->maxLength(255)
                                             ->unique(BlogTag::class, 'slug'),
                                     ]),
+                                TiptapEditor::make('content_seo_top')
+                                    ->label('Contenu SEO (haut de page)')
+                                    ->profile('default')
+                                    ->nullable()
+                                    ->columnSpanFull(),
                                 TiptapEditor::make('content')
                                     ->label('Contenu')
                                     ->profile('default')
                                     ->disk('public')
                                     ->directory('blog-content')
                                     ->columnSpanFull(),
+                                TiptapEditor::make('content_seo_bottom')
+                                    ->label('Contenu SEO (bas de page)')
+                                    ->profile('default')
+                                    ->nullable()
+                                    ->columnSpanFull(),
+                                Forms\Components\Repeater::make('faq_blocks')
+                                    ->label('FAQ')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('question')
+                                            ->label('Question')
+                                            ->required()
+                                            ->maxLength(500),
+                                        Forms\Components\Textarea::make('answer')
+                                            ->label('Reponse')
+                                            ->required()
+                                            ->rows(3),
+                                    ])
+                                    ->defaultItems(0)
+                                    ->collapsible()
+                                    ->collapsed()
+                                    ->itemLabel(fn (array $state): ?string => $state['question'] ?? null)
+                                    ->columnSpanFull(),
+                                Forms\Components\Toggle::make('table_of_contents')
+                                    ->label('Table des matieres')
+                                    ->default(false),
                             ]),
 
                         Forms\Components\Tabs\Tab::make('Images & Auteur')
@@ -145,8 +190,8 @@ class BlogPostResource extends Resource
                                         $options = [Draft::getMorphClass() => 'Brouillon'];
 
                                         if (auth()->user()?->can('publish blog posts')) {
-                                            $options[Scheduled::getMorphClass()] = 'Programmé';
-                                            $options[Published::getMorphClass()] = 'Publié';
+                                            $options[Scheduled::getMorphClass()] = 'Programme';
+                                            $options[Published::getMorphClass()] = 'Publie';
                                         }
 
                                         return $options;
@@ -155,7 +200,7 @@ class BlogPostResource extends Resource
                                     ->required()
                                     ->live(),
                                 Forms\Components\DateTimePicker::make('scheduled_for')
-                                    ->label('Date de publication programmée')
+                                    ->label('Date de publication programmee')
                                     ->visible(fn (Forms\Get $get): bool => $get('state') === Scheduled::getMorphClass())
                                     ->required(fn (Forms\Get $get): bool => $get('state') === Scheduled::getMorphClass()),
                                 Forms\Components\DateTimePicker::make('published_at')
@@ -166,98 +211,24 @@ class BlogPostResource extends Resource
 
                         Forms\Components\Tabs\Tab::make('SEO')
                             ->schema([
-                                Forms\Components\Toggle::make('indexing')
-                                    ->label('Indexation')
-                                    ->default(true),
-                                Forms\Components\TextInput::make('canonical_url')
-                                    ->label('URL canonique')
-                                    ->url()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('meta_title')
-                                    ->label('Titre meta')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('meta_description')
-                                    ->label('Description meta')
-                                    ->rows(2),
-
-                                Forms\Components\Fieldset::make('Robots')
-                                    ->schema([
-                                        Forms\Components\Toggle::make('robots_index')
-                                            ->label('Index'),
-                                        Forms\Components\Toggle::make('robots_follow')
-                                            ->label('Follow'),
-                                        Forms\Components\Toggle::make('robots_noarchive')
-                                            ->label('Noarchive'),
-                                        Forms\Components\Toggle::make('robots_nosnippet')
-                                            ->label('Nosnippet'),
-                                        Forms\Components\TextInput::make('robots_max_snippet')
-                                            ->label('Max snippet')
-                                            ->numeric()
-                                            ->nullable(),
-                                        Forms\Components\Select::make('robots_max_image_preview')
-                                            ->label('Max image preview')
-                                            ->options([
-                                                'none' => 'None',
-                                                'standard' => 'Standard',
-                                                'large' => 'Large',
-                                            ]),
-                                        Forms\Components\TextInput::make('robots_max_video_preview')
-                                            ->label('Max video preview')
-                                            ->numeric()
-                                            ->nullable(),
-                                    ])
-                                    ->columns(4),
+                                ...static::seoKeywordFields(),
+                                ...static::seoIndexingFields(),
+                                ...static::seoMetaFields(),
+                                static::robotsFieldset(),
+                                SerpPreview::make(),
                             ])
                             ->columns(2),
 
                         Forms\Components\Tabs\Tab::make('Open Graph')
-                            ->schema([
-                                Forms\Components\TextInput::make('og_type')
-                                    ->label('Type OG')
-                                    ->maxLength(50),
-                                Forms\Components\TextInput::make('og_title')
-                                    ->label('Titre OG')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('og_description')
-                                    ->label('Description OG')
-                                    ->rows(2),
-                                MediaPicker::make('og_image')
-                                    ->label('Image OG'),
-                            ])
+                            ->schema(static::ogFields())
                             ->columns(2),
 
                         Forms\Components\Tabs\Tab::make('Twitter')
-                            ->schema([
-                                Forms\Components\Select::make('twitter_card')
-                                    ->label('Type de carte')
-                                    ->options([
-                                        'summary' => 'Summary',
-                                        'summary_large_image' => 'Summary Large Image',
-                                    ]),
-                                Forms\Components\TextInput::make('twitter_title')
-                                    ->label('Titre Twitter')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('twitter_description')
-                                    ->label('Description Twitter')
-                                    ->rows(2),
-                                MediaPicker::make('twitter_image')
-                                    ->label('Image Twitter'),
-                            ])
+                            ->schema(static::twitterFields())
                             ->columns(2),
 
                         Forms\Components\Tabs\Tab::make('Schema')
-                            ->schema([
-                                Forms\Components\Select::make('schema_type')
-                                    ->label('Type de schema')
-                                    ->options([
-                                        'Article' => 'Article',
-                                        'BlogPosting' => 'BlogPosting',
-                                        'NewsArticle' => 'NewsArticle',
-                                    ]),
-                                Forms\Components\Textarea::make('schema_json')
-                                    ->label('JSON-LD personnalisé')
-                                    ->rows(4),
-                            ])
+                            ->schema(static::schemaFields())
                             ->columns(2),
                     ])
                     ->columnSpanFull(),
@@ -273,7 +244,7 @@ class BlogPostResource extends Resource
         $fields = [];
 
         for ($i = 0; $i < $max; $i++) {
-            $label = $max === 1 ? 'Image à la une' : 'Image à la une ' . ($i + 1);
+            $label = $max === 1 ? 'Image a la une' : 'Image a la une ' . ($i + 1);
             $fields[] = MediaPicker::make("featured_images.{$i}")
                 ->label($label);
         }
@@ -294,7 +265,7 @@ class BlogPostResource extends Resource
                     ->label('Auteur')
                     ->placeholder('Aucun'),
                 Tables\Columns\TextColumn::make('category.name')
-                    ->label('Catégorie')
+                    ->label('Categorie')
                     ->placeholder('Aucune')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('tags.name')
@@ -308,12 +279,12 @@ class BlogPostResource extends Resource
                     ->color(fn ($state) => $state->color())
                     ->sortable(),
                 Tables\Columns\TextColumn::make('published_at')
-                    ->label('Publié le')
+                    ->label('Publie le')
                     ->dateTime('d/m/Y H:i')
-                    ->placeholder('Non publié')
+                    ->placeholder('Non publie')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créé le')
+                    ->label('Cree le')
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -324,14 +295,14 @@ class BlogPostResource extends Resource
                     ->label('Statut')
                     ->options([
                         Draft::getMorphClass() => 'Brouillon',
-                        Scheduled::getMorphClass() => 'Programmé',
-                        Published::getMorphClass() => 'Publié',
+                        Scheduled::getMorphClass() => 'Programme',
+                        Published::getMorphClass() => 'Publie',
                     ]),
                 Tables\Filters\SelectFilter::make('author_id')
                     ->label('Auteur')
                     ->options(fn (): array => BlogAuthor::query()->pluck('display_name', 'id')->toArray()),
                 Tables\Filters\SelectFilter::make('category_id')
-                    ->label('Catégorie')
+                    ->label('Categorie')
                     ->options(fn (): array => BlogCategory::query()->pluck('name', 'id')->toArray()),
                 Tables\Filters\SelectFilter::make('tags')
                     ->label('Tags')

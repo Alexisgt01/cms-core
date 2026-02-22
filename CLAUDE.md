@@ -100,9 +100,31 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 | BlogSettings | Blog | Single-row settings form (General, RSS, Images, SEO, OG, Twitter, Schema). Requires `manage blog settings` |
 | EditProfile | — | Profile editing page |
 
+## SEO Module
+
+### Shared Components
+- **HasSeoFields** trait (`src/Filament/Concerns/HasSeoFields.php`) — provides reusable form field arrays: `seoKeywordFields()`, `seoIndexingFields()`, `seoMetaFields()`, `robotsFieldset()`, `ogFields()`, `twitterFields()`, `schemaFields()`, `contentSeoFields()`. Used by all 4 blog resources.
+- **SerpPreview** (`src/Filament/Forms/Components/SerpPreview.php`) — Google SERP preview with desktop/mobile toggle, reactive via Alpine.js
+- **OgPreview** (`src/Filament/Forms/Components/OgPreview.php`) — Facebook share card preview
+- **TwitterPreview** (`src/Filament/Forms/Components/TwitterPreview.php`) — Twitter/X card preview (summary + summary_large_image)
+
+### SEO Fields on All Models
+All blog models (BlogPost, BlogAuthor, BlogCategory, BlogTag) have: h1, focus_keyword, secondary_keywords (JSON), content_seo_top, content_seo_bottom, indexing, canonical_url, robots (7 directives), og (type/locale/site_name/title/description/image/width/height), twitter (card/site/creator/title/description/image), schema_types (JSON multi), schema_json.
+
+BlogPost additionally has: subtitle, seo_excerpt, faq_blocks (JSON repeater), table_of_contents (boolean).
+
+### Publication Validation (BlogPost only)
+- **Blocks** publication (Published/Scheduled) if `meta_title` is empty
+- **Blocks** publication if `h1` AND `title` are both empty
+- **Warns** (without blocking) if `meta_description` is missing
+- **Warns** on duplicate `meta_title` or `h1` across other BlogPosts
+
+### Schema Types (10 options)
+WebPage, CollectionPage, ItemList, Article, BlogPosting, NewsArticle, FAQPage, BreadcrumbList, Person, Organization. Multi-select via `schema_types` JSON column. Legacy `schema_type` string kept for backward compat.
+
 ## Blog Post Form Structure
 
-Tabs: Contenu (title, slug, excerpt, category, tags, Tiptap content) → Images & Auteur (featured images, author, reading time) → Publication (state select, conditional dates) → SEO → Open Graph → Twitter → Schema.
+Tabs: Contenu (title, h1, subtitle, slug, excerpt, seo_excerpt, category, tags, content_seo_top, Tiptap content, content_seo_bottom, FAQ repeater, table_of_contents) → Images & Auteur → Publication → SEO (focus_keyword, secondary_keywords, indexing, canonical, meta_title, meta_description, robots, SerpPreview) → Open Graph (+ OgPreview) → Twitter (+ TwitterPreview) → Schema (multi-select + JSON validation).
 
 Without `publish blog posts` permission, state select only shows "Brouillon" (Draft).
 
@@ -143,7 +165,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -157,3 +179,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `MediaLibraryTest.php` — media CRUD, folders, bulk ops, filters
 - `MediaPickerTest.php` — MediaSelection, MediaSelectionCast, media_url(), UnsplashClient
 - `BlogTest.php` — BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions
+- `BlogSeoTest.php` — SEO column existence, model casts (arrays/booleans), content storage, publication validation (block/allow/warn), duplicate detection

@@ -29,9 +29,11 @@ class BlogSetting extends Model
             'default_robots_follow' => 'boolean',
             'default_robots_noarchive' => 'boolean',
             'default_robots_nosnippet' => 'boolean',
+            'default_h1_from_title' => 'boolean',
             'schema_enabled' => 'boolean',
             'schema_publisher_logo' => MediaSelectionCast::class,
             'schema_custom_json' => 'array',
+            'default_schema_types' => 'array',
         ];
     }
 

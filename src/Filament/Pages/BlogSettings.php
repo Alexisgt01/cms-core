@@ -127,6 +127,9 @@ class BlogSettings extends Page implements HasForms
                     ->schema([
                         Toggle::make('indexing_default')
                             ->label('Indexation par défaut'),
+                        Toggle::make('default_h1_from_title')
+                            ->label('H1 auto depuis le titre')
+                            ->helperText('Si active, le H1 est auto-rempli depuis le titre quand il est vide'),
                         Select::make('default_canonical_mode')
                             ->label('Mode canonique par défaut')
                             ->options([
@@ -235,13 +238,35 @@ class BlogSettings extends Page implements HasForms
                         Toggle::make('schema_enabled')
                             ->label('Schema activé'),
                         Select::make('schema_type_default')
-                            ->label('Type de schema par défaut')
+                            ->label('Type de schema par defaut')
                             ->options([
+                                'WebPage' => 'WebPage',
+                                'CollectionPage' => 'CollectionPage',
+                                'ItemList' => 'ItemList',
                                 'Article' => 'Article',
                                 'BlogPosting' => 'BlogPosting',
                                 'NewsArticle' => 'NewsArticle',
+                                'FAQPage' => 'FAQPage',
+                                'BreadcrumbList' => 'BreadcrumbList',
+                                'Person' => 'Person',
+                                'Organization' => 'Organization',
                             ])
                             ->default('BlogPosting'),
+                        Select::make('default_schema_types')
+                            ->label('Types de schema par defaut (multi)')
+                            ->multiple()
+                            ->options([
+                                'WebPage' => 'WebPage',
+                                'CollectionPage' => 'CollectionPage',
+                                'ItemList' => 'ItemList',
+                                'Article' => 'Article',
+                                'BlogPosting' => 'BlogPosting',
+                                'NewsArticle' => 'NewsArticle',
+                                'FAQPage' => 'FAQPage',
+                                'BreadcrumbList' => 'BreadcrumbList',
+                                'Person' => 'Person',
+                                'Organization' => 'Organization',
+                            ]),
                         TextInput::make('schema_publisher_name')
                             ->label('Nom de l\'éditeur')
                             ->maxLength(255),

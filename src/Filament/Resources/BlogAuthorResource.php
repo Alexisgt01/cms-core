@@ -2,18 +2,22 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
+use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
+use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
+use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
+use Alexisgt01\CmsCore\Models\BlogAuthor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
-use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
-use Alexisgt01\CmsCore\Models\BlogAuthor;
 
 class BlogAuthorResource extends Resource
 {
+    use HasSeoFields;
+
     protected static ?string $model = BlogAuthor::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -54,16 +58,16 @@ class BlogAuthorResource extends Resource
             ->schema([
                 Forms\Components\Tabs::make('Auteur')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Identité')
+                        Forms\Components\Tabs\Tab::make('Identite')
                             ->schema([
                                 Forms\Components\Select::make('user_id')
-                                    ->label('Utilisateur lié')
+                                    ->label('Utilisateur lie')
                                     ->relationship('user', 'email')
                                     ->searchable()
                                     ->nullable()
                                     ->preload(),
                                 Forms\Components\TextInput::make('display_name')
-                                    ->label('Nom affiché')
+                                    ->label('Nom affiche')
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
@@ -72,6 +76,10 @@ class BlogAuthorResource extends Resource
                                             $set('slug', BlogAuthor::generateSlug($state ?? ''));
                                         }
                                     }),
+                                Forms\Components\TextInput::make('h1')
+                                    ->label('H1')
+                                    ->maxLength(255)
+                                    ->helperText('Laissez vide pour utiliser le nom affiche'),
                                 Forms\Components\TextInput::make('slug')
                                     ->label('Slug')
                                     ->required()
@@ -92,7 +100,7 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Bio & Réseaux')
+                        Forms\Components\Tabs\Tab::make('Bio & Reseaux')
                             ->schema([
                                 Forms\Components\Textarea::make('bio')
                                     ->label('Biographie')
@@ -123,41 +131,27 @@ class BlogAuthorResource extends Resource
 
                         Forms\Components\Tabs\Tab::make('SEO')
                             ->schema([
-                                Forms\Components\Toggle::make('indexing')
-                                    ->label('Indexation'),
-                                Forms\Components\TextInput::make('canonical_url')
-                                    ->label('URL canonique')
-                                    ->url()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('meta_title')
-                                    ->label('Titre meta')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('meta_description')
-                                    ->label('Description meta')
-                                    ->rows(2),
-                                Forms\Components\TextInput::make('og_title')
-                                    ->label('Titre OG')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('og_description')
-                                    ->label('Description OG')
-                                    ->rows(2),
-                                MediaPicker::make('og_image')
-                                    ->label('Image OG'),
-                                Forms\Components\TextInput::make('twitter_title')
-                                    ->label('Titre Twitter')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('twitter_description')
-                                    ->label('Description Twitter')
-                                    ->rows(2),
-                                MediaPicker::make('twitter_image')
-                                    ->label('Image Twitter'),
-                                Forms\Components\TextInput::make('schema_type')
-                                    ->label('Type schema')
-                                    ->maxLength(50),
-                                Forms\Components\Textarea::make('schema_json')
-                                    ->label('JSON-LD personnalisé')
-                                    ->rows(4),
+                                ...static::seoKeywordFields(),
+                                ...static::seoIndexingFields(),
+                                ...static::seoMetaFields(),
+                                static::robotsFieldset(),
+                                SerpPreview::make(),
                             ])
+                            ->columns(2),
+
+                        Forms\Components\Tabs\Tab::make('Contenu SEO')
+                            ->schema(static::contentSeoFields()),
+
+                        Forms\Components\Tabs\Tab::make('Open Graph')
+                            ->schema(static::ogFields())
+                            ->columns(2),
+
+                        Forms\Components\Tabs\Tab::make('Twitter')
+                            ->schema(static::twitterFields())
+                            ->columns(2),
+
+                        Forms\Components\Tabs\Tab::make('Schema')
+                            ->schema(static::schemaFields())
                             ->columns(2),
                     ])
                     ->columnSpanFull(),
@@ -177,13 +171,13 @@ class BlogAuthorResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('user.email')
                     ->label('Utilisateur')
-                    ->placeholder('Non lié'),
+                    ->placeholder('Non lie'),
                 Tables\Columns\TextColumn::make('posts_count')
                     ->label('Articles')
                     ->counts('posts')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créé le')
+                    ->label('Cree le')
                     ->dateTime('d/m/Y')
                     ->sortable(),
             ])
@@ -191,7 +185,7 @@ class BlogAuthorResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('detachUser')
-                    ->label('Détacher l\'utilisateur')
+                    ->label('Detacher l\'utilisateur')
                     ->icon('heroicon-o-link-slash')
                     ->color('warning')
                     ->requiresConfirmation()

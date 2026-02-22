@@ -17,9 +17,16 @@ class BlogTag extends Model
     protected function casts(): array
     {
         return [
+            'indexing' => 'boolean',
+            'robots_index' => 'boolean',
+            'robots_follow' => 'boolean',
+            'robots_noarchive' => 'boolean',
+            'robots_nosnippet' => 'boolean',
+            'secondary_keywords' => 'array',
             'og_image' => MediaSelectionCast::class,
             'twitter_image' => MediaSelectionCast::class,
             'schema_json' => 'array',
+            'schema_types' => 'array',
         ];
     }
 

@@ -1196,7 +1196,13 @@ media_url($media->id, ['width' => 400]);
 
 **Tags** — flat taxonomy, many-to-many with posts, inline creation from post form, full SEO.
 
-**Posts** — title, slug, excerpt, category, tags, Tiptap content, featured images, author, state machine (Draft/Scheduled/Published), publication dates, reading time, full SEO.
+**Posts** — title, h1, subtitle, slug, excerpt, seo_excerpt, category, tags, content_seo_top, Tiptap content, content_seo_bottom, FAQ blocks, table_of_contents, featured images, author, state machine (Draft/Scheduled/Published), publication dates, reading time, full SEO (focus_keyword, secondary_keywords, indexing, canonical, robots, OG complet, Twitter complet, schema multi-types).
+
+**SEO complet sur toutes les entites** — H1 independant, focus keyword, secondary keywords, contenu SEO haut/bas de page, robots (index/follow/noarchive/nosnippet/max-snippet/max-image-preview/max-video-preview), OG complet (type/locale/site_name/title/description/image/width/height), Twitter complet (card/site/creator/title/description/image), schema multi-types (10 types), JSON-LD personnalise.
+
+**Previews integrees** — SERP Google (desktop/mobile avec compteurs), Facebook OG, Twitter Card.
+
+**Validation publication** — Bloque si meta_title vide, bloque si h1+title vides, alerte meta_description manquante, detection duplicate meta_title/h1.
 
 **Scheduled publishing:**
 
@@ -1255,10 +1261,18 @@ packages/cms/core/
 │   ├── 500005_add_category_id_to_blog_posts
 │   ├── 500006_create_blog_tags_table
 │   ├── 500007_create_blog_post_tag_pivot
-│   └── 500008_add_tag_category_permissions
+│   ├── 500008_add_tag_category_permissions
+│   ├── 600001_add_seo_enhancements_to_blog_posts
+│   ├── 600002_add_seo_enhancements_to_blog_authors
+│   ├── 600003_add_seo_enhancements_to_blog_categories
+│   ├── 600004_add_seo_enhancements_to_blog_tags
+│   └── 600005_add_seo_defaults_to_blog_settings
 ├── resources/views/filament/
 │   ├── forms/components/
-│   │   └── media-picker.blade.php
+│   │   ├── media-picker.blade.php
+│   │   ├── serp-preview.blade.php
+│   │   ├── og-preview.blade.php
+│   │   └── twitter-preview.blade.php
 │   └── pages/
 │       ├── blog-settings.blade.php
 │       ├── media-library.blade.php
@@ -1275,8 +1289,13 @@ packages/cms/core/
     │   ├── Actions/
     │   │   └── CmsMediaAction.php
     │   ├── CmsCorePlugin.php      # Registers resources & pages
+    │   ├── Concerns/
+    │   │   └── HasSeoFields.php     # Shared SEO form fields trait
     │   ├── Forms/Components/
-    │   │   └── MediaPicker.php
+    │   │   ├── MediaPicker.php
+    │   │   ├── SerpPreview.php      # Google SERP preview
+    │   │   ├── OgPreview.php        # Facebook OG preview
+    │   │   └── TwitterPreview.php   # Twitter Card preview
     │   ├── Pages/
     │   │   ├── BlogSettings.php
     │   │   ├── EditProfile.php

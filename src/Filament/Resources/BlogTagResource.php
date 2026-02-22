@@ -2,18 +2,21 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
+use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
+use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
+use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
+use Alexisgt01\CmsCore\Models\BlogTag;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
-use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
-use Alexisgt01\CmsCore\Models\BlogTag;
 
 class BlogTagResource extends Resource
 {
+    use HasSeoFields;
+
     protected static ?string $model = BlogTag::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
@@ -66,6 +69,10 @@ class BlogTagResource extends Resource
                                             $set('slug', BlogTag::generateSlug($state ?? ''));
                                         }
                                     }),
+                                Forms\Components\TextInput::make('h1')
+                                    ->label('H1')
+                                    ->maxLength(255)
+                                    ->helperText('Laissez vide pour utiliser le nom'),
                                 Forms\Components\TextInput::make('slug')
                                     ->label('Slug')
                                     ->required()
@@ -80,54 +87,27 @@ class BlogTagResource extends Resource
 
                         Forms\Components\Tabs\Tab::make('SEO')
                             ->schema([
-                                Forms\Components\TextInput::make('meta_title')
-                                    ->label('Titre meta')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('meta_description')
-                                    ->label('Description meta')
-                                    ->rows(2),
+                                ...static::seoKeywordFields(),
+                                ...static::seoIndexingFields(),
+                                ...static::seoMetaFields(),
+                                static::robotsFieldset(),
+                                SerpPreview::make(),
                             ])
                             ->columns(2),
 
+                        Forms\Components\Tabs\Tab::make('Contenu SEO')
+                            ->schema(static::contentSeoFields()),
+
                         Forms\Components\Tabs\Tab::make('Open Graph')
-                            ->schema([
-                                Forms\Components\TextInput::make('og_title')
-                                    ->label('Titre OG')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('og_description')
-                                    ->label('Description OG')
-                                    ->rows(2),
-                                MediaPicker::make('og_image')
-                                    ->label('Image OG'),
-                            ])
+                            ->schema(static::ogFields())
                             ->columns(2),
 
                         Forms\Components\Tabs\Tab::make('Twitter')
-                            ->schema([
-                                Forms\Components\TextInput::make('twitter_title')
-                                    ->label('Titre Twitter')
-                                    ->maxLength(255),
-                                Forms\Components\Textarea::make('twitter_description')
-                                    ->label('Description Twitter')
-                                    ->rows(2),
-                                MediaPicker::make('twitter_image')
-                                    ->label('Image Twitter'),
-                            ])
+                            ->schema(static::twitterFields())
                             ->columns(2),
 
                         Forms\Components\Tabs\Tab::make('Schema')
-                            ->schema([
-                                Forms\Components\Select::make('schema_type')
-                                    ->label('Type de schema')
-                                    ->options([
-                                        'Article' => 'Article',
-                                        'BlogPosting' => 'BlogPosting',
-                                        'NewsArticle' => 'NewsArticle',
-                                    ]),
-                                Forms\Components\Textarea::make('schema_json')
-                                    ->label('JSON-LD personnalisé')
-                                    ->rows(4),
-                            ])
+                            ->schema(static::schemaFields())
                             ->columns(2),
                     ])
                     ->columnSpanFull(),
@@ -147,7 +127,7 @@ class BlogTagResource extends Resource
                     ->counts('posts')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créé le')
+                    ->label('Cree le')
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
