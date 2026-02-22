@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('redirects', function (Blueprint $table) {
             $table->id();
-            $table->string('source_path', 2048);
+            $table->string('source_path', 500);
             $table->string('destination_url', 2048)->nullable();
             $table->unsignedSmallInteger('status_code')->default(301);
             $table->boolean('is_active')->default(true);
