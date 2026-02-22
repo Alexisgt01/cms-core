@@ -97,16 +97,16 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 | Page | Nav group | Description |
 |------|-----------|-------------|
 | MediaLibrary | Medias | Full media management (folders, upload, search, filters, bulk ops, Unsplash, imgproxy) |
-| BlogSettings | Blog | Single-row settings form (General, RSS, Images, SEO, OG, Twitter, Schema). Requires `manage blog settings` |
+| BlogSettings | Blog | Tabbed settings form (General, RSS, Images, SEO+SerpPreview, OG+OgPreview, Twitter+TwitterPreview, Schema+JSON-LD validation). Requires `manage blog settings` |
 | EditProfile | — | Profile editing page |
 
 ## SEO Module
 
 ### Shared Components
 - **HasSeoFields** trait (`src/Filament/Concerns/HasSeoFields.php`) — provides reusable form field arrays: `seoKeywordFields()`, `seoIndexingFields()`, `seoMetaFields()`, `robotsFieldset()`, `ogFields()`, `twitterFields()`, `schemaFields()`, `contentSeoFields()`. Used by all 4 blog resources.
-- **SerpPreview** (`src/Filament/Forms/Components/SerpPreview.php`) — Google SERP preview with desktop/mobile toggle, reactive via Alpine.js
-- **OgPreview** (`src/Filament/Forms/Components/OgPreview.php`) — Facebook share card preview
-- **TwitterPreview** (`src/Filament/Forms/Components/TwitterPreview.php`) — Twitter/X card preview (summary + summary_large_image)
+- **SerpPreview** (`src/Filament/Forms/Components/SerpPreview.php`) — Google SERP preview with desktop/mobile toggle, reactive via Alpine.js. Use `->forSettings()` for settings-specific view.
+- **OgPreview** (`src/Filament/Forms/Components/OgPreview.php`) — Facebook share card preview. Use `->forSettings()` for settings-specific view.
+- **TwitterPreview** (`src/Filament/Forms/Components/TwitterPreview.php`) — Twitter/X card preview (summary + summary_large_image). Use `->forSettings()` for settings-specific view.
 
 ### SEO Fields on All Models
 All blog models (BlogPost, BlogAuthor, BlogCategory, BlogTag) have: h1, focus_keyword, secondary_keywords (JSON), content_seo_top, content_seo_bottom, indexing, canonical_url, robots (7 directives), og (type/locale/site_name/title/description/image/width/height), twitter (card/site/creator/title/description/image), schema_types (JSON multi), schema_json.
@@ -131,6 +131,12 @@ Without `publish blog posts` permission, state select only shows "Brouillon" (Dr
 Tags can be created inline from the post form (createOptionForm with name + auto-slug).
 
 Tiptap uploads go through `MediaService::storeUploadedFile()` via `CmsMediaAction` (custom Tiptap media action registered globally in ServiceProvider).
+
+## BlogSettings Form Structure
+
+Tabs: General (enabled, blog_name, description, default_author, posts_per_page, display toggles) → RSS (enabled, title, description) → Images (featured_images_max, required, default dimensions) → SEO (indexing_default, h1_from_title, canonical_mode, meta templates, robots defaults, SerpPreview) → Open Graph (site_name, type_default, locale, title/description templates, image fallback + dimensions, OgPreview) → Twitter (card_default, site, creator, title/description templates, image fallback + dimensions, TwitterPreview) → Schema (enabled, type_default, schema_types multi, publisher name/logo, organization_url, language, same_as social URLs, custom JSON-LD with validation).
+
+BlogSetting has: og_image_fallback_width/height, twitter_image_fallback_width/height, schema_same_as (JSON array of social URLs), schema_organization_url.
 
 ## CmsMediaAction (Tiptap Media Modal Override)
 
@@ -179,4 +185,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `MediaLibraryTest.php` — media CRUD, folders, bulk ops, filters
 - `MediaPickerTest.php` — MediaSelection, MediaSelectionCast, media_url(), UnsplashClient
 - `BlogTest.php` — BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions
-- `BlogSeoTest.php` — SEO column existence, model casts (arrays/booleans), content storage, publication validation (block/allow/warn), duplicate detection
+- `BlogSeoTest.php` — SEO column existence (all tables including settings), model casts (arrays/booleans), content storage, publication validation (block/allow/warn), duplicate detection, settings fallback dimensions, schema_same_as, schema_organization_url

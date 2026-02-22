@@ -313,8 +313,14 @@ The package ships **13 migrations** that run in sequence:
 | 500006 | `create_blog_tags_table` | Creates `blog_tags` |
 | 500007 | `create_blog_post_tag_pivot` | Creates `blog_post_tag` pivot table |
 | 500008 | `add_tag_category_permissions` | Creates tag/category CRUD permissions |
+| 600001 | `add_seo_enhancements_to_blog_posts` | Adds h1, subtitle, seo_excerpt, content_seo, keywords, faq, OG/Twitter/schema fields |
+| 600002 | `add_seo_enhancements_to_blog_authors` | Adds h1, content_seo, keywords, robots, OG/Twitter/schema fields |
+| 600003 | `add_seo_enhancements_to_blog_categories` | Same as authors + indexing, canonical_url |
+| 600004 | `add_seo_enhancements_to_blog_tags` | Identical to categories |
+| 600005 | `add_seo_defaults_to_blog_settings` | Adds default_h1_from_title, default_schema_types |
+| 600006 | `add_seo_enhancements_to_blog_settings` | Adds OG/Twitter fallback dimensions, schema_same_as, schema_organization_url |
 
-**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog.
+**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements.
 
 ---
 
@@ -366,7 +372,7 @@ The path is configurable via `config('cms-core.path')` (default: `admin`).
 
 Run through this after installation to confirm everything works:
 
-- [ ] `php artisan migrate:status` — all 13 CMS migrations show "Ran"
+- [ ] `php artisan migrate:status` — all 19 CMS migrations show "Ran"
 - [ ] `php artisan route:list --name=cms` — the `cms.unsplash.search` route exists
 - [ ] Navigate to `/admin` — login page appears
 - [ ] Log in with super_admin user — sidebar shows: Administration (Users, Roles, Permissions), Medias (Mediatheque), Blog (Articles, Auteurs, Categories, Tags, Parametres)
@@ -378,7 +384,7 @@ Run through this after installation to confirm everything works:
 - [ ] Publish the post — state changes from Draft to Published
 - [ ] `php artisan cms:make-admin` — creates admin user with super_admin role
 - [ ] `php artisan blog:publish-scheduled` — command runs without error
-- [ ] Blog Settings page loads — General, RSS, Images, SEO, OG, Twitter, Schema tabs
+- [ ] Blog Settings page loads — General, RSS, Images, SEO (+ SERP preview), OG (+ OG preview + fallback dimensions), Twitter (+ Twitter preview + fallback dimensions), Schema (+ JSON-LD validation + social profiles sameAs)
 
 ---
 
@@ -1188,7 +1194,7 @@ media_url($media->id, ['width' => 400]);
 
 ## Blog
 
-**Settings** — single-row config page with tabs: General, RSS, Images, SEO, Open Graph, Twitter, Schema/JSON-LD.
+**Settings** — single-row config page with tabs: General, RSS, Images, SEO (robots defaults + SERP preview), Open Graph (image fallback + dimensions + OG preview), Twitter (image fallback + dimensions + Twitter preview), Schema/JSON-LD (10 types multi-select, publisher info, organization URL, social profiles sameAs, JSON-LD validation).
 
 **Authors** — display name, slug, email, job title, company, bio, social profiles, avatar, full SEO.
 
@@ -1266,13 +1272,17 @@ packages/cms/core/
 │   ├── 600002_add_seo_enhancements_to_blog_authors
 │   ├── 600003_add_seo_enhancements_to_blog_categories
 │   ├── 600004_add_seo_enhancements_to_blog_tags
-│   └── 600005_add_seo_defaults_to_blog_settings
+│   ├── 600005_add_seo_defaults_to_blog_settings
+│   └── 600006_add_seo_enhancements_to_blog_settings
 ├── resources/views/filament/
 │   ├── forms/components/
 │   │   ├── media-picker.blade.php
 │   │   ├── serp-preview.blade.php
+│   │   ├── serp-preview-settings.blade.php
 │   │   ├── og-preview.blade.php
-│   │   └── twitter-preview.blade.php
+│   │   ├── og-preview-settings.blade.php
+│   │   ├── twitter-preview.blade.php
+│   │   └── twitter-preview-settings.blade.php
 │   └── pages/
 │       ├── blog-settings.blade.php
 │       ├── media-library.blade.php

@@ -13,4 +13,11 @@ class OgPreview extends Component
         return app(static::class)
             ->columnSpanFull();
     }
+
+    public function forSettings(): static
+    {
+        $this->view = 'cms-core::filament.forms.components.og-preview-settings';
+
+        return $this;
+    }
 }

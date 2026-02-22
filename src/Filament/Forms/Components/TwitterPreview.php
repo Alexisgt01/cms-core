@@ -13,4 +13,11 @@ class TwitterPreview extends Component
         return app(static::class)
             ->columnSpanFull();
     }
+
+    public function forSettings(): static
+    {
+        $this->view = 'cms-core::filament.forms.components.twitter-preview-settings';
+
+        return $this;
+    }
 }

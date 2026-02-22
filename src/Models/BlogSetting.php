@@ -34,6 +34,7 @@ class BlogSetting extends Model
             'schema_publisher_logo' => MediaSelectionCast::class,
             'schema_custom_json' => 'array',
             'default_schema_types' => 'array',
+            'schema_same_as' => 'array',
         ];
     }
 
