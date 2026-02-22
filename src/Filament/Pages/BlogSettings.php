@@ -266,6 +266,61 @@ class BlogSettings extends Page implements HasForms
                             ])
                             ->columns(2),
 
+                        Tabs\Tab::make('Sitemap')
+                            ->icon('heroicon-o-map')
+                            ->schema([
+                                Toggle::make('sitemap_enabled')
+                                    ->label('Sitemap active'),
+                                TextInput::make('sitemap_base_url')
+                                    ->label('URL de base')
+                                    ->url()
+                                    ->placeholder('https://monsite.com')
+                                    ->maxLength(255)
+                                    ->helperText('Laissez vide pour utiliser APP_URL'),
+                                TextInput::make('sitemap_max_urls')
+                                    ->label('Nombre max d\'URLs')
+                                    ->numeric()
+                                    ->default(5000)
+                                    ->minValue(1)
+                                    ->maxValue(50000),
+                                TextInput::make('sitemap_crawl_depth')
+                                    ->label('Profondeur de crawl')
+                                    ->numeric()
+                                    ->default(10)
+                                    ->minValue(1)
+                                    ->maxValue(255),
+                                TextInput::make('sitemap_concurrency')
+                                    ->label('Requetes simultanees')
+                                    ->numeric()
+                                    ->default(10)
+                                    ->minValue(1)
+                                    ->maxValue(50),
+                                TagsInput::make('sitemap_exclude_patterns')
+                                    ->label('Patterns d\'exclusion')
+                                    ->helperText('Patterns glob pour exclure des URLs (ex: /admin/*, /api/*)')
+                                    ->placeholder('/admin/*'),
+                                Select::make('sitemap_default_change_freq')
+                                    ->label('Frequence de changement par defaut')
+                                    ->options([
+                                        'always' => 'Always',
+                                        'hourly' => 'Hourly',
+                                        'daily' => 'Daily',
+                                        'weekly' => 'Weekly',
+                                        'monthly' => 'Monthly',
+                                        'yearly' => 'Yearly',
+                                        'never' => 'Never',
+                                    ])
+                                    ->default('weekly'),
+                                TextInput::make('sitemap_default_priority')
+                                    ->label('Priorite par defaut')
+                                    ->numeric()
+                                    ->default(0.5)
+                                    ->minValue(0)
+                                    ->maxValue(1)
+                                    ->step(0.1),
+                            ])
+                            ->columns(2),
+
                         Tabs\Tab::make('Schema')
                             ->icon('heroicon-o-code-bracket')
                             ->schema([

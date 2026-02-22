@@ -136,9 +136,9 @@ Tiptap uploads go through `MediaService::storeUploadedFile()` via `CmsMediaActio
 
 ## BlogSettings Form Structure
 
-Tabs: General (enabled, blog_name, description, default_author, posts_per_page, display toggles) → RSS (enabled, title, description) → Images (featured_images_max, required, default dimensions) → SEO (indexing_default, h1_from_title, canonical_mode, meta templates, robots defaults, SerpPreview) → Open Graph (site_name, type_default, locale, title/description templates, image fallback + dimensions, OgPreview) → Twitter (card_default, site, creator, title/description templates, image fallback + dimensions, TwitterPreview) → Schema (enabled, type_default, schema_types multi, publisher name/logo, organization_url, language, same_as social URLs, custom JSON-LD with validation).
+Tabs: General (enabled, blog_name, description, default_author, posts_per_page, display toggles) → RSS (enabled, title, description) → Images (featured_images_max, required, default dimensions) → SEO (indexing_default, h1_from_title, canonical_mode, meta templates, robots defaults, SerpPreview) → Open Graph (site_name, type_default, locale, title/description templates, image fallback + dimensions, OgPreview) → Twitter (card_default, site, creator, title/description templates, image fallback + dimensions, TwitterPreview) → Sitemap (enabled, base_url, max_urls, crawl_depth, concurrency, exclude_patterns, change_freq, priority) → Schema (enabled, type_default, schema_types multi, publisher name/logo, organization_url, language, same_as social URLs, custom JSON-LD with validation).
 
-BlogSetting has: og_image_fallback_width/height, twitter_image_fallback_width/height, schema_same_as (JSON array of social URLs), schema_organization_url.
+BlogSetting has: og_image_fallback_width/height, twitter_image_fallback_width/height, schema_same_as (JSON array of social URLs), schema_organization_url, sitemap_* settings (enabled, base_url, max_urls, crawl_depth, concurrency, exclude_patterns, default_change_freq, default_priority).
 
 ## Redirections Module
 
@@ -185,7 +185,8 @@ super_admin = all. editor = view/create/edit authors/categories/tags + view/crea
 ## Commands
 
 - `cms:make-admin` — creates an admin user with `super_admin` role. Prompts for first_name, last_name, email, password. Supports `--first-name`, `--last-name`, `--email`, `--password` options for non-interactive use. Replaces `make:filament-user` (which doesn't work with first_name/last_name fields).
-- `blog:publish-scheduled` — finds Scheduled posts with `scheduled_for <= now()`, transitions to Published, sets published_at/first_published_at. Run hourly via scheduler.
+- `cms:publish-scheduled` — finds Scheduled posts with `scheduled_for <= now()`, transitions to Published, sets published_at/first_published_at. Run hourly via scheduler.
+- `cms:sitemap` — generates sitemap.xml by HTTP crawling the site using spatie/laravel-sitemap. Reads config from BlogSetting (base_url, max_urls, concurrency, depth, exclude_patterns, change_freq, priority). Options: `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth`.
 
 ## Config
 
@@ -197,7 +198,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -213,3 +214,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `BlogTest.php` — BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions
 - `BlogSeoTest.php` — SEO column existence (all tables including settings), model casts (arrays/booleans), content storage, publication validation (block/allow/warn), duplicate detection, settings fallback dimensions, schema_same_as, schema_organization_url
 - `RedirectTest.php` — columns, permissions (super_admin/editor/viewer), CRUD, casts, recordHit, scopeActive, middleware (301/302/410/inactive/non-matching), cache invalidation
+- `SitemapTest.php` — sitemap settings columns, casts (boolean/array), default values, settings storage, command registration, disabled exit

@@ -17,6 +17,7 @@ use Alexisgt01\CmsCore\Policies\PermissionPolicy;
 use Alexisgt01\CmsCore\Policies\RolePolicy;
 use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
+use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
@@ -61,6 +62,7 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->commands([
             MakeAdminCommand::class,
             PublishScheduledPosts::class,
+            GenerateSitemap::class,
         ]);
 
         $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(HandleRedirects::class);

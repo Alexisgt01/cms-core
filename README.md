@@ -46,6 +46,7 @@ Headless CMS core package with Filament admin panel — user management, media l
   - [Backward compatibility rules](#backward-compatibility-rules)
   - [Changelog format](#changelog-format)
 - [Appendix — Modules reference](#appendix--modules-reference)
+- [Appendix — Artisan commands](#appendix--artisan-commands)
 - [Appendix — Permissions reference](#appendix--permissions-reference)
 - [Appendix — Package structure](#appendix--package-structure)
 
@@ -111,7 +112,7 @@ The ServiceProvider is **auto-discovered** via `composer.json` `extra.laravel.pr
 - Migrations are loaded from the package
 - Views are registered under the `cms-core` namespace
 - Policies are registered for User, Role, Permission, and CmsMedia models
-- The `blog:publish-scheduled` Artisan command becomes available
+- The `cms:publish-scheduled` Artisan command becomes available
 - The Tiptap editor media action is overridden to use the CMS media library
 - An API route (`GET /{admin-path}/cms/api/unsplash/search`) is registered
 
@@ -321,8 +322,9 @@ The package ships **13 migrations** that run in sequence:
 | 600006 | `add_seo_enhancements_to_blog_settings` | Adds OG/Twitter fallback dimensions, schema_same_as, schema_organization_url |
 | 700001 | `create_redirects_table` | Creates `redirects` (source_path, destination_url, status_code, hit tracking) |
 | 700002 | `add_redirect_permissions` | Creates view/create/edit/delete redirects permissions |
+| 700003 | `add_sitemap_settings_to_blog_settings` | Adds sitemap config columns (enabled, base_url, max_urls, crawl_depth, concurrency, exclude_patterns, change_freq, priority) |
 
-**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections.
+**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections/sitemap.
 
 ---
 
@@ -353,7 +355,7 @@ In `routes/console.php` or your scheduling configuration:
 ```php
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('blog:publish-scheduled')->hourly();
+Schedule::command('cms:publish-scheduled')->hourly();
 ```
 
 This transitions posts in `Scheduled` state to `Published` when `scheduled_for <= now()`.
@@ -385,8 +387,9 @@ Run through this after installation to confirm everything works:
 - [ ] Create a blog post — select category, tags, upload featured image, use Tiptap editor
 - [ ] Publish the post — state changes from Draft to Published
 - [ ] `php artisan cms:make-admin` — creates admin user with super_admin role
-- [ ] `php artisan blog:publish-scheduled` — command runs without error
-- [ ] Blog Settings page loads — General, RSS, Images, SEO (+ SERP preview), OG (+ OG preview + fallback dimensions), Twitter (+ Twitter preview + fallback dimensions), Schema (+ JSON-LD validation + social profiles sameAs)
+- [ ] `php artisan cms:publish-scheduled` — command runs without error
+- [ ] `php artisan cms:sitemap` — generates sitemap.xml in public/
+- [ ] Blog Settings page loads — General, RSS, Images, SEO (+ SERP preview), OG (+ OG preview + fallback dimensions), Twitter (+ Twitter preview + fallback dimensions), Schema (+ JSON-LD validation + social profiles sameAs), Sitemap
 
 ---
 
@@ -1215,7 +1218,7 @@ media_url($media->id, ['width' => 400]);
 **Scheduled publishing:**
 
 ```bash
-php artisan blog:publish-scheduled
+php artisan cms:publish-scheduled
 ```
 
 ## Redirections
@@ -1228,6 +1231,31 @@ Gestion complete des redirections URL depuis le panel admin (groupe SEO).
 - Middleware global intercepte toutes les requetes avant le routing
 - Table avec filtres (code HTTP, actif/inactif), tri, recherche, copie, toggle inline
 - Permissions : view/create/edit/delete redirects (editor n'a pas delete)
+
+## Sitemap
+
+Generation de sitemap XML par crawl HTTP via `spatie/laravel-sitemap`.
+
+- Commande `cms:sitemap` — crawl HTTP optimise avec concurrence configurable
+- Configuration centralisee dans les parametres du blog (onglet Sitemap)
+- Exclusion par patterns glob (`/admin/*`, `/api/*`, etc.)
+- Frequence de changement et priorite par defaut configurables
+- Options CLI : `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth`
+
+```bash
+php artisan cms:sitemap
+php artisan cms:sitemap --url=https://monsite.com --concurrency=20 --depth=5
+```
+
+---
+
+# Appendix — Artisan commands
+
+| Command | Description |
+|---|---|
+| `cms:make-admin` | Cree un utilisateur admin avec le role `super_admin`. Options : `--first-name`, `--last-name`, `--email`, `--password` |
+| `cms:publish-scheduled` | Publie les articles planifies dont la date `scheduled_for` est passee. A executer via le scheduler (hourly) |
+| `cms:sitemap` | Genere un sitemap.xml par crawl HTTP du site. Options : `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth` |
 
 ---
 
@@ -1288,7 +1316,8 @@ packages/cms/core/
 │   ├── 600005_add_seo_defaults_to_blog_settings
 │   ├── 600006_add_seo_enhancements_to_blog_settings
 │   ├── 700001_create_redirects_table
-│   └── 700002_add_redirect_permissions
+│   ├── 700002_add_redirect_permissions
+│   └── 700003_add_sitemap_settings_to_blog_settings
 ├── resources/views/filament/
 │   ├── forms/components/
 │   │   ├── media-picker.blade.php
@@ -1310,6 +1339,7 @@ packages/cms/core/
     ├── Casts/
     │   └── MediaSelectionCast.php
     ├── Console/Commands/
+    │   ├── GenerateSitemap.php
     │   ├── MakeAdminCommand.php
     │   └── PublishScheduledPosts.php
     ├── Filament/

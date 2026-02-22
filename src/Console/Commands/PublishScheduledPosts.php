@@ -9,7 +9,7 @@ use Alexisgt01\CmsCore\Models\States\Scheduled;
 
 class PublishScheduledPosts extends Command
 {
-    protected $signature = 'blog:publish-scheduled';
+    protected $signature = 'cms:publish-scheduled';
 
     protected $description = 'Publish all scheduled blog posts whose scheduled_for date has passed';
 

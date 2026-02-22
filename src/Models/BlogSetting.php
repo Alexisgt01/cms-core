@@ -35,6 +35,8 @@ class BlogSetting extends Model
             'schema_custom_json' => 'array',
             'default_schema_types' => 'array',
             'schema_same_as' => 'array',
+            'sitemap_enabled' => 'boolean',
+            'sitemap_exclude_patterns' => 'array',
         ];
     }
 
