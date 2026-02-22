@@ -319,8 +319,10 @@ The package ships **13 migrations** that run in sequence:
 | 600004 | `add_seo_enhancements_to_blog_tags` | Identical to categories |
 | 600005 | `add_seo_defaults_to_blog_settings` | Adds default_h1_from_title, default_schema_types |
 | 600006 | `add_seo_enhancements_to_blog_settings` | Adds OG/Twitter fallback dimensions, schema_same_as, schema_organization_url |
+| 700001 | `create_redirects_table` | Creates `redirects` (source_path, destination_url, status_code, hit tracking) |
+| 700002 | `add_redirect_permissions` | Creates view/create/edit/delete redirects permissions |
 
-**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements.
+**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections.
 
 ---
 
@@ -372,7 +374,7 @@ The path is configurable via `config('cms-core.path')` (default: `admin`).
 
 Run through this after installation to confirm everything works:
 
-- [ ] `php artisan migrate:status` — all 19 CMS migrations show "Ran"
+- [ ] `php artisan migrate:status` — all 21 CMS migrations show "Ran"
 - [ ] `php artisan route:list --name=cms` — the `cms.unsplash.search` route exists
 - [ ] Navigate to `/admin` — login page appears
 - [ ] Log in with super_admin user — sidebar shows: Administration (Users, Roles, Permissions), Medias (Mediatheque), Blog (Articles, Auteurs, Categories, Tags, Parametres)
@@ -1216,6 +1218,17 @@ media_url($media->id, ['width' => 400]);
 php artisan blog:publish-scheduled
 ```
 
+## Redirections
+
+Gestion complete des redirections URL depuis le panel admin (groupe SEO).
+
+- **301** (Permanent), **302** (Temporaire), **307** (Temporaire strict), **410** (Supprime/Gone)
+- Tracking automatique : hit_count + last_hit_at
+- Cache `rememberForever` invalide automatiquement a chaque modification
+- Middleware global intercepte toutes les requetes avant le routing
+- Table avec filtres (code HTTP, actif/inactif), tri, recherche, copie, toggle inline
+- Permissions : view/create/edit/delete redirects (editor n'a pas delete)
+
 ---
 
 # Appendix — Permissions reference
@@ -1273,7 +1286,9 @@ packages/cms/core/
 │   ├── 600003_add_seo_enhancements_to_blog_categories
 │   ├── 600004_add_seo_enhancements_to_blog_tags
 │   ├── 600005_add_seo_defaults_to_blog_settings
-│   └── 600006_add_seo_enhancements_to_blog_settings
+│   ├── 600006_add_seo_enhancements_to_blog_settings
+│   ├── 700001_create_redirects_table
+│   └── 700002_add_redirect_permissions
 ├── resources/views/filament/
 │   ├── forms/components/
 │   │   ├── media-picker.blade.php
@@ -1290,6 +1305,8 @@ packages/cms/core/
 └── src/
     ├── helpers.php                # media_url() global helper
     ├── CmsCoreServiceProvider.php # Registers everything
+    ├── Http/Middleware/
+    │   └── HandleRedirects.php    # Global redirect middleware
     ├── Casts/
     │   └── MediaSelectionCast.php
     ├── Console/Commands/
@@ -1316,6 +1333,7 @@ packages/cms/core/
     │       ├── BlogPostResource.php     (+Pages/)
     │       ├── BlogTagResource.php      (+Pages/)
     │       ├── PermissionResource.php
+    │       ├── RedirectResource.php    (+Pages/)
     │       ├── RoleResource.php         (+Pages/)
     │       └── UserResource.php         (+Pages/)
     ├── Models/
@@ -1326,6 +1344,7 @@ packages/cms/core/
     │   ├── BlogTag.php
     │   ├── CmsMedia.php
     │   ├── CmsMediaFolder.php
+    │   ├── Redirect.php
     │   └── States/
     │       ├── PostState.php      # Abstract base
     │       ├── Draft.php

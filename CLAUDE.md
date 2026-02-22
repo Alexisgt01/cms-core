@@ -21,6 +21,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `BlogSetting` | `blog_settings` | Singleton via `BlogSetting::instance()`, 70+ config fields, MediaSelectionCast on image fallbacks |
 | `CmsMedia` | `media` (Spatie) | Extends Spatie Media, belongs to CmsMediaFolder, appends url/human_readable_size |
 | `CmsMediaFolder` | `cms_media_folders` | Hierarchical (parent/children), has many CmsMedia |
+| `Redirect` | `redirects` | URL redirections (301/302/307/410), hit tracking, cache auto-invalidation, `scopeActive()`, `recordHit()`, `getCachedRedirects()` |
 
 ## State Machine (spatie/laravel-model-states)
 
@@ -91,6 +92,7 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 | BlogAuthorResource | Blog | BlogAuthor | view/create/edit/delete blog authors |
 | BlogCategoryResource | Blog | BlogCategory | view/create/edit/delete blog categories |
 | BlogTagResource | Blog | BlogTag | view/create/edit/delete blog tags |
+| RedirectResource | SEO | Redirect | view/create/edit/delete redirects |
 
 ## Filament Pages
 
@@ -138,6 +140,28 @@ Tabs: General (enabled, blog_name, description, default_author, posts_per_page, 
 
 BlogSetting has: og_image_fallback_width/height, twitter_image_fallback_width/height, schema_same_as (JSON array of social URLs), schema_organization_url.
 
+## Redirections Module
+
+### Model `Redirect` (`src/Models/Redirect.php`)
+- source_path, destination_url, status_code (301/302/307/410), is_active, hit_count, last_hit_at, note
+- `scopeActive()` — filters active redirections
+- `recordHit()` — increments hit_count + updates last_hit_at
+- `getCachedRedirects()` — returns cached array keyed by source_path
+- `clearCache()` — invalidates `cms_redirects` cache key
+- Auto cache invalidation via `booted()` hooks on saved/deleted
+
+### Middleware `HandleRedirects` (`src/Http/Middleware/HandleRedirects.php`)
+- Registered as global middleware via `Kernel::pushMiddleware()` in ServiceProvider boot()
+- Matches `$request->getPathInfo()` against cached active redirections
+- 301/302/307 → redirect response; 410 → abort(410)
+- Hit recording dispatched after response (non-blocking)
+
+### Filament Resource `RedirectResource`
+- Nav group: SEO, icon: heroicon-o-arrow-uturn-right
+- Form: source_path (prefix /), destination_url (hidden for 410), status_code Select, is_active Toggle, note
+- Table: searchable/sortable/copyable source, destination, status badge (color-coded), hit_count, last_hit_at, ToggleColumn is_active
+- Filters: status_code SelectFilter, is_active TernaryFilter
+
 ## CmsMediaAction (Tiptap Media Modal Override)
 
 `src/Filament/Actions/CmsMediaAction.php` replaces the default `FilamentTiptapEditor\Actions\MediaAction`. Registered via `config('filament-tiptap-editor.media_action')` override in `CmsCoreServiceProvider::register()`.
@@ -154,7 +178,9 @@ All created via migrations (NOT seeders). Pattern: `Permission::create()` + role
 
 **Blog permissions**: manage blog settings, view/create/edit/delete blog authors, view/create/edit/delete blog posts, publish blog posts, view/create/edit/delete blog categories, view/create/edit/delete blog tags.
 
-super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings). viewer = none.
+**Redirect permissions**: view/create/edit/delete redirects.
+
+super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit redirects (no delete). viewer = none.
 
 ## Commands
 
@@ -171,7 +197,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -186,3 +212,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `MediaPickerTest.php` — MediaSelection, MediaSelectionCast, media_url(), UnsplashClient
 - `BlogTest.php` — BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions
 - `BlogSeoTest.php` — SEO column existence (all tables including settings), model casts (arrays/booleans), content storage, publication validation (block/allow/warn), duplicate detection, settings fallback dimensions, schema_same_as, schema_organization_url
+- `RedirectTest.php` — columns, permissions (super_admin/editor/viewer), CRUD, casts, recordHit, scopeActive, middleware (301/302/410/inactive/non-matching), cache invalidation

@@ -19,6 +19,7 @@ use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
+use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
 
 class CmsCoreServiceProvider extends ServiceProvider
@@ -61,6 +62,8 @@ class CmsCoreServiceProvider extends ServiceProvider
             MakeAdminCommand::class,
             PublishScheduledPosts::class,
         ]);
+
+        $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(HandleRedirects::class);
 
         $this->registerRoutes();
     }
