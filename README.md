@@ -1,6 +1,6 @@
 # CMS Core
 
-Headless CMS core package with Filament admin panel — user management, media library, blog engine.
+Headless CMS core package with Filament admin panel — user management, media library, blog engine, site settings, activity log.
 
 **Package:** `alexisgt01/cms-core`
 **Namespace:** `Alexisgt01\CmsCore`
@@ -46,9 +46,20 @@ Headless CMS core package with Filament admin panel — user management, media l
   - [Backward compatibility rules](#backward-compatibility-rules)
   - [Changelog format](#changelog-format)
 - [Appendix — Modules reference](#appendix--modules-reference)
+  - [Administration](#administration)
+  - [Media Library](#media-library)
+  - [Blog](#blog)
+  - [Dashboards](#dashboards)
+  - [Redirections](#redirections)
+  - [Sitemap](#sitemap)
+  - [Site Settings](#site-settings)
+  - [Restricted Access](#restricted-access)
+  - [Activity Log](#activity-log)
+  - [Git Version Footer](#git-version-footer)
 - [Appendix — Artisan commands](#appendix--artisan-commands)
 - [Appendix — Permissions reference](#appendix--permissions-reference)
 - [Appendix — Package structure](#appendix--package-structure)
+- [Appendix — Test files](#appendix--test-files)
 
 ---
 
@@ -73,6 +84,7 @@ The package pulls these dependencies automatically via Composer:
 | `spatie/laravel-medialibrary` | ^11.0 |
 | `spatie/laravel-model-states` | ^2.0 |
 | `awcodes/filament-tiptap-editor` | ^3.0 |
+| `spatie/laravel-activitylog` | ^4.0 |
 
 ---
 
@@ -112,9 +124,11 @@ The ServiceProvider is **auto-discovered** via `composer.json` `extra.laravel.pr
 - Migrations are loaded from the package
 - Views are registered under the `cms-core` namespace
 - Policies are registered for User, Role, Permission, and CmsMedia models
-- The `cms:publish-scheduled` Artisan command becomes available
+- The `cms:publish-scheduled` and `cms:purge-activity` Artisan commands become available
 - The Tiptap editor media action is overridden to use the CMS media library
 - An API route (`GET /{admin-path}/cms/api/unsplash/search`) is registered
+- The `HandleRestrictedAccess` and `HandleRedirects` global middlewares are registered
+- A POST route `/cms/restricted-access` is registered for password validation
 
 ---
 
@@ -297,7 +311,7 @@ UNSPLASH_SECRET_KEY=
 php artisan migrate
 ```
 
-The package ships **13 migrations** that run in sequence:
+The package ships **23 migrations** that run in sequence:
 
 | Sequence | Migration | Description |
 |---|---|---|
@@ -323,8 +337,10 @@ The package ships **13 migrations** that run in sequence:
 | 700001 | `create_redirects_table` | Creates `redirects` (source_path, destination_url, status_code, hit tracking) |
 | 700002 | `add_redirect_permissions` | Creates view/create/edit/delete redirects permissions |
 | 700003 | `add_sitemap_settings_to_blog_settings` | Adds sitemap config columns (enabled, base_url, max_urls, crawl_depth, concurrency, exclude_patterns, change_freq, priority) |
+| 800001 | `create_site_settings_table` | Creates `site_settings` (identity, contact, restricted access, global SEO, admin) |
+| 800002 | `add_site_settings_and_activity_log_permissions` | Creates `manage site settings` and `view activity log` permissions |
 
-**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections/sitemap.
+**Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections/sitemap, `800xxx` = site settings/activity log.
 
 ---
 
@@ -376,10 +392,10 @@ The path is configurable via `config('cms-core.path')` (default: `admin`).
 
 Run through this after installation to confirm everything works:
 
-- [ ] `php artisan migrate:status` — all 21 CMS migrations show "Ran"
+- [ ] `php artisan migrate:status` — all 23 CMS migrations show "Ran"
 - [ ] `php artisan route:list --name=cms` — the `cms.unsplash.search` route exists
 - [ ] Navigate to `/admin` — login page appears
-- [ ] Log in with super_admin user — sidebar shows: Administration (Users, Roles, Permissions), Medias (Mediatheque), Blog (Articles, Auteurs, Categories, Tags, Parametres)
+- [ ] Log in with super_admin user — sidebar shows: Administration (Users, Roles, Permissions, Journal d'activite, Parametres du site), Medias (Mediatheque), Blog (Articles, Auteurs, Categories, Tags, Parametres)
 - [ ] Create a media folder and upload an image — file appears in `storage/app/public/`
 - [ ] Create a blog author — slug auto-generates
 - [ ] Create a blog category with a child category — hierarchy works
@@ -389,7 +405,11 @@ Run through this after installation to confirm everything works:
 - [ ] `php artisan cms:make-admin` — creates admin user with super_admin role
 - [ ] `php artisan cms:publish-scheduled` — command runs without error
 - [ ] `php artisan cms:sitemap` — generates sitemap.xml in public/
+- [ ] `php artisan cms:purge-activity` — purges old activity log entries
 - [ ] Blog Settings page loads — General, RSS, Images, SEO (+ SERP preview), OG (+ OG preview + fallback dimensions), Twitter (+ Twitter preview + fallback dimensions), Schema (+ JSON-LD validation + social profiles sameAs), Sitemap
+- [ ] Site Settings page loads — Identite, Contact, Acces restreint, SEO Global, Admin
+- [ ] Activity Log page loads — lists recent model changes (read-only)
+- [ ] Edit a blog post — activity log entry is created automatically
 
 ---
 
@@ -487,7 +507,9 @@ php artisan optimize:clear             # config/route/view changes
    - `200xxx` — Administration (users, roles, permissions)
    - `300xxx` — Media library
    - `500xxx` — Blog
-   - `600xxx` — Future modules (reserve ranges)
+   - `600xxx` — SEO enhancements
+   - `700xxx` — Redirections/sitemap
+   - `800xxx` — Site settings/activity log
 
    Increment from the last migration in the sequence. Example: if the last blog migration is `500008`, the next is `500009`.
 
@@ -1159,11 +1181,13 @@ Use this format for each release:
 
 ## Administration
 
-| Resource | Features |
+| Resource / Page | Features |
 |---|---|
 | Users | CRUD, first/last name, email, password, role assignment |
 | Roles | CRUD, permission assignment, user count |
 | Permissions | Read-only list with role display (super_admin only) |
+| Activity Log | Read-only table of model changes (causer, event, old/new values). Filters by event type and model. Requires `view activity log` |
+| Site Settings | Tabbed settings form (Identite, Contact, Acces restreint, SEO Global, Admin). Requires `manage site settings` |
 | Profile | Self-edit (first/last name, email, password) |
 
 ## Media Library
@@ -1266,6 +1290,60 @@ php artisan cms:sitemap
 php artisan cms:sitemap --url=https://monsite.com --concurrency=20 --depth=5
 ```
 
+## Site Settings
+
+Parametres globaux du site stockes dans un modele singleton `SiteSetting` (table `site_settings`). Accessible via `SiteSetting::instance()`.
+
+**5 onglets de configuration :**
+
+- **Identite** — nom du site, baseline, logos (clair/sombre), favicon, fuseau horaire, formats date/heure
+- **Contact** — destinataires emails (JSON array), expediteur (nom + adresse), reply-to
+- **Acces restreint** — activation, mot de passe (hashe), duree du cookie (TTL en minutes), message personnalise, bypass admin
+- **SEO Global** — titre par defaut, meta description, template titre (`%title% · %site%`), image OG par defaut, directives robots, URL canonique de base
+- **Admin** — affichage de la version Git dans le footer du panel
+
+Toutes les images utilisent `MediaPicker` + `MediaSelectionCast`.
+
+## Restricted Access
+
+Protection par mot de passe de l'ensemble du site (hors panel admin).
+
+- **Middleware** `HandleRestrictedAccess` — enregistre globalement, s'execute AVANT `HandleRedirects`
+- **Logique** : desactive → passe / route admin → passe / admin_bypass + authentifie → passe / cookie `cms_restricted_access` valide → passe / sinon → affiche page de restriction
+- **Route POST** `/cms/restricted-access` — valide le mot de passe via `Hash::check()`, pose un cookie avec TTL configurable
+- **Vue** `resources/views/restricted-access.blade.php` — page standalone avec formulaire mot de passe et message personnalisable
+- Configuration centralisee dans les parametres du site (onglet Acces restreint)
+
+## Activity Log
+
+Journalisation automatique des modifications sur les modeles CMS via `spatie/laravel-activitylog`.
+
+**Modeles traces :** BlogPost, BlogCategory, BlogTag, BlogAuthor, Redirect. Chaque modele implemente `LogsActivity` avec `logOnly(['*'])`, `logOnlyDirty()`, `dontSubmitEmptyLogs()`.
+
+> Pour `App\Models\User` : le trait doit etre ajoute manuellement par l'application hote (le package ne peut pas modifier ce modele).
+
+**ActivityLogResource** — ressource Filament en lecture seule (groupe Administration) :
+
+- Table : date, utilisateur (causer), type de modele (traduit), evenement (badge), description
+- Filtres : type d'evenement (created/updated/deleted), type de modele (subject_type)
+- ViewAction modale avec ancien/nouveau valeurs en JSON formatte
+- Requiert la permission `view activity log`
+
+**Purge** — commande Artisan pour nettoyer les anciennes entrees :
+
+```bash
+php artisan cms:purge-activity              # purge > 30 jours (defaut)
+php artisan cms:purge-activity --days=90    # purge > 90 jours
+```
+
+## Git Version Footer
+
+Affichage optionnel de la version Git (dernier tag) dans le footer du panel Filament.
+
+- Active/desactive via `SiteSetting::show_version_in_footer` (onglet Admin des parametres du site)
+- Lit `git describe --tags --abbrev=0` avec cache de 1 heure
+- Rendu via `PanelsRenderHook::FOOTER` dans `CmsCorePlugin::boot()`
+
 ---
 
 # Appendix — Artisan commands
@@ -1275,6 +1353,7 @@ php artisan cms:sitemap --url=https://monsite.com --concurrency=20 --depth=5
 | `cms:make-admin` | Cree un utilisateur admin avec le role `super_admin`. Options : `--first-name`, `--last-name`, `--email`, `--password` |
 | `cms:publish-scheduled` | Publie les articles planifies dont la date `scheduled_for` est passee. A executer via le scheduler (hourly) |
 | `cms:sitemap` | Genere un sitemap.xml par crawl HTTP du site. Options : `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth` |
+| `cms:purge-activity` | Purge les entrees du journal d'activite plus anciennes que N jours. Option : `--days=30` (defaut) |
 
 ---
 
@@ -1302,6 +1381,9 @@ php artisan cms:sitemap --url=https://monsite.com --concurrency=20 --depth=5
 | publish blog posts | yes | yes | — |
 | view/create/edit/delete blog categories | all | view/create/edit | — |
 | view/create/edit/delete blog tags | all | view/create/edit | — |
+| view/create/edit/delete redirects | all | view/create/edit | — |
+| manage site settings | yes | — | — |
+| view activity log | yes | yes | — |
 
 Without `publish blog posts` permission, only "Brouillon" (Draft) state is available.
 
@@ -1336,7 +1418,9 @@ packages/cms/core/
 │   ├── 600006_add_seo_enhancements_to_blog_settings
 │   ├── 700001_create_redirects_table
 │   ├── 700002_add_redirect_permissions
-│   └── 700003_add_sitemap_settings_to_blog_settings
+│   ├── 700003_add_sitemap_settings_to_blog_settings
+│   ├── 800001_create_site_settings_table
+│   └── 800002_add_site_settings_and_activity_log_permissions
 ├── resources/views/filament/
 │   ├── forms/components/
 │   │   ├── media-picker.blade.php
@@ -1349,18 +1433,23 @@ packages/cms/core/
 │   └── pages/
 │       ├── blog-settings.blade.php
 │       ├── media-library.blade.php
-│       └── media-library-preview.blade.php
+│       ├── media-library-preview.blade.php
+│       └── site-settings.blade.php
+├── resources/views/
+│   └── restricted-access.blade.php
 └── src/
     ├── helpers.php                # media_url() global helper
     ├── CmsCoreServiceProvider.php # Registers everything
     ├── Http/Middleware/
-    │   └── HandleRedirects.php    # Global redirect middleware
+    │   ├── HandleRestrictedAccess.php  # Global restricted access middleware
+    │   └── HandleRedirects.php         # Global redirect middleware
     ├── Casts/
     │   └── MediaSelectionCast.php
     ├── Console/Commands/
     │   ├── GenerateSitemap.php
     │   ├── MakeAdminCommand.php
-    │   └── PublishScheduledPosts.php
+    │   ├── PublishScheduledPosts.php
+    │   └── PurgeActivityLog.php
     ├── Filament/
     │   ├── Actions/
     │   │   └── CmsMediaAction.php
@@ -1378,6 +1467,7 @@ packages/cms/core/
     │   │   ├── BlogSettings.php
     │   │   ├── EditProfile.php
     │   │   ├── MediaLibrary.php
+    │   │   ├── SiteSettings.php    # Site-wide settings
     │   ├── Widgets/
     │   │   ├── AdminStatsOverview.php    # Admin: users, roles, media, folders
     │   │   ├── BlogStatsOverview.php     # Blog: posts by state, categories, tags, authors
@@ -1385,6 +1475,7 @@ packages/cms/core/
     │   │   ├── LatestUsersTable.php      # Admin: 10 latest users
     │   │   ├── PostsPerMonthChart.php    # Blog: line chart (12 months)
     │   └── Resources/
+    │       ├── ActivityLogResource.php  (+Pages/)
     │       ├── BlogAuthorResource.php   (+Pages/)
     │       ├── BlogCategoryResource.php (+Pages/)
     │       ├── BlogPostResource.php     (+Pages/)
@@ -1394,14 +1485,15 @@ packages/cms/core/
     │       ├── RoleResource.php         (+Pages/)
     │       └── UserResource.php         (+Pages/)
     ├── Models/
-    │   ├── BlogAuthor.php
-    │   ├── BlogCategory.php
-    │   ├── BlogPost.php
+    │   ├── BlogAuthor.php         # LogsActivity
+    │   ├── BlogCategory.php       # LogsActivity
+    │   ├── BlogPost.php           # LogsActivity
     │   ├── BlogSetting.php
-    │   ├── BlogTag.php
+    │   ├── BlogTag.php              # LogsActivity
     │   ├── CmsMedia.php
     │   ├── CmsMediaFolder.php
-    │   ├── Redirect.php
+    │   ├── Redirect.php               # LogsActivity
+    │   ├── SiteSetting.php            # Singleton (site-wide settings)
     │   └── States/
     │       ├── PostState.php      # Abstract base
     │       ├── Draft.php
@@ -1418,3 +1510,19 @@ packages/cms/core/
     └── ValueObjects/
         └── MediaSelection.php
 ```
+
+---
+
+# Appendix — Test files
+
+Test files live in the host app at `tests/Feature/Filament/`:
+
+| File | Coverage |
+|---|---|
+| `MediaLibraryTest.php` | Media CRUD, folders, bulk operations, filters |
+| `MediaPickerTest.php` | MediaSelection, MediaSelectionCast, media_url(), UnsplashClient |
+| `BlogTest.php` | BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions |
+| `BlogSeoTest.php` | SEO columns, model casts, content storage, publication validation, duplicate detection, settings fallback dimensions, schema |
+| `RedirectTest.php` | Columns, permissions (super_admin/editor/viewer), CRUD, casts, recordHit, scopeActive, middleware, cache invalidation |
+| `SitemapTest.php` | Sitemap settings columns, casts, default values, command registration |
+| `SiteSettingsTest.php` | SiteSetting model (columns, singleton, casts, defaults), SiteSettings page (access, save, password hashing), restricted access middleware (enabled/disabled, admin bypass, cookie, password validation), activity log (logging on all CMS models, resource access, purge command), permissions |

@@ -5,6 +5,9 @@ namespace Alexisgt01\CmsCore;
 use App\Models\User;
 use Filament\Panel;
 use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -18,6 +21,7 @@ use Alexisgt01\CmsCore\Policies\RolePolicy;
 use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
 use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
+use Alexisgt01\CmsCore\Console\Commands\PurgeActivityLog;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
 use Alexisgt01\CmsCore\Filament\Widgets\AdminStatsOverview;
@@ -26,6 +30,8 @@ use Alexisgt01\CmsCore\Filament\Widgets\LatestPostsTable;
 use Alexisgt01\CmsCore\Filament\Widgets\LatestUsersTable;
 use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
+use Alexisgt01\CmsCore\Http\Middleware\HandleRestrictedAccess;
+use Alexisgt01\CmsCore\Models\SiteSetting;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
 use Livewire\Livewire;
 
@@ -69,12 +75,15 @@ class CmsCoreServiceProvider extends ServiceProvider
             MakeAdminCommand::class,
             PublishScheduledPosts::class,
             GenerateSitemap::class,
+            PurgeActivityLog::class,
         ]);
 
+        $this->app[\Illuminate\Contracts\Http\Kernel::class]->appendMiddlewareToGroup('web', HandleRestrictedAccess::class);
         $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(HandleRedirects::class);
 
         $this->registerLivewireWidgets();
         $this->registerRoutes();
+        $this->registerAuthListeners();
     }
 
     protected function registerLivewireWidgets(): void
@@ -94,6 +103,25 @@ class CmsCoreServiceProvider extends ServiceProvider
 
             Livewire::component($name, $widget);
         }
+    }
+
+    protected function registerAuthListeners(): void
+    {
+        Event::listen(Login::class, function (Login $event): void {
+            activity()
+                ->causedBy($event->user)
+                ->event('login')
+                ->log('Connexion');
+        });
+
+        Event::listen(Logout::class, function (Logout $event): void {
+            if ($event->user) {
+                activity()
+                    ->causedBy($event->user)
+                    ->event('logout')
+                    ->log('Deconnexion');
+            }
+        });
     }
 
     protected function registerRoutes(): void
@@ -118,5 +146,23 @@ class CmsCoreServiceProvider extends ServiceProvider
                     );
                 })->name('cms.unsplash.search');
             });
+
+        Route::middleware('web')
+            ->post('cms/restricted-access', function (Request $request) {
+                $settings = SiteSetting::instance();
+
+                if (! $settings->restricted_access_password) {
+                    return redirect('/');
+                }
+
+                if (! \Illuminate\Support\Facades\Hash::check($request->input('password', ''), $settings->restricted_access_password)) {
+                    return back()->withErrors(['password' => 'Mot de passe incorrect.']);
+                }
+
+                $ttl = $settings->restricted_access_cookie_ttl ?? 1440;
+
+                return redirect('/')
+                    ->withCookie(cookie('cms_restricted_access', 'granted', $ttl));
+            })->name('cms.restricted-access.validate');
     }
 }

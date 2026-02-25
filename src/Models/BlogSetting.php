@@ -4,10 +4,13 @@ namespace Alexisgt01\CmsCore\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogSetting extends Model
 {
+    use LogsActivity;
     protected $guarded = ['id'];
 
     /**
@@ -38,6 +41,14 @@ class BlogSetting extends Model
             'sitemap_enabled' => 'boolean',
             'sitemap_exclude_patterns' => 'array',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     public function defaultAuthor(): BelongsTo

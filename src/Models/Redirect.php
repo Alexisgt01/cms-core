@@ -5,9 +5,12 @@ namespace Alexisgt01\CmsCore\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Redirect extends Model
 {
+    use LogsActivity;
     protected $guarded = ['id'];
 
     protected $table = 'redirects';
@@ -47,6 +50,14 @@ class Redirect extends Model
     public static function clearCache(): void
     {
         Cache::forget('cms_redirects');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     /**

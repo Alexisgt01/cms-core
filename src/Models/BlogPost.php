@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 use Alexisgt01\CmsCore\Models\States\PostState;
@@ -13,6 +15,7 @@ use Alexisgt01\CmsCore\Models\States\PostState;
 class BlogPost extends Model
 {
     use HasStates;
+    use LogsActivity;
 
     protected $guarded = ['id'];
 
@@ -70,6 +73,14 @@ class BlogPost extends Model
         }
 
         return $slug;
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     public function calculateReadingTime(): int

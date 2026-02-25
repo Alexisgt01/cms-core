@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use App\Models\User;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogAuthor extends Model
 {
+    use LogsActivity;
     protected $guarded = ['id'];
 
     /**
@@ -41,6 +44,14 @@ class BlogAuthor extends Model
     public function posts(): HasMany
     {
         return $this->hasMany(BlogPost::class, 'author_id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
     public static function generateSlug(string $name): string
