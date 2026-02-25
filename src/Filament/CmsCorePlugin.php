@@ -4,6 +4,8 @@ namespace Alexisgt01\CmsCore\Filament;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Alexisgt01\CmsCore\Filament\Pages\AdminDashboard;
+use Alexisgt01\CmsCore\Filament\Pages\BlogDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogSettings;
 use Alexisgt01\CmsCore\Filament\Pages\EditProfile;
 use Alexisgt01\CmsCore\Filament\Pages\MediaLibrary;
@@ -42,6 +44,8 @@ class CmsCorePlugin implements Plugin
                 RedirectResource::class,
             ])
             ->pages([
+                BlogDashboard::class,
+                AdminDashboard::class,
                 MediaLibrary::class,
                 BlogSettings::class,
             ])

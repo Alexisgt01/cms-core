@@ -6,7 +6,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 ## Architecture
 
 - **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`), overrides Tiptap media_action config, auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies and commands
-- **Plugin**: `CmsCorePlugin` — registers all Filament resources and pages
+- **Plugin**: `CmsCorePlugin` — registers all Filament resources, pages, and widgets
 - **Views namespace**: `cms-core` (e.g. `cms-core::filament.pages.blog-settings`)
 - **Helpers**: `src/helpers.php` loaded via Composer `files` autoload. After modifying, run `composer update alexisgt01/cms-core`
 
@@ -98,9 +98,30 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 
 | Page | Nav group | Description |
 |------|-----------|-------------|
+| BlogDashboard | Tableaux de bord | Blog stats, chart, latest posts. Route: `/blog`. Requires `view blog posts` |
+| AdminDashboard | Tableaux de bord | Users, roles, media stats. Route: `/admin-overview`. Requires `view users` |
 | MediaLibrary | Medias | Full media management (folders, upload, search, filters, bulk ops, Unsplash, imgproxy) |
 | BlogSettings | Blog | Tabbed settings form (General, RSS, Images, SEO+SerpPreview, OG+OgPreview, Twitter+TwitterPreview, Schema+JSON-LD validation). Requires `manage blog settings` |
 | EditProfile | — | Profile editing page |
+
+## Dashboard Widgets
+
+Each dashboard page controls its own widgets via `getWidgets()`. No widgets registered globally in the plugin.
+
+### Blog Dashboard Widgets
+| Widget | Type | Description |
+|--------|------|-------------|
+| `BlogStatsOverview` | StatsOverview | 6 stat cards: published/scheduled/draft posts (single SQL with conditional counts), categories, tags, authors. Shows last 30 days count. |
+| `PostsPerMonthChart` | Chart (line) | Published posts per month over 12 months. DB-agnostic (SQLite/MySQL). |
+| `LatestPostsTable` | Table | 10 latest posts with eager-loaded author + category. Links to edit page. |
+
+### Admin Dashboard Widgets
+| Widget | Type | Description |
+|--------|------|-------------|
+| `AdminStatsOverview` | StatsOverview | 4 stat cards: users (with role distribution), roles, media files, folders. |
+| `LatestUsersTable` | Table | 10 latest users with roles badges. Links to edit page. |
+
+All widgets have `pollingInterval = null` (no auto-refresh).
 
 ## SEO Module
 

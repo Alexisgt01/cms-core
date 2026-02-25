@@ -1221,6 +1221,25 @@ media_url($media->id, ['width' => 400]);
 php artisan cms:publish-scheduled
 ```
 
+## Dashboards
+
+2 tableaux de bord dedies, chacun avec ses propres widgets et controle d'acces. Navigation groupee sous "Tableaux de bord".
+
+### Blog Dashboard (`/admin/blog`)
+
+Acces : `view blog posts`. Widgets :
+
+- **BlogStatsOverview** — 6 stats cards en une seule requete SQL (conditional counts) : articles publies (+ 30 derniers jours), programmes, brouillons, categories, tags, auteurs
+- **PostsPerMonthChart** — graphique ligne 12 mois des articles publies. Compatible SQLite/MySQL
+- **LatestPostsTable** — 10 derniers articles avec eager loading (author, category), liens vers edition
+
+### Admin Dashboard (`/admin/admin-overview`)
+
+Acces : `view users`. Widgets :
+
+- **AdminStatsOverview** — utilisateurs (avec distribution par role), roles, fichiers medias, dossiers
+- **LatestUsersTable** — 10 derniers utilisateurs avec roles en badges, liens vers edition
+
 ## Redirections
 
 Gestion complete des redirections URL depuis le panel admin (groupe SEO).
@@ -1354,9 +1373,17 @@ packages/cms/core/
     │   │   ├── OgPreview.php        # Facebook OG preview
     │   │   └── TwitterPreview.php   # Twitter Card preview
     │   ├── Pages/
+    │   │   ├── AdminDashboard.php  # Admin dashboard
+    │   │   ├── BlogDashboard.php   # Blog dashboard
     │   │   ├── BlogSettings.php
     │   │   ├── EditProfile.php
-    │   │   └── MediaLibrary.php
+    │   │   ├── MediaLibrary.php
+    │   ├── Widgets/
+    │   │   ├── AdminStatsOverview.php    # Admin: users, roles, media, folders
+    │   │   ├── BlogStatsOverview.php     # Blog: posts by state, categories, tags, authors
+    │   │   ├── LatestPostsTable.php      # Blog: 10 latest posts
+    │   │   ├── LatestUsersTable.php      # Admin: 10 latest users
+    │   │   ├── PostsPerMonthChart.php    # Blog: line chart (12 months)
     │   └── Resources/
     │       ├── BlogAuthorResource.php   (+Pages/)
     │       ├── BlogCategoryResource.php (+Pages/)

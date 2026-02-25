@@ -20,8 +20,14 @@ use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
 use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
+use Alexisgt01\CmsCore\Filament\Widgets\AdminStatsOverview;
+use Alexisgt01\CmsCore\Filament\Widgets\BlogStatsOverview;
+use Alexisgt01\CmsCore\Filament\Widgets\LatestPostsTable;
+use Alexisgt01\CmsCore\Filament\Widgets\LatestUsersTable;
+use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
+use Livewire\Livewire;
 
 class CmsCoreServiceProvider extends ServiceProvider
 {
@@ -67,7 +73,27 @@ class CmsCoreServiceProvider extends ServiceProvider
 
         $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(HandleRedirects::class);
 
+        $this->registerLivewireWidgets();
         $this->registerRoutes();
+    }
+
+    protected function registerLivewireWidgets(): void
+    {
+        $widgets = [
+            AdminStatsOverview::class,
+            BlogStatsOverview::class,
+            LatestPostsTable::class,
+            LatestUsersTable::class,
+            PostsPerMonthChart::class,
+        ];
+
+        foreach ($widgets as $widget) {
+            $name = collect(explode('\\', $widget))
+                ->map(fn (string $part) => \Illuminate\Support\Str::kebab($part))
+                ->implode('.');
+
+            Livewire::component($name, $widget);
+        }
     }
 
     protected function registerRoutes(): void
