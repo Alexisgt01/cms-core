@@ -47,6 +47,7 @@ Cast: `'state' => PageState::class` in Page model.
 - `MediaSelectionCast` (`src/Casts/`) — Eloquent cast for JSON ↔ MediaSelection. Used on: BlogPost.og_image, BlogPost.twitter_image, BlogAuthor.avatar/og_image/twitter_image, BlogCategory.og_image/twitter_image, BlogTag.og_image/twitter_image, BlogSetting.og_image_fallback/twitter_image_fallback/schema_publisher_logo.
 - `IconSelection` (`src/ValueObjects/`) — immutable VO with name, set, variant, label, svg. Use `fromArray()` / `toArray()` / `jsonSerialize()` / `toSvg()`.
 - `IconSelectionCast` (`src/Casts/`) — Eloquent cast for JSON ↔ IconSelection.
+- `SeoMeta` (`src/ValueObjects/`) — immutable VO for resolved SEO data. Properties: title, description, canonicalUrl, robots, og*, twitter*, schemaJsonLd. Methods: `toHtml()`, `toArray()`, `jsonSerialize()`, `__toString()` (renders all `<head>` tags).
 
 ## Helpers
 
@@ -65,6 +66,15 @@ Signing: HMAC-SHA256 when `cms-media.proxy.key` and `cms-media.proxy.salt` are s
 // cms_icon() — render icon from blade-icons name or IconSelection
 cms_icon('heroicon-o-home', 'w-6 h-6');
 cms_icon($iconSelection, 'w-6 h-6');
+```
+
+```php
+// seo_meta() — resolve SEO metadata with fallbacks
+seo_meta('service');   // Page by key → SeoMeta VO
+seo_meta($blogPost);   // Model directly → SeoMeta VO
+seo_meta();            // Global defaults → SeoMeta VO
+// Returns SeoMeta (Stringable) → {!! seo_meta('about') !!} renders all <head> tags
+// Fallback: entity → BlogSetting (blog entities) → SiteSetting (global)
 ```
 
 ## MediaPicker (Filament Form Component)
@@ -117,6 +127,9 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 - `getAvailableSets(): array` — returns registered icon sets with prefix, label, variants
 - `searchIcons(query, set, variant, page, perPage): array` — server-side paginated search with cached manifest
 - `getSvgContent(string $iconName): string` — resolves SVG via blade-icons
+
+**SeoResolver** (`src/Services/SeoResolver.php`):
+- `resolve(Model|string|null $entity = null): SeoMeta` — resolves all SEO with fallback chains: entity → BlogSetting (for blog entities) → SiteSetting (global). String arg looks up Page by key. Handles title template (`%title% · %site%`), robots directives, OG/Twitter images from MediaSelection, schema JSON-LD auto-generation.
 
 ## Filament Resources
 
@@ -361,3 +374,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `IconPickerTest.php` — IconSelection VO, IconSelectionCast, IconDiscoveryService, API routes, config, cms_icon() helper
 - `PageTest.php` — Pages table columns, permissions, model CRUD, SoftDeletes, states (Draft ↔ Published), scopes, static helpers, casts, Filament resource
 - `SectionTest.php` — SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions), config, Filament integration (Builder::fake())
+- `SeoMetaTest.php` — SeoMeta VO (properties, serialization, toHtml, Stringable, escaping), SeoResolver (global defaults, page by key, model direct for all entities, fallback chains title/description/canonical/robots/OG/Twitter/Schema), seo_meta() helper

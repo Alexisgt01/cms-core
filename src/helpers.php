@@ -74,6 +74,21 @@ if (! function_exists('cms_icon')) {
     }
 }
 
+if (! function_exists('seo_meta')) {
+    /**
+     * Resolve SEO metadata for a page key, model instance, or global defaults.
+     *
+     * Usage:
+     *   seo_meta('service')   → looks up Page by key
+     *   seo_meta($blogPost)   → uses the model directly
+     *   seo_meta()            → global defaults only
+     */
+    function seo_meta(string|\Illuminate\Database\Eloquent\Model|null $entity = null): \Alexisgt01\CmsCore\ValueObjects\SeoMeta
+    {
+        return (new \Alexisgt01\CmsCore\Services\SeoResolver)->resolve($entity);
+    }
+}
+
 if (! function_exists('media_url_build_options')) {
     /**
      * @param  array<string, mixed>  $options

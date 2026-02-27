@@ -59,6 +59,7 @@ Headless CMS core package with Filament admin panel — user management, media l
   - [Icon Picker](#icon-picker)
   - [Pages](#pages)
   - [Sections](#sections)
+  - [SEO Helper](#seo-helper)
 - [Appendix — Artisan commands](#appendix--artisan-commands)
 - [Appendix — Permissions reference](#appendix--permissions-reference)
 - [Appendix — Package structure](#appendix--package-structure)
@@ -1508,6 +1509,51 @@ return [
 - **Onglet Sections** — automatiquement visible dans PageResource quand au moins un type est enregistre
 - **Migration** — 900003 (ajout colonne sections)
 
+## SEO Helper
+
+Helper frontend pour injecter les balises SEO dans le `<head>`, avec resolution automatique des fallbacks.
+
+### Usage
+
+```blade
+{{-- Par cle de page --}}
+{!! seo_meta('service') !!}
+
+{{-- Par model directement --}}
+{!! seo_meta($blogPost) !!}
+
+{{-- Defauts globaux (homepage) --}}
+{!! seo_meta() !!}
+
+{{-- Acces programmatique --}}
+@php $seo = seo_meta('about'); @endphp
+<title>{{ $seo->title }}</title>
+```
+
+### Chaine de fallback
+
+| Donnee | Entite → | BlogSetting → | SiteSetting |
+|---|---|---|---|
+| Title | `meta_title` ou `name`/`title` dans `title_template` | — | `default_site_title` |
+| Description | `meta_description` → `seo_excerpt` → `excerpt` → `description` → `bio` | — | `default_meta_description` |
+| Canonical | `canonical_url` ou auto (`canonical_base_url` + slug) | — | `canonical_base_url` |
+| Robots | `robots_*` directives | `default_robots_*` (blog entities) | `default_robots_index/follow` |
+| OG | `og_*` champs | `og_site_name`, `og_type_default`, `og_locale`, `og_image_fallback` | `site_name`, `default_og_image` |
+| Twitter | `twitter_*` champs | `twitter_card_default`, `twitter_site`, `twitter_creator`, `twitter_image_fallback` | — (fallback vers OG) |
+| Schema | `schema_json` ou auto-genere depuis `schema_types` | `schema_*` settings | — |
+
+### Rendu HTML
+
+`seo_meta()` retourne un `SeoMeta` (Value Object) qui implemente `Stringable`. Le `toHtml()` genere :
+
+- `<title>` — titre avec template applique
+- `<meta name="description">` — si description presente
+- `<link rel="canonical">` — si canonical resolu
+- `<meta name="robots">` — directives combinees
+- `<meta property="og:*">` — toutes les proprietes OG
+- `<meta name="twitter:*">` — toutes les proprietes Twitter
+- `<script type="application/ld+json">` — schema JSON-LD si present
+
 ---
 
 # Appendix — Artisan commands
@@ -1687,9 +1733,11 @@ packages/cms/core/
     │   └── SectionRegistry.php      # Singleton registry service
     ├── Services/
     │   ├── MediaService.php
+    │   ├── SeoResolver.php          # SEO fallback resolution engine
     │   └── UnsplashClient.php
     └── ValueObjects/
-        └── MediaSelection.php
+        ├── MediaSelection.php
+        └── SeoMeta.php              # SEO data VO with toHtml()
 ```
 
 ---
@@ -1710,3 +1758,4 @@ Test files live in the host app at `tests/Feature/Filament/`:
 | `IconPickerTest.php` | IconSelection VO, IconSelectionCast, IconDiscoveryService, IconPicker component, cms_icon() helper, API routes |
 | `PageTest.php` | Pages table columns, permissions (super_admin/editor/viewer), model CRUD, SoftDeletes (delete/restore), states (Draft ↔ Published), scopes (roots/published), static helpers (findByKey/home/generateSlug), casts, Filament resource (list/create/edit, form submission, viewer denied) |
 | `SectionTest.php` | SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType contract (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions, invalid class rejection), config, Filament integration (form render, save via Builder::fake(), hidden tab) |
+| `SeoMetaTest.php` | SeoMeta VO (properties, toArray, toHtml, Stringable, HTML escaping), SeoResolver (global defaults, page by key, non-existent key, BlogPost/Category/Tag/Author direct, title/description/canonical fallbacks, robots inheritance SiteSetting/BlogSetting, OG/Twitter fallbacks, schema JSON-LD), seo_meta() helper (key, model, no args, Blade usage) |
