@@ -344,6 +344,7 @@ The package ships **23 migrations** that run in sequence:
 | 700003 | `add_sitemap_settings_to_blog_settings` | Adds sitemap config columns (enabled, base_url, max_urls, crawl_depth, concurrency, exclude_patterns, change_freq, priority) |
 | 800001 | `create_site_settings_table` | Creates `site_settings` (identity, contact, restricted access, global SEO, admin) |
 | 800002 | `add_site_settings_and_activity_log_permissions` | Creates `manage site settings` and `view activity log` permissions |
+| 800003 | `add_legal_social_columns_to_site_settings` | Adds legal (company, SIRET, hosting, DPO), contact (phone, maps), social media (10 platforms) |
 
 **Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections/sitemap, `800xxx` = site settings/activity log.
 
@@ -1299,12 +1300,14 @@ php artisan cms:sitemap --url=https://monsite.com --concurrency=20 --depth=5
 
 Parametres globaux du site stockes dans un modele singleton `SiteSetting` (table `site_settings`). Accessible via `SiteSetting::instance()`.
 
-**5 onglets de configuration :**
+**7 onglets de configuration :**
 
 - **Identite** — nom du site, baseline, logos (clair/sombre), favicon, fuseau horaire, formats date/heure
-- **Contact** — destinataires emails (JSON array), expediteur (nom + adresse), reply-to
+- **Contact** — telephone principal/secondaire, destinataires emails (JSON array), expediteur (nom + adresse), reply-to, URL Google Maps
 - **Acces restreint** — activation, mot de passe (hashe), duree du cookie (TTL en minutes), message personnalise, bypass admin
 - **SEO Global** — titre par defaut, meta description, template titre (`%title% · %site%`), image OG par defaut, directives robots, URL canonique de base
+- **Mentions legales** — raison sociale, forme juridique (Select 11 formes), capital social, siege social (adresse/CP/ville/pays), immatriculation (SIRET/SIREN/TVA/RCS/APE), directeur de publication, hebergeur (nom/adresse/tel/email), DPO/RGPD (nom/email)
+- **Reseaux sociaux** — Facebook, X (Twitter), Instagram, LinkedIn, YouTube, TikTok, Pinterest, GitHub, Threads, Snapchat
 - **Admin** — affichage de la version Git dans le footer du panel
 
 Toutes les images utilisent `MediaPicker` + `MediaSelectionCast`.
@@ -1742,6 +1745,7 @@ packages/cms/core/
 │   ├── 700003_add_sitemap_settings_to_blog_settings
 │   ├── 800001_create_site_settings_table
 │   ├── 800002_add_site_settings_and_activity_log_permissions
+│   ├── 800003_add_legal_social_columns_to_site_settings
 │   ├── 900001_create_pages_table
 │   ├── 900002_add_page_permissions
 │   ├── 900003_add_sections_to_pages

@@ -104,6 +104,14 @@ class SiteSettings extends Page implements HasForms
                         Tabs\Tab::make('Contact')
                             ->icon('heroicon-o-envelope')
                             ->schema([
+                                TextInput::make('phone')
+                                    ->label('Telephone principal')
+                                    ->tel()
+                                    ->maxLength(30),
+                                TextInput::make('secondary_phone')
+                                    ->label('Telephone secondaire')
+                                    ->tel()
+                                    ->maxLength(30),
                                 TagsInput::make('contact_email_recipients')
                                     ->label('Destinataires des emails de contact')
                                     ->helperText('Adresses email qui recevront les messages de contact')
@@ -119,6 +127,12 @@ class SiteSettings extends Page implements HasForms
                                     ->label('Adresse de reponse (Reply-To)')
                                     ->email()
                                     ->maxLength(255),
+                                TextInput::make('google_maps_url')
+                                    ->label('URL Google Maps')
+                                    ->url()
+                                    ->maxLength(500)
+                                    ->helperText('Lien vers la localisation sur Google Maps')
+                                    ->columnSpanFull(),
                             ])
                             ->columns(2),
 
@@ -183,6 +197,182 @@ class SiteSettings extends Page implements HasForms
                                     ->maxLength(255)
                                     ->placeholder('https://monsite.com')
                                     ->helperText('Laissez vide pour utiliser APP_URL'),
+                            ])
+                            ->columns(2),
+
+                        Tabs\Tab::make('Mentions legales')
+                            ->icon('heroicon-o-building-office')
+                            ->schema([
+                                Fieldset::make('Entreprise')
+                                    ->schema([
+                                        TextInput::make('company_name')
+                                            ->label('Raison sociale')
+                                            ->maxLength(255),
+                                        Select::make('legal_form')
+                                            ->label('Forme juridique')
+                                            ->options([
+                                                'SAS' => 'SAS',
+                                                'SASU' => 'SASU',
+                                                'SARL' => 'SARL',
+                                                'EURL' => 'EURL',
+                                                'SA' => 'SA',
+                                                'SCI' => 'SCI',
+                                                'SNC' => 'SNC',
+                                                'EI' => 'Entreprise individuelle',
+                                                'EIRL' => 'EIRL',
+                                                'Auto-entrepreneur' => 'Auto-entrepreneur',
+                                                'Association' => 'Association',
+                                            ])
+                                            ->searchable()
+                                            ->nullable(),
+                                        TextInput::make('share_capital')
+                                            ->label('Capital social')
+                                            ->maxLength(100)
+                                            ->placeholder('10 000 EUR'),
+                                    ])
+                                    ->columns(3),
+
+                                Fieldset::make('Siege social')
+                                    ->schema([
+                                        TextInput::make('company_address')
+                                            ->label('Adresse')
+                                            ->maxLength(255)
+                                            ->columnSpanFull(),
+                                        TextInput::make('company_postal_code')
+                                            ->label('Code postal')
+                                            ->maxLength(20),
+                                        TextInput::make('company_city')
+                                            ->label('Ville')
+                                            ->maxLength(255),
+                                        TextInput::make('company_country')
+                                            ->label('Pays')
+                                            ->maxLength(255)
+                                            ->default('France'),
+                                    ])
+                                    ->columns(3),
+
+                                Fieldset::make('Immatriculation')
+                                    ->schema([
+                                        TextInput::make('siret')
+                                            ->label('SIRET')
+                                            ->maxLength(20)
+                                            ->placeholder('123 456 789 00012'),
+                                        TextInput::make('siren')
+                                            ->label('SIREN')
+                                            ->maxLength(15)
+                                            ->placeholder('123 456 789'),
+                                        TextInput::make('tva_number')
+                                            ->label('TVA intracommunautaire')
+                                            ->maxLength(30)
+                                            ->placeholder('FR 12 345678901'),
+                                        TextInput::make('rcs')
+                                            ->label('RCS')
+                                            ->maxLength(100)
+                                            ->placeholder('RCS Paris B 123 456 789'),
+                                        TextInput::make('ape_code')
+                                            ->label('Code APE / NAF')
+                                            ->maxLength(10)
+                                            ->placeholder('6201Z'),
+                                    ])
+                                    ->columns(3),
+
+                                Fieldset::make('Directeur de publication')
+                                    ->schema([
+                                        TextInput::make('director_name')
+                                            ->label('Nom complet')
+                                            ->maxLength(255),
+                                        TextInput::make('director_email')
+                                            ->label('Email')
+                                            ->email()
+                                            ->maxLength(255),
+                                    ])
+                                    ->columns(2),
+
+                                Fieldset::make('Hebergeur')
+                                    ->schema([
+                                        TextInput::make('hosting_provider_name')
+                                            ->label('Nom')
+                                            ->maxLength(255),
+                                        TextInput::make('hosting_provider_address')
+                                            ->label('Adresse')
+                                            ->maxLength(500),
+                                        TextInput::make('hosting_provider_phone')
+                                            ->label('Telephone')
+                                            ->tel()
+                                            ->maxLength(30),
+                                        TextInput::make('hosting_provider_email')
+                                            ->label('Email')
+                                            ->email()
+                                            ->maxLength(255),
+                                    ])
+                                    ->columns(2),
+
+                                Fieldset::make('DPO / RGPD')
+                                    ->schema([
+                                        TextInput::make('dpo_name')
+                                            ->label('Nom du DPO')
+                                            ->maxLength(255),
+                                        TextInput::make('dpo_email')
+                                            ->label('Email du DPO')
+                                            ->email()
+                                            ->maxLength(255),
+                                    ])
+                                    ->columns(2),
+                            ]),
+
+                        Tabs\Tab::make('Reseaux sociaux')
+                            ->icon('heroicon-o-share')
+                            ->schema([
+                                TextInput::make('social_facebook')
+                                    ->label('Facebook')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://facebook.com/votre-page'),
+                                TextInput::make('social_x')
+                                    ->label('X (Twitter)')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://x.com/votre-compte'),
+                                TextInput::make('social_instagram')
+                                    ->label('Instagram')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://instagram.com/votre-compte'),
+                                TextInput::make('social_linkedin')
+                                    ->label('LinkedIn')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://linkedin.com/company/votre-entreprise'),
+                                TextInput::make('social_youtube')
+                                    ->label('YouTube')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://youtube.com/@votre-chaine'),
+                                TextInput::make('social_tiktok')
+                                    ->label('TikTok')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://tiktok.com/@votre-compte'),
+                                TextInput::make('social_pinterest')
+                                    ->label('Pinterest')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://pinterest.com/votre-compte'),
+                                TextInput::make('social_github')
+                                    ->label('GitHub')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://github.com/votre-compte'),
+                                TextInput::make('social_threads')
+                                    ->label('Threads')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://threads.net/@votre-compte'),
+                                TextInput::make('social_snapchat')
+                                    ->label('Snapchat')
+                                    ->url()
+                                    ->maxLength(255)
+                                    ->placeholder('https://snapchat.com/add/votre-compte'),
                             ])
                             ->columns(2),
 

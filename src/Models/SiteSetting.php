@@ -51,6 +51,7 @@ class SiteSetting extends Model
             'restricted_access_admin_bypass' => true,
             'default_robots_index' => true,
             'default_robots_follow' => true,
+            'company_country' => 'France',
         ]);
     }
 }
