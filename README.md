@@ -345,6 +345,7 @@ The package ships **23 migrations** that run in sequence:
 | 800001 | `create_site_settings_table` | Creates `site_settings` (identity, contact, restricted access, global SEO, admin) |
 | 800002 | `add_site_settings_and_activity_log_permissions` | Creates `manage site settings` and `view activity log` permissions |
 | 800003 | `add_legal_social_columns_to_site_settings` | Adds legal (company, SIRET, hosting, DPO), contact (phone, maps), social media (10 platforms) |
+| 800004 | `add_footer_and_opening_hours_to_site_settings` | Adds footer (copyright, text, start year), contact (opening hours) |
 
 **Sequence convention:** `200xxx` = admin/users, `300xxx` = media, `500xxx` = blog, `600xxx` = SEO enhancements, `700xxx` = redirections/sitemap, `800xxx` = site settings/activity log.
 
@@ -1302,8 +1303,8 @@ Parametres globaux du site stockes dans un modele singleton `SiteSetting` (table
 
 **7 onglets de configuration :**
 
-- **Identite** — nom du site, baseline, logos (clair/sombre), favicon, fuseau horaire, formats date/heure
-- **Contact** — telephone principal/secondaire, destinataires emails (JSON array), expediteur (nom + adresse), reply-to, URL Google Maps
+- **Identite** — nom du site, baseline, logos (clair/sombre), favicon, fuseau horaire, formats date/heure, footer (copyright avec `%year%`/`%start_year%`, texte additionnel, annee de debut)
+- **Contact** — telephone principal/secondaire, destinataires emails (JSON array), expediteur (nom + adresse), reply-to, URL Google Maps, horaires d'ouverture
 - **Acces restreint** — activation, mot de passe (hashe), duree du cookie (TTL en minutes), message personnalise, bypass admin
 - **SEO Global** — titre par defaut, meta description, template titre (`%title% · %site%`), image OG par defaut, directives robots, URL canonique de base
 - **Mentions legales** — raison sociale, forme juridique (Select 11 formes), capital social, siege social (adresse/CP/ville/pays), immatriculation (SIRET/SIREN/TVA/RCS/APE), directeur de publication, hebergeur (nom/adresse/tel/email), DPO/RGPD (nom/email)
@@ -1746,6 +1747,7 @@ packages/cms/core/
 │   ├── 800001_create_site_settings_table
 │   ├── 800002_add_site_settings_and_activity_log_permissions
 │   ├── 800003_add_legal_social_columns_to_site_settings
+│   ├── 800004_add_footer_and_opening_hours_to_site_settings
 │   ├── 900001_create_pages_table
 │   ├── 900002_add_page_permissions
 │   ├── 900003_add_sections_to_pages

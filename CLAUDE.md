@@ -21,7 +21,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `BlogSetting` | `blog_settings` | Singleton via `BlogSetting::instance()`, 70+ config fields, MediaSelectionCast on image fallbacks |
 | `CmsMedia` | `media` (Spatie) | Extends Spatie Media, belongs to CmsMediaFolder, appends url/human_readable_size |
 | `CmsMediaFolder` | `cms_media_folders` | Hierarchical (parent/children), has many CmsMedia |
-| `SiteSetting` | `site_settings` | Singleton via `SiteSetting::instance()`, identity (site_name, baseline, logos, favicon, timezone, formats), contact (phone, secondary_phone, recipients, from, reply-to, google_maps_url), legal (company_name, legal_form, share_capital, address, SIRET, SIREN, TVA, RCS, APE, director, hosting provider, DPO), social media (10 platforms), restricted access (enabled, hashed password, cookie TTL, message, admin bypass), global SEO (title, description, template, OG image, robots, canonical), admin (show_version_in_footer). MediaSelectionCast on logo_light/logo_dark/favicon/default_og_image |
+| `SiteSetting` | `site_settings` | Singleton via `SiteSetting::instance()`, identity (site_name, baseline, logos, favicon, timezone, formats, footer_copyright, footer_text, copyright_start_year), contact (phone, secondary_phone, recipients, from, reply-to, google_maps_url, opening_hours), legal (company_name, legal_form, share_capital, address, SIRET, SIREN, TVA, RCS, APE, director, hosting provider, DPO), social media (10 platforms), restricted access (enabled, hashed password, cookie TTL, message, admin bypass), global SEO (title, description, template, OG image, robots, canonical), admin (show_version_in_footer). MediaSelectionCast on logo_light/logo_dark/favicon/default_og_image |
 | `Redirect` | `redirects` | URL redirections (301/302/307/410), hit tracking, cache auto-invalidation, `scopeActive()`, `recordHit()`, `getCachedRedirects()` |
 | `Page` | `pages` | HasStates (PageDraft/PagePublished), SoftDeletes, LogsActivity, hierarchical (parent/children + position), key (front-end identifier), is_home, sections (JSON array via SectionRegistry/Builder), full SEO fields, MediaSelectionCast on og_image/twitter_image |
 | `CollectionEntry` | `collection_entries` | HasStates (EntryDraft/EntryPublished), SoftDeletes, LogsActivity, collection_type discriminator, data (JSON), slug (unique per type), position, full SEO fields (optional per CollectionType), field() accessor for data, scopes: forType/ordered/published |
@@ -266,9 +266,9 @@ BlogSetting has: og_image_fallback_width/height, twitter_image_fallback_width/he
 ## Site Settings Module
 
 ### Model `SiteSetting` (`src/Models/SiteSetting.php`)
-- Singleton via `SiteSetting::instance()` (firstOrCreate with sensible defaults)
+- Singleton via `SiteSetting::instance()` (cached 1h via `Cache::remember`, auto-invalidated on save/delete)
 - Identity: site_name, baseline, logo_light/logo_dark/favicon (MediaSelectionCast), timezone, date_format, time_format
-- Contact: phone, secondary_phone, contact_email_recipients (JSON array), from_email_name, from_email_address, reply_to_email, google_maps_url
+- Contact: phone, secondary_phone, contact_email_recipients (JSON array), from_email_name, from_email_address, reply_to_email, google_maps_url, opening_hours
 - Legal: company_name, legal_form (Select: SAS/SASU/SARL/EURL/SA/SCI/SNC/EI/EIRL/Auto-entrepreneur/Association), share_capital, company_address, company_postal_code, company_city, company_country (default: France), siret, siren, tva_number, rcs, ape_code, director_name, director_email, hosting_provider_name/address/phone/email, dpo_name, dpo_email
 - Social media: social_facebook, social_x, social_instagram, social_linkedin, social_youtube, social_tiktok, social_pinterest, social_github, social_threads, social_snapchat
 - Restricted access: restricted_access_enabled, restricted_access_password (hashed), restricted_access_cookie_ttl (default 1440min), restricted_access_message, restricted_access_admin_bypass

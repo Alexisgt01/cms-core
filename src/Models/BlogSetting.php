@@ -4,6 +4,7 @@ namespace Alexisgt01\CmsCore\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
@@ -11,7 +12,10 @@ use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 class BlogSetting extends Model
 {
     use LogsActivity;
+
     protected $guarded = ['id'];
+
+    protected static string $cacheKey = 'cms_blog_settings';
 
     /**
      * @return array<string, string>
@@ -43,6 +47,12 @@ class BlogSetting extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget(static::$cacheKey));
+        static::deleted(fn () => Cache::forget(static::$cacheKey));
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -59,6 +69,13 @@ class BlogSetting extends Model
     public static function instance(): static
     {
         /** @var static */
-        return static::query()->firstOrCreate([], ['blog_name' => 'Blog']);
+        return Cache::remember(static::$cacheKey, 3600, function () {
+            return static::query()->firstOrCreate([], ['blog_name' => 'Blog']);
+        });
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget(static::$cacheKey);
     }
 }

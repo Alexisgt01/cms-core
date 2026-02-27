@@ -98,6 +98,27 @@ class SiteSettings extends Page implements HasForms
                                         'g:i A' => 'g:i A (2:30 PM)',
                                     ])
                                     ->default('H:i'),
+
+                                Fieldset::make('Footer')
+                                    ->schema([
+                                        TextInput::make('footer_copyright')
+                                            ->label('Texte copyright')
+                                            ->maxLength(255)
+                                            ->placeholder('© %year% Mon Entreprise. Tous droits reserves.')
+                                            ->helperText('%year% sera remplace par l\'annee en cours, %start_year% par l\'annee de debut'),
+                                        TextInput::make('copyright_start_year')
+                                            ->label('Annee de debut')
+                                            ->numeric()
+                                            ->minValue(1900)
+                                            ->maxValue(2100)
+                                            ->placeholder(date('Y'))
+                                            ->helperText('Pour afficher "© 2020-2026"'),
+                                        Textarea::make('footer_text')
+                                            ->label('Texte additionnel footer')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
                             ])
                             ->columns(2),
 
@@ -132,6 +153,11 @@ class SiteSettings extends Page implements HasForms
                                     ->url()
                                     ->maxLength(500)
                                     ->helperText('Lien vers la localisation sur Google Maps')
+                                    ->columnSpanFull(),
+                                Textarea::make('opening_hours')
+                                    ->label('Horaires d\'ouverture')
+                                    ->rows(4)
+                                    ->placeholder("Lundi - Vendredi : 9h00 - 18h00\nSamedi : 10h00 - 16h00\nDimanche : Ferme")
                                     ->columnSpanFull(),
                             ])
                             ->columns(2),
