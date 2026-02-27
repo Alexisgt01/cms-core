@@ -35,6 +35,8 @@
             unsplashLoading: false,
             unsplashDownloading: null,
             selectedUnsplashPhoto: null,
+            importUrl: '',
+            isImporting: false,
 
             get filteredMedia() {
                 if (!this.librarySearch) return @js($libraryMedia->toArray());
@@ -83,6 +85,15 @@
                 $wire.mountFormComponentAction('{{ $statePath }}', 'uploadFromPicker');
             },
 
+            importFromUrl() {
+                if (!this.importUrl.trim()) return;
+                this.isImporting = true;
+                $wire.mountFormComponentAction('{{ $statePath }}', 'importFromUrl', { url: this.importUrl });
+                this.open = false;
+                this.isImporting = false;
+                this.importUrl = '';
+            },
+
             clearSelection() {
                 $wire.mountFormComponentAction('{{ $statePath }}', 'clear');
             },
@@ -126,6 +137,8 @@
                                 @if ($currentUnsplashAuthor)
                                     <span>par {{ $currentUnsplashAuthor }}</span>
                                 @endif
+                            @elseif ($currentSource === 'url')
+                                <span style="background: rgb(237, 233, 254); color: rgb(109, 40, 217); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 500;">URL</span>
                             @elseif ($currentSource === 'upload')
                                 <span style="background: rgb(220, 252, 231); color: rgb(21, 128, 61); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 500;">Upload</span>
                             @else
@@ -166,7 +179,7 @@
                 >
                     <x-heroicon-o-photo style="width: 32px; height: 32px;" />
                     <span style="font-size: 13px; font-weight: 500;">Sélectionner un média</span>
-                    <span style="font-size: 11px;">Médiathèque, upload ou Unsplash</span>
+                    <span style="font-size: 11px;">Médiathèque, upload, URL ou Unsplash</span>
                 </button>
             @else
                 <div style="width: 100%; padding: 24px; border: 2px dashed rgb(229, 231, 235); border-radius: 8px; background: rgb(249, 250, 251); text-align: center; color: rgb(156, 163, 175); font-size: 13px;">
@@ -232,6 +245,15 @@
                                 : 'padding: 10px 16px; font-size: 13px; font-weight: 500; color: rgb(107, 114, 128); border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; outline: none;'"
                         >
                             Upload
+                        </button>
+                        <button
+                            type="button"
+                            @click="tab = 'url'"
+                            :style="tab === 'url'
+                                ? 'padding: 10px 16px; font-size: 13px; font-weight: 500; color: rgb(59, 130, 246); border-bottom: 2px solid rgb(59, 130, 246); background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; outline: none;'
+                                : 'padding: 10px 16px; font-size: 13px; font-weight: 500; color: rgb(107, 114, 128); border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; outline: none;'"
+                        >
+                            URL
                         </button>
                         @if ($isUnsplashEnabled)
                             <button
@@ -321,6 +343,36 @@
                                 >
                                     Choisir un fichier
                                 </button>
+                            </div>
+                        </div>
+
+                        {{-- URL tab --}}
+                        <div x-show="tab === 'url'" x-cloak>
+                            <div style="text-align: center; padding: 40px 16px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 48px; height: 48px; color: rgb(156, 163, 175); margin: 0 auto 12px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.86-4.503a4.5 4.5 0 0 0-1.242-7.244l4.5-4.5a4.5 4.5 0 0 1 6.364 6.364l-1.757 1.757" />
+                                </svg>
+                                <p style="font-size: 14px; font-weight: 500; color: rgb(55, 65, 81); margin: 0 0 4px;">Importer depuis une URL</p>
+                                <p style="font-size: 12px; color: rgb(107, 114, 128); margin: 0 0 16px;">Le fichier sera téléchargé et ajouté à la médiathèque</p>
+                                <div style="display: flex; gap: 8px; max-width: 500px; margin: 0 auto;">
+                                    <input
+                                        type="url"
+                                        x-model="importUrl"
+                                        @keydown.enter.prevent="importFromUrl()"
+                                        placeholder="https://example.com/image.jpg"
+                                        style="flex: 1; padding: 8px 12px; border: 1px solid rgb(209, 213, 219); border-radius: 6px; font-size: 13px; outline: none; background: white;"
+                                    >
+                                    <button
+                                        type="button"
+                                        @click="importFromUrl()"
+                                        :disabled="isImporting || !importUrl.trim()"
+                                        style="padding: 8px 20px; background: rgb(59, 130, 246); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; outline: none; white-space: nowrap;"
+                                        :style="(!importUrl.trim() || isImporting) ? 'opacity: 0.5; cursor: not-allowed;' : ''"
+                                    >
+                                        <span x-show="!isImporting">Importer</span>
+                                        <span x-show="isImporting" x-cloak>...</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

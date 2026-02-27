@@ -4,7 +4,9 @@ namespace Alexisgt01\CmsCore\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Models\CmsMediaFolder;
 
@@ -39,6 +41,40 @@ class MediaService
         ]);
 
         return $media->fresh();
+    }
+
+    public function storeFromUrl(string $url): CmsMedia
+    {
+        $response = Http::withOptions(['timeout' => 30])->get($url);
+        $response->throw();
+
+        $filename = basename(parse_url($url, PHP_URL_PATH)) ?: 'imported-file';
+        $mimeType = Str::before($response->header('Content-Type', 'application/octet-stream'), ';');
+
+        if (! pathinfo($filename, PATHINFO_EXTENSION)) {
+            $ext = match (true) {
+                str_contains($mimeType, 'jpeg') => 'jpg',
+                str_contains($mimeType, 'png') => 'png',
+                str_contains($mimeType, 'gif') => 'gif',
+                str_contains($mimeType, 'webp') => 'webp',
+                str_contains($mimeType, 'svg') => 'svg',
+                str_contains($mimeType, 'pdf') => 'pdf',
+                default => 'bin',
+            };
+            $filename .= '.' . $ext;
+        }
+
+        $tmpPath = 'tmp-uploads/' . Str::random(16) . '_' . $filename;
+        Storage::disk('public')->put($tmpPath, $response->body());
+
+        $fullPath = Storage::disk('public')->path($tmpPath);
+        $file = new UploadedFile($fullPath, $filename, $mimeType, null, true);
+
+        $media = $this->storeUploadedFile($file);
+
+        Storage::disk('public')->delete($tmpPath);
+
+        return $media;
     }
 
     public function moveToFolder(CmsMedia $media, ?int $folderId): void

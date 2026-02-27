@@ -106,8 +106,9 @@ MediaPicker::make('featured_image')
     ->showUnsplash(false);
 ```
 
-Three sources: library (existing media), upload (new file → media library), Unsplash (download or use URL).
-State is a JSON array compatible with `MediaSelection::toArray()`.
+Four sources: library (existing media), upload (new file → media library), url (import from external URL → media library), Unsplash (download or use URL).
+Modal tabs order: Bibliothèque, Upload, URL, Unsplash.
+State is a JSON array compatible with `MediaSelection::toArray()`. The `source` field can be `'library'`, `'upload'`, `'url'`, or `'unsplash'`. URL imports display a purple badge in filled state.
 
 ## IconPicker (Filament Form Component)
 
@@ -130,6 +131,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 
 **MediaService** (`src/Services/MediaService.php`):
 - `storeUploadedFile(UploadedFile $file, ?int $folderId = null): CmsMedia`
+- `storeFromUrl(string $url): CmsMedia` — downloads a file from an external URL, stores it in the media library
 - `deleteMedia(CmsMedia)`, `renameMedia()`, `updateMediaDetails()`, `replaceFile()`, `moveToFolder()`
 - `createFolder()`, `renameFolder()`, `deleteFolder()`
 - `listFolderContents(?int $folderId, ?string $search, filters..., int $limit): array`

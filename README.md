@@ -1208,7 +1208,7 @@ Use this format for each release:
 - imgproxy support (signed URLs, resize, format conversion)
 - Infinite scroll
 
-**MediaPicker** — reusable Filament form component:
+**MediaPicker** — reusable Filament form component with 4 sources: library, upload, URL import, Unsplash:
 
 ```php
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
@@ -1219,6 +1219,8 @@ MediaPicker::make('featured_image')
     ->maxUploadSize(5120)
     ->showUnsplash(false);
 ```
+
+The modal provides four tabs: Bibliothèque (existing media), Upload, URL (import from external URL), and Unsplash. URL imports download the file and store it in the media library. Each source displays a colored badge in the filled state.
 
 **`media_url()`** — global helper:
 

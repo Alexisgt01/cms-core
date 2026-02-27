@@ -51,6 +51,7 @@ class MediaPicker extends Field
             $this->uploadFromPickerAction(),
             $this->selectFromUnsplashAction(),
             $this->useUnsplashUrlAction(),
+            $this->importFromUrlAction(),
             $this->clearAction(),
         ]);
     }
@@ -211,6 +212,28 @@ class MediaPicker extends Field
                     'unsplash_author' => $photo['author'] ?? '',
                     'unsplash_author_url' => $photo['author_url'] ?? '',
                     'alt' => $photo['description'] ?? '',
+                ]);
+            });
+    }
+
+    protected function importFromUrlAction(): Action
+    {
+        return Action::make('importFromUrl')
+            ->action(function (array $arguments, self $component): void {
+                $url = $arguments['url'] ?? '';
+
+                if (empty($url) || ! filter_var($url, FILTER_VALIDATE_URL)) {
+                    return;
+                }
+
+                $media = app(MediaService::class)->storeFromUrl($url);
+
+                $component->state([
+                    'source' => 'url',
+                    'url' => $media->url,
+                    'original_url' => $media->url,
+                    'media_id' => $media->id,
+                    'alt' => '',
                 ]);
             });
     }
