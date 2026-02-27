@@ -80,6 +80,14 @@ abstract class CollectionType
     }
 
     /**
+     * Which data field to use for auto-generating the slug.
+     */
+    public static function slugFrom(): string
+    {
+        return 'title';
+    }
+
+    /**
      * Convert fields() to Filament form component array.
      *
      * @return array<int, \Filament\Forms\Components\Component>

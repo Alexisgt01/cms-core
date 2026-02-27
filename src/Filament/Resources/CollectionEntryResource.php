@@ -29,7 +29,10 @@ class CollectionEntryResource extends Resource
 
     protected static ?string $navigationGroup = 'Collections';
 
-    protected static bool $shouldRegisterNavigation = false;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return count(app(CollectionRegistry::class)->all()) > 0;
+    }
 
     public static function canAccess(): bool
     {
@@ -102,12 +105,13 @@ class CollectionEntryResource extends Resource
             if ($typeClass::hasSlug()) {
                 $mainSchema[] = Forms\Components\TextInput::make('slug')
                     ->label('Slug')
-                    ->required()
                     ->maxLength(255)
                     ->unique(
                         ignoreRecord: true,
                         modifyRuleUsing: fn ($rule) => $rule->where('collection_type', $collectionTypeKey),
-                    );
+                    )
+                    ->placeholder('Genere automatiquement depuis ' . $typeClass::slugFrom())
+                    ->helperText('Laissez vide pour generer automatiquement');
             }
 
             // Dynamic fields from blueprint, wrapped with data. statePath
@@ -187,8 +191,17 @@ class CollectionEntryResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $typeClass = static::resolveCollectionType();
+        $titleField = $typeClass ? $typeClass::slugFrom() : 'title';
+
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('data.' . $titleField)
+                    ->label($typeClass ? $typeClass::singularLabel() : 'Titre')
+                    ->searchable(query: function (Builder $query, string $search) use ($titleField): Builder {
+                        return $query->where('data->' . $titleField, 'like', "%{$search}%");
+                    })
+                    ->limit(50),
                 Tables\Columns\TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()

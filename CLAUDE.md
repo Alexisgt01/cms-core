@@ -365,7 +365,7 @@ Blueprint system for structured page content. Host app defines SectionType class
 Blueprint system for structured, reusable content types. Host app defines CollectionType classes, entries stored as individual DB rows (queryable via Eloquent).
 
 ### Key Classes (`src/Collections/`)
-- **CollectionType** — Abstract class with `key()`, `label()`, `singularLabel()`, `icon()`, `fields()`. Optional: `hasSlug()`, `hasSeo()`, `hasStates()`, `sortable()`, `maxEntries()`, `description()`. Auto-generates `schema()` (Filament components), `toDefinition()` (serializable).
+- **CollectionType** — Abstract class with `key()`, `label()`, `singularLabel()`, `icon()`, `fields()`. Optional: `hasSlug()`, `hasSeo()`, `hasStates()`, `sortable()`, `maxEntries()`, `description()`, `slugFrom()` (default: `'title'`). Auto-generates `schema()` (Filament components), `toDefinition()` (serializable).
 - **CollectionRegistry** — Singleton service. `register(string $typeClass)`, `all()`, `resolve(string $key)`, `definitions()`. Validates classes extend CollectionType.
 
 ### Storage
@@ -379,10 +379,12 @@ Blueprint system for structured, reusable content types. Host app defines Collec
 - Each registered type auto-generates a Filament navigation item in "Collections" group
 
 ### Filament Resource
-- Single `CollectionEntryResource` with `$shouldRegisterNavigation = false`
+- Single `CollectionEntryResource` with `shouldRegisterNavigation()` returning true when types are registered
 - Dynamic nav items per registered CollectionType via `getNavigationItems()` override
 - Query param `?collectionType=key` filters and configures the resource
 - Dynamic form: `Group::make($typeClass::schema())->statePath('data')` wraps blueprint fields
+- Slug auto-generated server-side from `slugFrom()` field in `CreateCollectionEntry::mutateFormDataBeforeCreate()` when left empty
+- Table shows title (from `data.{slugFrom}`), slug, position, state, updated_at
 - SEO/OG/Twitter/Schema tabs shown conditionally based on `hasSeo()`
 - State select shown conditionally based on `hasStates()`
 - Position field shown conditionally based on `sortable()`
