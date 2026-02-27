@@ -99,7 +99,7 @@ class IconDiscoveryService
     public function getSvgContent(string $iconName): string
     {
         try {
-            return svg($iconName)->toHtml();
+            return svg($iconName, ['style' => 'width: 100%; height: 100%;'])->toHtml();
         } catch (\Throwable) {
             return '';
         }

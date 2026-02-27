@@ -295,23 +295,25 @@
                         </div>
 
                         {{-- Grid --}}
-                        <div x-show="icons.length > 0" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;">
-                            <template x-for="icon in icons" :key="icon.name">
-                                <button
-                                    type="button"
-                                    @click="selectIcon(icon)"
-                                    style="border: 1px solid rgb(229, 231, 235); border-radius: 8px; padding: 10px 4px 6px; cursor: pointer; background: white; text-align: center; outline: none; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px;"
-                                    onmouseover="this.style.borderColor='rgb(59, 130, 246)'; this.style.backgroundColor='rgb(239, 246, 255)';"
-                                    onmouseout="this.style.borderColor='rgb(229, 231, 235)'; this.style.backgroundColor='white';"
-                                >
-                                    <div style="width: 24px; height: 24px; color: rgb(55, 65, 81); display: flex; align-items: center; justify-content: center;" x-html="icon.svg_html"></div>
-                                    <span
-                                        x-text="icon.label"
-                                        style="font-size: 9px; color: rgb(107, 114, 128); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block;"
-                                    ></span>
-                                </button>
-                            </template>
-                        </div>
+                        <template x-if="icons.length > 0">
+                            <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;">
+                                <template x-for="icon in icons" :key="icon.name">
+                                    <button
+                                        type="button"
+                                        @click="selectIcon(icon)"
+                                        style="border: 1px solid rgb(229, 231, 235); border-radius: 8px; padding: 10px 4px 6px; cursor: pointer; background: white; text-align: center; outline: none; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; overflow: hidden;"
+                                        onmouseover="this.style.borderColor='rgb(59, 130, 246)'; this.style.backgroundColor='rgb(239, 246, 255)';"
+                                        onmouseout="this.style.borderColor='rgb(229, 231, 235)'; this.style.backgroundColor='white';"
+                                    >
+                                        <div style="width: 24px; height: 24px; color: rgb(55, 65, 81); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;" x-html="icon.svg_html"></div>
+                                        <span
+                                            x-text="icon.label"
+                                            style="font-size: 9px; color: rgb(107, 114, 128); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block;"
+                                        ></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
 
                         {{-- Empty state --}}
                         <div x-show="!loading && icons.length === 0" x-cloak style="text-align: center; padding: 40px 16px; color: rgb(156, 163, 175);">
