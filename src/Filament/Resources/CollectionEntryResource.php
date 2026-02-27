@@ -213,9 +213,8 @@ class CollectionEntryResource extends Resource
                 Tables\Columns\TextColumn::make('state')
                     ->label('Statut')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state?->label() ?? '—')
-                    ->color(fn ($state) => $state?->color() ?? 'gray')
-                    ->sortable(),
+                    ->formatStateUsing(fn ($state): string => $state instanceof \Spatie\ModelStates\State ? $state->label() : '—')
+                    ->color(fn ($state): string => $state instanceof \Spatie\ModelStates\State ? $state->color() : 'gray'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modifie le')
                     ->dateTime('d/m/Y H:i')
