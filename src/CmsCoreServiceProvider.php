@@ -16,6 +16,7 @@ use Spatie\Permission\Models\Role;
 use Alexisgt01\CmsCore\Filament\CmsCorePlugin;
 use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
+use Alexisgt01\CmsCore\Policies\CollectionEntryPolicy;
 use Alexisgt01\CmsCore\Policies\PermissionPolicy;
 use Alexisgt01\CmsCore\Policies\RolePolicy;
 use Alexisgt01\CmsCore\Policies\PagePolicy;
@@ -32,6 +33,7 @@ use Alexisgt01\CmsCore\Filament\Widgets\LatestUsersTable;
 use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRestrictedAccess;
+use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\SiteSetting;
 use Alexisgt01\CmsCore\Services\IconDiscoveryService;
@@ -46,6 +48,7 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-media.php', 'cms-media');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-icons.php', 'cms-icons');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-sections.php', 'cms-sections');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-collections.php', 'cms-collections');
 
         $this->app['config']->set(
             'filament-tiptap-editor.media_action',
@@ -56,6 +59,16 @@ class CmsCoreServiceProvider extends ServiceProvider
             $registry = new Sections\SectionRegistry;
 
             foreach (config('cms-sections.types', []) as $typeClass) {
+                $registry->register($typeClass);
+            }
+
+            return $registry;
+        });
+
+        $this->app->singleton(Collections\CollectionRegistry::class, function () {
+            $registry = new Collections\CollectionRegistry;
+
+            foreach (config('cms-collections.types', []) as $typeClass) {
                 $registry->register($typeClass);
             }
 
@@ -81,12 +94,14 @@ class CmsCoreServiceProvider extends ServiceProvider
             __DIR__ . '/../config/cms-media.php' => config_path('cms-media.php'),
             __DIR__ . '/../config/cms-icons.php' => config_path('cms-icons.php'),
             __DIR__ . '/../config/cms-sections.php' => config_path('cms-sections.php'),
+            __DIR__ . '/../config/cms-collections.php' => config_path('cms-collections.php'),
         ], 'cms-core-config');
 
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
         Gate::policy(Page::class, PagePolicy::class);
+        Gate::policy(CollectionEntry::class, CollectionEntryPolicy::class);
         Gate::policy(CmsMedia::class, CmsMediaPolicy::class);
 
         $this->commands([

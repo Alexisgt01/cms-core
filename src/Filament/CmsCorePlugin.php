@@ -15,6 +15,7 @@ use Alexisgt01\CmsCore\Filament\Pages\MediaLibrary;
 use Alexisgt01\CmsCore\Filament\Pages\SiteSettings;
 use Alexisgt01\CmsCore\Filament\Resources\ActivityLogResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
+use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
@@ -50,6 +51,7 @@ class CmsCorePlugin implements Plugin
                 BlogTagResource::class,
                 PageResource::class,
                 RedirectResource::class,
+                CollectionEntryResource::class,
                 ActivityLogResource::class,
             ])
             ->pages([

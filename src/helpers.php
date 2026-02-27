@@ -89,6 +89,44 @@ if (! function_exists('seo_meta')) {
     }
 }
 
+if (! function_exists('collection_entries')) {
+    /**
+     * Get all entries for a collection type.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \Alexisgt01\CmsCore\Models\CollectionEntry>
+     */
+    function collection_entries(string $collectionType, bool $publishedOnly = true): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = \Alexisgt01\CmsCore\Models\CollectionEntry::query()
+            ->forType($collectionType)
+            ->ordered();
+
+        if ($publishedOnly) {
+            $registry = app(\Alexisgt01\CmsCore\Collections\CollectionRegistry::class);
+            $typeClass = $registry->resolve($collectionType);
+
+            if ($typeClass && $typeClass::hasStates()) {
+                $query->published();
+            }
+        }
+
+        return $query->get();
+    }
+}
+
+if (! function_exists('collection_entry')) {
+    /**
+     * Get a single collection entry by slug.
+     */
+    function collection_entry(string $collectionType, string $slug): ?\Alexisgt01\CmsCore\Models\CollectionEntry
+    {
+        return \Alexisgt01\CmsCore\Models\CollectionEntry::query()
+            ->forType($collectionType)
+            ->where('slug', $slug)
+            ->first();
+    }
+}
+
 if (! function_exists('media_url_build_options')) {
     /**
      * @param  array<string, mixed>  $options

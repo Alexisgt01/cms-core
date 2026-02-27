@@ -24,6 +24,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `SiteSetting` | `site_settings` | Singleton via `SiteSetting::instance()`, identity (site_name, baseline, logos, favicon, timezone, formats), contact (recipients, from, reply-to), restricted access (enabled, hashed password, cookie TTL, message, admin bypass), global SEO (title, description, template, OG image, robots, canonical), admin (show_version_in_footer). MediaSelectionCast on logo_light/logo_dark/favicon/default_og_image |
 | `Redirect` | `redirects` | URL redirections (301/302/307/410), hit tracking, cache auto-invalidation, `scopeActive()`, `recordHit()`, `getCachedRedirects()` |
 | `Page` | `pages` | HasStates (PageDraft/PagePublished), SoftDeletes, LogsActivity, hierarchical (parent/children + position), key (front-end identifier), is_home, sections (JSON array via SectionRegistry/Builder), full SEO fields, MediaSelectionCast on og_image/twitter_image |
+| `CollectionEntry` | `collection_entries` | HasStates (EntryDraft/EntryPublished), SoftDeletes, LogsActivity, collection_type discriminator, data (JSON), slug (unique per type), position, full SEO fields (optional per CollectionType), field() accessor for data, scopes: forType/ordered/published |
 
 ## State Machine (spatie/laravel-model-states)
 
@@ -40,6 +41,11 @@ Transition: `$post->state->transitionTo(Published::class)`
 - `PageDraft` (default) ↔ `PagePublished`
 
 Cast: `'state' => PageState::class` in Page model.
+
+- `EntryState` (abstract) — 2-state machine for CollectionEntry
+- `EntryDraft` (default) ↔ `EntryPublished`
+
+Cast: `'state' => EntryState::class` in CollectionEntry model.
 
 ## Value Objects & Casts
 
@@ -75,6 +81,16 @@ seo_meta($blogPost);   // Model directly → SeoMeta VO
 seo_meta();            // Global defaults → SeoMeta VO
 // Returns SeoMeta (Stringable) → {!! seo_meta('about') !!} renders all <head> tags
 // Fallback: entity → BlogSetting (blog entities) → SiteSetting (global)
+```
+
+```php
+// collection_entries() — get all entries for a collection type
+collection_entries('services');                      // published only (if hasStates)
+collection_entries('services', publishedOnly: false); // all entries
+// Returns ordered by position, filtered by collection_type
+
+// collection_entry() — get a single entry by slug
+collection_entry('services', 'web-design');          // CollectionEntry|null
 ```
 
 ## MediaPicker (Filament Form Component)
@@ -144,6 +160,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | BlogTagResource | Blog | BlogTag | view/create/edit/delete blog tags |
 | PageResource | Contenu | Page | view/create/edit/delete pages, publish pages |
 | RedirectResource | SEO | Redirect | view/create/edit/delete redirects |
+| CollectionEntryResource | Collections | CollectionEntry | view/create/edit/delete collection entries, publish collection entries |
 | ActivityLogResource | Administration | Spatie Activity | view activity log, read-only (no create/edit/delete) |
 
 ## Filament Pages
@@ -313,7 +330,9 @@ All created via migrations (NOT seeders). Pattern: `Permission::create()` + role
 
 **Site/Admin permissions**: manage site settings, view activity log.
 
-super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit/publish pages (no delete) + view/create/edit redirects (no delete) + view activity log. viewer = none.
+**Collection permissions**: view/create/edit/delete/publish collection entries.
+
+super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit/publish pages (no delete) + view/create/edit redirects (no delete) + view/create/edit/publish collection entries (no delete) + view activity log. viewer = none.
 
 ## Commands
 
@@ -341,19 +360,47 @@ Blueprint system for structured page content. Host app defines SectionType class
 - Host app publishes `cms-sections.php` and lists its SectionType classes
 - Sections tab auto-hidden when no types registered
 
+## Collections Module
+
+Blueprint system for structured, reusable content types. Host app defines CollectionType classes, entries stored as individual DB rows (queryable via Eloquent).
+
+### Key Classes (`src/Collections/`)
+- **CollectionType** — Abstract class with `key()`, `label()`, `singularLabel()`, `icon()`, `fields()`. Optional: `hasSlug()`, `hasSeo()`, `hasStates()`, `sortable()`, `maxEntries()`, `description()`. Auto-generates `schema()` (Filament components), `toDefinition()` (serializable).
+- **CollectionRegistry** — Singleton service. `register(string $typeClass)`, `all()`, `resolve(string $key)`, `definitions()`. Validates classes extend CollectionType.
+
+### Storage
+- Individual rows in `collection_entries` table, discriminated by `collection_type` column
+- Field values stored in `data` JSON column, accessed via `$entry->field('title')`
+- Full SEO columns always present, form only shows when `CollectionType::hasSeo() === true`
+
+### Registration
+- ServiceProvider registers CollectionRegistry singleton, reads from `config('cms-collections.types')`
+- Host app publishes `cms-collections.php` and lists its CollectionType classes
+- Each registered type auto-generates a Filament navigation item in "Collections" group
+
+### Filament Resource
+- Single `CollectionEntryResource` with `$shouldRegisterNavigation = false`
+- Dynamic nav items per registered CollectionType via `getNavigationItems()` override
+- Query param `?collectionType=key` filters and configures the resource
+- Dynamic form: `Group::make($typeClass::schema())->statePath('data')` wraps blueprint fields
+- SEO/OG/Twitter/Schema tabs shown conditionally based on `hasSeo()`
+- State select shown conditionally based on `hasStates()`
+- Position field shown conditionally based on `sortable()`
+
 ## Config
 
 - `config/cms-core.php` — admin path
 - `config/cms-media.php` — proxy (imgproxy), unsplash, media upload settings
 - `config/cms-icons.php` — icon sets, output mode, pagination, cache TTL, labels, variants
 - `config/cms-sections.php` — section type classes registration (host app publishes and adds its types)
+- `config/cms-collections.php` — collection type classes registration (host app publishes and adds its types)
 
 Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `UNSPLASH_APP_ID`, `UNSPLASH_APP_KEY`, `UNSPLASH_SECRET_KEY`.
 
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages), 1000xxx (collections)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -375,3 +422,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `PageTest.php` — Pages table columns, permissions, model CRUD, SoftDeletes, states (Draft ↔ Published), scopes, static helpers, casts, Filament resource
 - `SectionTest.php` — SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions), config, Filament integration (Builder::fake())
 - `SeoMetaTest.php` — SeoMeta VO (properties, serialization, toHtml, Stringable, escaping), SeoResolver (global defaults, page by key, model direct for all entities, fallback chains title/description/canonical/robots/OG/Twitter/Schema), seo_meta() helper
+- `CollectionTest.php` — CollectionType (methods, schema, definition), CollectionRegistry (register/resolve, definitions, rejection), migration columns, permissions, model CRUD, field accessor, scopes, SoftDeletes, slug generation, state machine, casts, config, Filament resource access, dynamic nav items, helpers (collection_entries/collection_entry), SeoResolver with CollectionEntry

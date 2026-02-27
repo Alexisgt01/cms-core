@@ -60,6 +60,7 @@ Headless CMS core package with Filament admin panel — user management, media l
   - [Pages](#pages)
   - [Sections](#sections)
   - [SEO Helper](#seo-helper)
+  - [Collections](#collections)
 - [Appendix — Artisan commands](#appendix--artisan-commands)
 - [Appendix — Permissions reference](#appendix--permissions-reference)
 - [Appendix — Package structure](#appendix--package-structure)
@@ -1556,6 +1557,109 @@ Helper frontend pour injecter les balises SEO dans le `<head>`, avec resolution 
 
 ---
 
+## Collections
+
+Systeme de contenu structure reutilisable. Permet de definir des types de contenu (services, temoignages, equipe...) avec des champs personnalises, stockes en base et gerables via Filament.
+
+### Architecture
+
+```
+Host App (code)                    Package (code + DB)
+CollectionType (abstract)  ←───── ServiceCollection (host app)
+CollectionRegistry         ←───── config/cms-collections.php
+CollectionEntry (Eloquent) ←───── table collection_entries
+CollectionEntryResource    ←───── 1 resource, N items de navigation
+```
+
+### Definir un type de collection
+
+Creer une classe dans le host app :
+
+```php
+namespace App\Collections;
+
+use Alexisgt01\CmsCore\Collections\CollectionType;
+use Alexisgt01\CmsCore\Sections\SectionField;
+
+class ServiceCollection extends CollectionType
+{
+    public static function key(): string { return 'services'; }
+    public static function label(): string { return 'Services'; }
+    public static function singularLabel(): string { return 'Service'; }
+    public static function icon(): string { return 'heroicon-o-briefcase'; }
+
+    public static function fields(): array
+    {
+        return [
+            SectionField::text('title')->label('Titre')->required(),
+            SectionField::paragraph('description')->label('Description'),
+            SectionField::image('image')->label('Image'),
+        ];
+    }
+
+    public static function hasSlug(): bool { return true; }
+    public static function hasStates(): bool { return true; }
+    public static function sortable(): bool { return true; }
+    // public static function hasSeo(): bool { return true; }
+    // public static function maxEntries(): int { return 10; }
+}
+```
+
+Enregistrer dans `config/cms-collections.php` :
+
+```php
+'types' => [
+    \App\Collections\ServiceCollection::class,
+],
+```
+
+### Options du CollectionType
+
+| Methode | Defaut | Description |
+|---------|--------|-------------|
+| `hasSlug()` | `false` | Active la colonne slug (unique par type) |
+| `hasSeo()` | `false` | Active les onglets SEO/OG/Twitter/Schema |
+| `hasStates()` | `false` | Active Draft/Published avec `publish collection entries` |
+| `sortable()` | `false` | Active le champ position et le tri |
+| `maxEntries()` | `0` | Limite le nombre d'entrees (0 = illimite) |
+
+### Helpers
+
+```php
+// Recuperer toutes les entrees (publiees si hasStates)
+$services = collection_entries('services');
+
+// Toutes les entrees sans filtre de publication
+$all = collection_entries('services', publishedOnly: false);
+
+// Entree par slug
+$service = collection_entry('services', 'web-design');
+
+// Acceder aux champs
+$service->field('title');
+$service->field('image');
+$service->field('missing', 'default');
+
+// SEO (si hasSeo active)
+{!! seo_meta($service) !!}
+```
+
+### Navigation Filament
+
+Chaque CollectionType enregistre genere automatiquement un item de navigation dans le groupe "Collections". Un seul resource Filament (`CollectionEntryResource`) gere tous les types via le query parameter `?collectionType=`.
+
+### Permissions
+
+| Permission | super_admin | editor |
+|---|:---:|:---:|
+| view collection entries | oui | oui |
+| create collection entries | oui | oui |
+| edit collection entries | oui | oui |
+| delete collection entries | oui | — |
+| publish collection entries | oui | oui |
+
+---
+
 # Appendix — Artisan commands
 
 | Command | Description |
@@ -1594,6 +1698,8 @@ Helper frontend pour injecter les balises SEO dans le `<head>`, avec resolution 
 | view/create/edit/delete pages | all | view/create/edit | — |
 | publish pages | yes | yes | — |
 | view/create/edit/delete redirects | all | view/create/edit | — |
+| view/create/edit/delete collection entries | all | view/create/edit | — |
+| publish collection entries | yes | yes | — |
 | manage site settings | yes | — | — |
 | view activity log | yes | yes | — |
 
@@ -1609,7 +1715,8 @@ packages/cms/core/
 │   ├── cms-core.php              # Admin panel path
 │   ├── cms-media.php             # imgproxy, Unsplash, upload settings
 │   ├── cms-icons.php             # Icon sets, output mode, pagination
-│   └── cms-sections.php          # Section types registration
+│   ├── cms-sections.php          # Section types registration
+│   └── cms-collections.php      # Collection types registration
 ├── database/migrations/
 │   ├── 200001_add_name_fields_to_users_table
 │   ├── 200002_create_default_roles_and_permissions
@@ -1637,7 +1744,9 @@ packages/cms/core/
 │   ├── 800002_add_site_settings_and_activity_log_permissions
 │   ├── 900001_create_pages_table
 │   ├── 900002_add_page_permissions
-│   └── 900003_add_sections_to_pages
+│   ├── 900003_add_sections_to_pages
+│   ├── 1000001_create_collection_entries_table
+│   └── 1000002_add_collection_entry_permissions
 ├── resources/views/filament/
 │   ├── forms/components/
 │   │   ├── media-picker.blade.php
@@ -1655,7 +1764,7 @@ packages/cms/core/
 ├── resources/views/
 │   └── restricted-access.blade.php
 └── src/
-    ├── helpers.php                # media_url() global helper
+    ├── helpers.php                # media_url(), seo_meta(), collection_entries(), collection_entry(), cms_icon()
     ├── CmsCoreServiceProvider.php # Registers everything
     ├── Http/Middleware/
     │   ├── HandleRestrictedAccess.php  # Global restricted access middleware
@@ -1697,6 +1806,7 @@ packages/cms/core/
     │       ├── BlogCategoryResource.php (+Pages/)
     │       ├── BlogPostResource.php     (+Pages/)
     │       ├── BlogTagResource.php      (+Pages/)
+    │       ├── CollectionEntryResource.php (+Pages/)
     │       ├── PageResource.php         (+Pages/)
     │       ├── PermissionResource.php
     │       ├── RedirectResource.php    (+Pages/)
@@ -1708,6 +1818,7 @@ packages/cms/core/
     │   ├── BlogPost.php           # LogsActivity
     │   ├── BlogSetting.php
     │   ├── BlogTag.php              # LogsActivity
+    │   ├── CollectionEntry.php  # LogsActivity, SoftDeletes, HasStates
     │   ├── Page.php              # LogsActivity, SoftDeletes, HasStates
     │   ├── CmsMedia.php
     │   ├── CmsMediaFolder.php
@@ -1720,13 +1831,20 @@ packages/cms/core/
     │       ├── Published.php
     │       ├── PageState.php    # Abstract base (Draft ↔ Published)
     │       ├── PageDraft.php
-    │       └── PagePublished.php
+    │       ├── PagePublished.php
+    │       ├── EntryState.php   # Abstract base (Draft ↔ Published)
+    │       ├── EntryDraft.php
+    │       └── EntryPublished.php
     ├── Policies/
     │   ├── CmsMediaPolicy.php
+    │   ├── CollectionEntryPolicy.php
     │   ├── PagePolicy.php
     │   ├── PermissionPolicy.php
     │   ├── RolePolicy.php
     │   └── UserPolicy.php
+    ├── Collections/
+    │   ├── CollectionType.php       # Abstract blueprint class
+    │   └── CollectionRegistry.php   # Singleton registry service
     ├── Sections/
     │   ├── SectionField.php         # Fluent builder (14 field types)
     │   ├── SectionType.php          # Abstract blueprint class
@@ -1759,3 +1877,4 @@ Test files live in the host app at `tests/Feature/Filament/`:
 | `PageTest.php` | Pages table columns, permissions (super_admin/editor/viewer), model CRUD, SoftDeletes (delete/restore), states (Draft ↔ Published), scopes (roots/published), static helpers (findByKey/home/generateSlug), casts, Filament resource (list/create/edit, form submission, viewer denied) |
 | `SectionTest.php` | SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType contract (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions, invalid class rejection), config, Filament integration (form render, save via Builder::fake(), hidden tab) |
 | `SeoMetaTest.php` | SeoMeta VO (properties, toArray, toHtml, Stringable, HTML escaping), SeoResolver (global defaults, page by key, non-existent key, BlogPost/Category/Tag/Author direct, title/description/canonical fallbacks, robots inheritance SiteSetting/BlogSetting, OG/Twitter fallbacks, schema JSON-LD), seo_meta() helper (key, model, no args, Blade usage) |
+| `CollectionTest.php` | CollectionType contract (methods, schema, definition), CollectionRegistry (register/resolve, definitions, invalid class rejection), migration columns, permissions (super_admin/editor/viewer), model CRUD, field accessor, scopes (forType/ordered/published), SoftDeletes, slug generation, state machine (Draft ↔ Published), casts, config, Filament resource access, dynamic navigation items, collection_entries()/collection_entry() helpers, SeoResolver with CollectionEntry |

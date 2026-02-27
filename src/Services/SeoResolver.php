@@ -7,6 +7,7 @@ use Alexisgt01\CmsCore\Models\BlogCategory;
 use Alexisgt01\CmsCore\Models\BlogPost;
 use Alexisgt01\CmsCore\Models\BlogSetting;
 use Alexisgt01\CmsCore\Models\BlogTag;
+use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\SiteSetting;
 use Alexisgt01\CmsCore\ValueObjects\MediaSelection;
@@ -404,6 +405,10 @@ class SeoResolver
 
         if ($entity instanceof BlogAuthor) {
             return $entity->display_name;
+        }
+
+        if ($entity instanceof CollectionEntry) {
+            return $entity->field('title') ?: $entity->field('name');
         }
 
         return $this->getAttr($entity, 'name');
