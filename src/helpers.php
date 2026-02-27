@@ -54,6 +54,26 @@ if (! function_exists('media_url')) {
     }
 }
 
+if (! function_exists('cms_icon')) {
+    /**
+     * Render an icon from an IconSelection or blade-icons name.
+     *
+     * @param  array<string, string>  $attributes
+     */
+    function cms_icon(string|\Alexisgt01\CmsCore\ValueObjects\IconSelection|null $icon, string $class = '', array $attributes = []): string
+    {
+        if ($icon === null || $icon === '') {
+            return '';
+        }
+
+        if ($icon instanceof \Alexisgt01\CmsCore\ValueObjects\IconSelection) {
+            return $icon->toSvg($class, $attributes);
+        }
+
+        return svg($icon, $class, $attributes)->toHtml();
+    }
+}
+
 if (! function_exists('media_url_build_options')) {
     /**
      * @param  array<string, mixed>  $options

@@ -56,6 +56,9 @@ Headless CMS core package with Filament admin panel — user management, media l
   - [Restricted Access](#restricted-access)
   - [Activity Log](#activity-log)
   - [Git Version Footer](#git-version-footer)
+  - [Icon Picker](#icon-picker)
+  - [Pages](#pages)
+  - [Sections](#sections)
 - [Appendix — Artisan commands](#appendix--artisan-commands)
 - [Appendix — Permissions reference](#appendix--permissions-reference)
 - [Appendix — Package structure](#appendix--package-structure)
@@ -1344,6 +1347,167 @@ Affichage optionnel de la version Git (dernier tag) dans le footer du panel Fila
 - Lit `git describe --tags --abbrev=0` avec cache de 1 heure
 - Rendu via `PanelsRenderHook::FOOTER` dans `CmsCorePlugin::boot()`
 
+## Icon Picker
+
+Composant Filament de recherche, preview et selection d'icones depuis plusieurs bibliotheques. Utilise `blade-ui-kit/blade-icons` comme backend de decouverte — tout jeu d'icones Blade installe est automatiquement detecte.
+
+**Dependances optionnelles :**
+
+| Package | Description | Version |
+|---|---|---|
+| `owenvoke/blade-fontawesome` | Icones Font Awesome | ^2.0 |
+| `codeat3/blade-simple-icons` | Icones de marques (Netflix, Docker, Laravel, etc.) | ^5.0 |
+
+Heroicons est toujours disponible (fourni avec Filament).
+
+**IconPicker** — composant Filament reutilisable :
+
+```php
+use Alexisgt01\CmsCore\Filament\Forms\Components\IconPicker;
+
+IconPicker::make('icon')
+    ->label('Icone')
+    ->outputMode('reference')        // ou 'svg' pour stocker le SVG inline
+    ->allowedSets(['heroicons'])     // filtrer les jeux disponibles
+    ->defaultSet('heroicons')
+    ->required();
+```
+
+**Modes de sortie :**
+
+- **reference** (defaut) — stocke le nom blade-icons (ex: `heroicon-o-home`)
+- **svg** — stocke le balisage SVG complet inline
+
+**Cast Eloquent** — `IconSelectionCast` pour la serialisation JSON automatique :
+
+```php
+use Alexisgt01\CmsCore\Casts\IconSelectionCast;
+
+protected function casts(): array
+{
+    return [
+        'icon' => IconSelectionCast::class,
+    ];
+}
+```
+
+**`cms_icon()`** — helper global de rendu :
+
+```php
+// Rendu depuis un nom blade-icons
+cms_icon('heroicon-o-home', 'w-6 h-6');
+
+// Rendu depuis un IconSelection
+cms_icon($model->icon, 'w-6 h-6');
+```
+
+**Configuration** — publiez et personnalisez `cms-icons.php` :
+
+| Cle | Description | Defaut |
+|---|---|---|
+| `sets` | Filtrer les jeux d'icones exposes (null = tous) | `null` |
+| `default_mode` | Mode de sortie par defaut | `'reference'` |
+| `per_page` | Icones par page de recherche | `60` |
+| `cache_ttl` | Cache du manifeste en secondes | `3600` |
+| `labels` | Labels lisibles pour les jeux connus | — |
+| `variants` | Mappings de styles/variantes par jeu | — |
+
+## Pages
+
+Pages statiques du site avec hierarchie parent/enfant, SEO complet et SoftDeletes.
+
+- **Modele `Page`** — name, slug (unique), key (identifiant front-end unique, ex: `about`, `contact`), meta (JSON), hierarchie (parent_id + position), is_home, SoftDeletes
+- **States** — `PageDraft` (defaut) ↔ `PagePublished` (simplifie, 2 etats uniquement)
+- **SEO complet** — meme pattern que BlogPost : h1, focus_keyword, secondary_keywords, indexing, canonical_url, meta_title, meta_description, robots (7 directives), OG complet, Twitter complet, schema multi-types + JSON-LD
+- **Hierarchie** — parent/enfant avec position ordering, scopes `roots()` et `published()`
+- **Helpers statiques** — `Page::findByKey('about')`, `Page::home()`, `Page::generateSlug('name')`
+- **Formulaire avec onglets** — Page (nom, slug, cle, parent, position, accueil, meta, statut, date publication), SEO, Open Graph, Twitter, Schema
+- **Permissions** — view/create/edit/delete/publish pages. Sans `publish pages`, seul "Brouillon" est disponible
+- **SoftDeletes** — corbeille avec restauration et suppression definitive (TrashedFilter, RestoreAction, ForceDeleteAction)
+- **Nav group** — Contenu
+- **Migrations** — 900001 (table pages), 900002 (permissions)
+
+## Sections
+
+Systeme de blueprints de sections pour structurer le contenu des pages. Deux niveaux : definition du type (blueprint) et instances par page (valeurs).
+
+### Architecture
+
+```
+SectionField (fluent builder)     → definit un champ declarativement
+    ↓ toFormComponent()
+SectionType (abstract class)      → blueprint avec key/label/icon/fields()
+    ↓ toBlock()
+SectionRegistry (singleton)       → collecte les types, produit les Builder\Block[]
+    ↓ blocks()
+PageResource (Filament Builder)   → onglet "Sections" avec Builder component
+    ↓
+Page.sections (JSON column)       → stocke [{type, data}, ...] par page
+```
+
+### Types de champs disponibles (SectionField)
+
+| Type | Factory | Composant Filament |
+|---|---|---|
+| `text` | `SectionField::text('name')` | TextInput |
+| `title` | `SectionField::title('heading')` | TextInput + Select H1-H6 |
+| `paragraph` | `SectionField::paragraph('desc')` | Textarea |
+| `richtext` | `SectionField::richtext('content')` | TiptapEditor |
+| `icon` | `SectionField::icon('icon')` | IconPicker |
+| `image` | `SectionField::image('hero')` | MediaPicker |
+| `toggle` | `SectionField::toggle('show')` | Toggle |
+| `select` | `SectionField::select('style')` | Select |
+| `link` | `SectionField::link('cta')` | 2x TextInput (url + label) |
+| `list` | `SectionField::list('items')` | Repeater simple |
+| `repeater` | `SectionField::repeater('cards')` | Repeater (sous-champs) |
+| `number` | `SectionField::number('cols')` | TextInput numeric |
+| `color` | `SectionField::color('bg')` | ColorPicker |
+
+API fluente : `label()`, `required()`, `maxLength()`, `rows()`, `level()`, `placeholder()`, `maxItems()`, `min()`, `max()`, `default()`, `options()`, `helperText()`, `columnSpanFull()`, `fields()`.
+
+### Creer un type de section (app hote)
+
+```php
+// app/Sections/CtaContactSection.php
+use Alexisgt01\CmsCore\Sections\SectionField;
+use Alexisgt01\CmsCore\Sections\SectionType;
+
+class CtaContactSection extends SectionType
+{
+    public static function key(): string { return 'cta_contact'; }
+    public static function label(): string { return 'CTA Contact'; }
+    public static function icon(): string { return 'heroicon-o-phone'; }
+
+    public static function fields(): array
+    {
+        return [
+            SectionField::title('title')->label('Titre')->required()->level('h2'),
+            SectionField::paragraph('paragraph')->label('Paragraphe'),
+            SectionField::icon('icon')->label('Icone'),
+            SectionField::repeater('bullets')->label('Points cles')->maxItems(6)->fields([
+                SectionField::text('text')->label('Texte')->required(),
+            ]),
+        ];
+    }
+}
+```
+
+### Enregistrer les types
+
+```php
+// config/cms-sections.php
+return [
+    'types' => [
+        \App\Sections\CtaContactSection::class,
+    ],
+];
+```
+
+- **Config** — `config/cms-sections.php` (publiable via `cms-core-config`)
+- **Stockage** — colonne JSON `sections` sur la table `pages`, stocke `[{type, data}, ...]`
+- **Onglet Sections** — automatiquement visible dans PageResource quand au moins un type est enregistre
+- **Migration** — 900003 (ajout colonne sections)
+
 ---
 
 # Appendix — Artisan commands
@@ -1381,6 +1545,8 @@ Affichage optionnel de la version Git (dernier tag) dans le footer du panel Fila
 | publish blog posts | yes | yes | — |
 | view/create/edit/delete blog categories | all | view/create/edit | — |
 | view/create/edit/delete blog tags | all | view/create/edit | — |
+| view/create/edit/delete pages | all | view/create/edit | — |
+| publish pages | yes | yes | — |
 | view/create/edit/delete redirects | all | view/create/edit | — |
 | manage site settings | yes | — | — |
 | view activity log | yes | yes | — |
@@ -1395,7 +1561,9 @@ Without `publish blog posts` permission, only "Brouillon" (Draft) state is avail
 packages/cms/core/
 ├── config/
 │   ├── cms-core.php              # Admin panel path
-│   └── cms-media.php             # imgproxy, Unsplash, upload settings
+│   ├── cms-media.php             # imgproxy, Unsplash, upload settings
+│   ├── cms-icons.php             # Icon sets, output mode, pagination
+│   └── cms-sections.php          # Section types registration
 ├── database/migrations/
 │   ├── 200001_add_name_fields_to_users_table
 │   ├── 200002_create_default_roles_and_permissions
@@ -1420,7 +1588,10 @@ packages/cms/core/
 │   ├── 700002_add_redirect_permissions
 │   ├── 700003_add_sitemap_settings_to_blog_settings
 │   ├── 800001_create_site_settings_table
-│   └── 800002_add_site_settings_and_activity_log_permissions
+│   ├── 800002_add_site_settings_and_activity_log_permissions
+│   ├── 900001_create_pages_table
+│   ├── 900002_add_page_permissions
+│   └── 900003_add_sections_to_pages
 ├── resources/views/filament/
 │   ├── forms/components/
 │   │   ├── media-picker.blade.php
@@ -1480,6 +1651,7 @@ packages/cms/core/
     │       ├── BlogCategoryResource.php (+Pages/)
     │       ├── BlogPostResource.php     (+Pages/)
     │       ├── BlogTagResource.php      (+Pages/)
+    │       ├── PageResource.php         (+Pages/)
     │       ├── PermissionResource.php
     │       ├── RedirectResource.php    (+Pages/)
     │       ├── RoleResource.php         (+Pages/)
@@ -1490,6 +1662,7 @@ packages/cms/core/
     │   ├── BlogPost.php           # LogsActivity
     │   ├── BlogSetting.php
     │   ├── BlogTag.php              # LogsActivity
+    │   ├── Page.php              # LogsActivity, SoftDeletes, HasStates
     │   ├── CmsMedia.php
     │   ├── CmsMediaFolder.php
     │   ├── Redirect.php               # LogsActivity
@@ -1498,12 +1671,20 @@ packages/cms/core/
     │       ├── PostState.php      # Abstract base
     │       ├── Draft.php
     │       ├── Scheduled.php
-    │       └── Published.php
+    │       ├── Published.php
+    │       ├── PageState.php    # Abstract base (Draft ↔ Published)
+    │       ├── PageDraft.php
+    │       └── PagePublished.php
     ├── Policies/
     │   ├── CmsMediaPolicy.php
+    │   ├── PagePolicy.php
     │   ├── PermissionPolicy.php
     │   ├── RolePolicy.php
     │   └── UserPolicy.php
+    ├── Sections/
+    │   ├── SectionField.php         # Fluent builder (14 field types)
+    │   ├── SectionType.php          # Abstract blueprint class
+    │   └── SectionRegistry.php      # Singleton registry service
     ├── Services/
     │   ├── MediaService.php
     │   └── UnsplashClient.php
@@ -1526,3 +1707,6 @@ Test files live in the host app at `tests/Feature/Filament/`:
 | `RedirectTest.php` | Columns, permissions (super_admin/editor/viewer), CRUD, casts, recordHit, scopeActive, middleware, cache invalidation |
 | `SitemapTest.php` | Sitemap settings columns, casts, default values, command registration |
 | `SiteSettingsTest.php` | SiteSetting model (columns, singleton, casts, defaults), SiteSettings page (access, save, password hashing), restricted access middleware (enabled/disabled, admin bypass, cookie, password validation), activity log (logging on all CMS models, resource access, purge command), permissions |
+| `IconPickerTest.php` | IconSelection VO, IconSelectionCast, IconDiscoveryService, IconPicker component, cms_icon() helper, API routes |
+| `PageTest.php` | Pages table columns, permissions (super_admin/editor/viewer), model CRUD, SoftDeletes (delete/restore), states (Draft ↔ Published), scopes (roots/published), static helpers (findByKey/home/generateSlug), casts, Filament resource (list/create/edit, form submission, viewer denied) |
+| `SectionTest.php` | SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType contract (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions, invalid class rejection), config, Filament integration (form render, save via Builder::fake(), hidden tab) |

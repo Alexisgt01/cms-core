@@ -18,6 +18,7 @@ use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
+use Alexisgt01\CmsCore\Filament\Resources\PageResource;
 use Alexisgt01\CmsCore\Filament\Resources\PermissionResource;
 use Alexisgt01\CmsCore\Filament\Resources\RedirectResource;
 use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
@@ -47,6 +48,7 @@ class CmsCorePlugin implements Plugin
                 BlogCategoryResource::class,
                 BlogPostResource::class,
                 BlogTagResource::class,
+                PageResource::class,
                 RedirectResource::class,
                 ActivityLogResource::class,
             ])

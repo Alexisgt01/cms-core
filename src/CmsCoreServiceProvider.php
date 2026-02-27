@@ -18,6 +18,7 @@ use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
 use Alexisgt01\CmsCore\Policies\PermissionPolicy;
 use Alexisgt01\CmsCore\Policies\RolePolicy;
+use Alexisgt01\CmsCore\Policies\PagePolicy;
 use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
 use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
@@ -31,7 +32,9 @@ use Alexisgt01\CmsCore\Filament\Widgets\LatestUsersTable;
 use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRestrictedAccess;
+use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\SiteSetting;
+use Alexisgt01\CmsCore\Services\IconDiscoveryService;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
 use Livewire\Livewire;
 
@@ -41,11 +44,23 @@ class CmsCoreServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-core.php', 'cms-core');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-media.php', 'cms-media');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-icons.php', 'cms-icons');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-sections.php', 'cms-sections');
 
         $this->app['config']->set(
             'filament-tiptap-editor.media_action',
             CmsMediaAction::class,
         );
+
+        $this->app->singleton(Sections\SectionRegistry::class, function () {
+            $registry = new Sections\SectionRegistry;
+
+            foreach (config('cms-sections.types', []) as $typeClass) {
+                $registry->register($typeClass);
+            }
+
+            return $registry;
+        });
 
         Panel::configureUsing(function (Panel $panel): void {
             if ($panel->getId() !== 'admin') {
@@ -64,11 +79,14 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/cms-core.php' => config_path('cms-core.php'),
             __DIR__ . '/../config/cms-media.php' => config_path('cms-media.php'),
+            __DIR__ . '/../config/cms-icons.php' => config_path('cms-icons.php'),
+            __DIR__ . '/../config/cms-sections.php' => config_path('cms-sections.php'),
         ], 'cms-core-config');
 
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Permission::class, PermissionPolicy::class);
+        Gate::policy(Page::class, PagePolicy::class);
         Gate::policy(CmsMedia::class, CmsMediaPolicy::class);
 
         $this->commands([
@@ -145,6 +163,32 @@ class CmsCoreServiceProvider extends ServiceProvider
                         )
                     );
                 })->name('cms.unsplash.search');
+
+                Route::get('icons/search', function (Request $request) {
+                    if (! $request->user()) {
+                        abort(403);
+                    }
+
+                    return response()->json(
+                        app(IconDiscoveryService::class)->searchIcons(
+                            query: (string) $request->query('q', ''),
+                            set: (string) $request->query('set', ''),
+                            variant: (string) $request->query('variant', ''),
+                            page: (int) $request->query('page', 1),
+                            perPage: (int) config('cms-icons.per_page', 60),
+                        )
+                    );
+                })->name('cms.icons.search');
+
+                Route::get('icons/sets', function (Request $request) {
+                    if (! $request->user()) {
+                        abort(403);
+                    }
+
+                    return response()->json(
+                        app(IconDiscoveryService::class)->getAvailableSets()
+                    );
+                })->name('cms.icons.sets');
             });
 
         Route::middleware('web')

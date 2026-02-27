@@ -23,6 +23,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `CmsMediaFolder` | `cms_media_folders` | Hierarchical (parent/children), has many CmsMedia |
 | `SiteSetting` | `site_settings` | Singleton via `SiteSetting::instance()`, identity (site_name, baseline, logos, favicon, timezone, formats), contact (recipients, from, reply-to), restricted access (enabled, hashed password, cookie TTL, message, admin bypass), global SEO (title, description, template, OG image, robots, canonical), admin (show_version_in_footer). MediaSelectionCast on logo_light/logo_dark/favicon/default_og_image |
 | `Redirect` | `redirects` | URL redirections (301/302/307/410), hit tracking, cache auto-invalidation, `scopeActive()`, `recordHit()`, `getCachedRedirects()` |
+| `Page` | `pages` | HasStates (PageDraft/PagePublished), SoftDeletes, LogsActivity, hierarchical (parent/children + position), key (front-end identifier), is_home, sections (JSON array via SectionRegistry/Builder), full SEO fields, MediaSelectionCast on og_image/twitter_image |
 
 ## State Machine (spatie/laravel-model-states)
 
@@ -35,10 +36,17 @@ States are in `src/Models/States/`:
 Cast: `'state' => PostState::class` in BlogPost model.
 Transition: `$post->state->transitionTo(Published::class)`
 
+- `PageState` (abstract) — simplified 2-state machine for Page
+- `PageDraft` (default) ↔ `PagePublished`
+
+Cast: `'state' => PageState::class` in Page model.
+
 ## Value Objects & Casts
 
 - `MediaSelection` (`src/ValueObjects/`) — immutable VO with source, url, originalUrl, mediaId, alt, unsplash metadata. Use `fromArray()` / `toArray()` / `jsonSerialize()`.
 - `MediaSelectionCast` (`src/Casts/`) — Eloquent cast for JSON ↔ MediaSelection. Used on: BlogPost.og_image, BlogPost.twitter_image, BlogAuthor.avatar/og_image/twitter_image, BlogCategory.og_image/twitter_image, BlogTag.og_image/twitter_image, BlogSetting.og_image_fallback/twitter_image_fallback/schema_publisher_logo.
+- `IconSelection` (`src/ValueObjects/`) — immutable VO with name, set, variant, label, svg. Use `fromArray()` / `toArray()` / `jsonSerialize()` / `toSvg()`.
+- `IconSelectionCast` (`src/Casts/`) — Eloquent cast for JSON ↔ IconSelection.
 
 ## Helpers
 
@@ -52,6 +60,12 @@ media_url($url, ['width' => 800, 'height' => 600, 'format' => 'webp', 'quality' 
 
 Supports: width, height, resizing_type (fit/fill/force/auto), gravity, quality, format, blur, sharpen.
 Signing: HMAC-SHA256 when `cms-media.proxy.key` and `cms-media.proxy.salt` are set, otherwise `/unsafe/`.
+
+```php
+// cms_icon() — render icon from blade-icons name or IconSelection
+cms_icon('heroicon-o-home', 'w-6 h-6');
+cms_icon($iconSelection, 'w-6 h-6');
+```
 
 ## MediaPicker (Filament Form Component)
 
@@ -69,6 +83,23 @@ MediaPicker::make('featured_image')
 Three sources: library (existing media), upload (new file → media library), Unsplash (download or use URL).
 State is a JSON array compatible with `MediaSelection::toArray()`.
 
+## IconPicker (Filament Form Component)
+
+Reusable field for any form:
+```php
+use Alexisgt01\CmsCore\Filament\Forms\Components\IconPicker;
+
+IconPicker::make('icon')
+    ->outputMode('reference')        // or 'svg'
+    ->allowedSets(['heroicons'])
+    ->defaultSet('heroicons')
+    ->required();
+```
+
+Two output modes: reference (blade-icons name string) or svg (inline SVG markup).
+Uses blade-ui-kit/blade-icons for icon discovery. Any installed Blade Icon set is auto-detected.
+State is a JSON object compatible with `IconSelection::toArray()`.
+
 ## Services
 
 **MediaService** (`src/Services/MediaService.php`):
@@ -82,6 +113,11 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 - `search(string $query, int $page = 1, int $perPage = 24): array` — cached 5min
 - `downloadToLibrary(array $photo, ?int $folderId = null): CmsMedia`
 
+**IconDiscoveryService** (`src/Services/IconDiscoveryService.php`):
+- `getAvailableSets(): array` — returns registered icon sets with prefix, label, variants
+- `searchIcons(query, set, variant, page, perPage): array` — server-side paginated search with cached manifest
+- `getSvgContent(string $iconName): string` — resolves SVG via blade-icons
+
 ## Filament Resources
 
 | Resource | Nav group | Model | Permissions |
@@ -93,6 +129,7 @@ State is a JSON array compatible with `MediaSelection::toArray()`.
 | BlogAuthorResource | Blog | BlogAuthor | view/create/edit/delete blog authors |
 | BlogCategoryResource | Blog | BlogCategory | view/create/edit/delete blog categories |
 | BlogTagResource | Blog | BlogTag | view/create/edit/delete blog tags |
+| PageResource | Contenu | Page | view/create/edit/delete pages, publish pages |
 | RedirectResource | SEO | Redirect | view/create/edit/delete redirects |
 | ActivityLogResource | Administration | Spatie Activity | view activity log, read-only (no create/edit/delete) |
 
@@ -135,9 +172,11 @@ All widgets have `pollingInterval = null` (no auto-refresh).
 - **TwitterPreview** (`src/Filament/Forms/Components/TwitterPreview.php`) — Twitter/X card preview (summary + summary_large_image). Use `->forSettings()` for settings-specific view.
 
 ### SEO Fields on All Models
-All blog models (BlogPost, BlogAuthor, BlogCategory, BlogTag) have: h1, focus_keyword, secondary_keywords (JSON), content_seo_top, content_seo_bottom, indexing, canonical_url, robots (7 directives), og (type/locale/site_name/title/description/image/width/height), twitter (card/site/creator/title/description/image), schema_types (JSON multi), schema_json.
+All blog models (BlogPost, BlogAuthor, BlogCategory, BlogTag) and Page have: h1, focus_keyword, secondary_keywords (JSON), indexing, canonical_url, robots (7 directives), og (type/locale/site_name/title/description/image/width/height), twitter (card/site/creator/title/description/image), schema_types (JSON multi), schema_json.
 
-BlogPost additionally has: subtitle, seo_excerpt, faq_blocks (JSON repeater), table_of_contents (boolean).
+BlogPost additionally has: subtitle, seo_excerpt, content_seo_top, content_seo_bottom, faq_blocks (JSON repeater), table_of_contents (boolean).
+
+Page has no rich content (content managed front-end via key/template).
 
 ### Publication Validation (BlogPost only)
 - **Blocks** publication (Published/Scheduled) if `meta_title` is empty
@@ -157,6 +196,14 @@ Without `publish blog posts` permission, state select only shows "Brouillon" (Dr
 Tags can be created inline from the post form (createOptionForm with name + auto-slug).
 
 Tiptap uploads go through `MediaService::storeUploadedFile()` via `CmsMediaAction` (custom Tiptap media action registered globally in ServiceProvider).
+
+## Page Form Structure
+
+Tabs: Page (name, slug, key, parent_id select hierarchical, position if parent set, is_home, meta KeyValue, state, published_at) → Sections (Builder component, visible only when types registered) → SEO (h1, focus_keyword, secondary_keywords, indexing, canonical, meta_title, meta_description, robots, SerpPreview) → Open Graph → Twitter → Schema.
+
+Without `publish pages` permission, state select only shows "Brouillon" (PageDraft).
+
+SoftDeletes support: TrashedFilter in list, RestoreAction + ForceDeleteAction in edit header and table actions.
 
 ## BlogSettings Form Structure
 
@@ -211,7 +258,7 @@ BlogSetting has: og_image_fallback_width/height, twitter_image_fallback_width/he
 ## Activity Log Module (spatie/laravel-activitylog)
 
 ### LogsActivity Trait
-Added to: BlogPost, BlogCategory, BlogTag, BlogAuthor, Redirect, SiteSetting, BlogSetting. Each implements `getActivitylogOptions(): LogOptions` with `logOnly(['*'])`, `logOnlyDirty()`, `dontSubmitEmptyLogs()`.
+Added to: BlogPost, BlogCategory, BlogTag, BlogAuthor, Redirect, SiteSetting, BlogSetting, Page. Each implements `getActivitylogOptions(): LogOptions` with `logOnly(['*'])`, `logOnlyDirty()`, `dontSubmitEmptyLogs()`.
 
 Auth events (Login/Logout) are listened in `CmsCoreServiceProvider::registerAuthListeners()` and logged via `activity()->event('login'/'logout')`.
 
@@ -247,11 +294,13 @@ All created via migrations (NOT seeders). Pattern: `Permission::create()` + role
 
 **Blog permissions**: manage blog settings, view/create/edit/delete blog authors, view/create/edit/delete blog posts, publish blog posts, view/create/edit/delete blog categories, view/create/edit/delete blog tags.
 
+**Page permissions**: view/create/edit/delete/publish pages.
+
 **Redirect permissions**: view/create/edit/delete redirects.
 
 **Site/Admin permissions**: manage site settings, view activity log.
 
-super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit redirects (no delete) + view activity log. viewer = none.
+super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit/publish pages (no delete) + view/create/edit redirects (no delete) + view activity log. viewer = none.
 
 ## Commands
 
@@ -260,17 +309,38 @@ super_admin = all. editor = view/create/edit authors/categories/tags + view/crea
 - `cms:sitemap` — generates sitemap.xml by HTTP crawling the site using spatie/laravel-sitemap. Reads config from BlogSetting (base_url, max_urls, concurrency, depth, exclude_patterns, change_freq, priority). Options: `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth`.
 - `cms:purge-activity` — purges activity log entries older than N days. Option: `--days=30`.
 
+## Sections Module
+
+Blueprint system for structured page content. Host app defines SectionType classes, pages store instances as JSON.
+
+### Key Classes (`src/Sections/`)
+- **SectionField** — Fluent builder with 14 field types: text, title (2 components: text + H1-H6 select), paragraph (Textarea), richtext (TiptapEditor), icon (IconPicker), image (MediaPicker), toggle, select, link (2 components: url + label), list (Repeater simple), repeater (Repeater with sub-fields), number, color. Methods: `toFormComponent(): array`, `toDefinition(): array`.
+- **SectionType** — Abstract class with `key()`, `label()`, `icon()`, `fields()`, `description()`. Auto-generates `schema()` (Filament components), `toBlock()` (Builder\Block), `toDefinition()` (serializable).
+- **SectionRegistry** — Singleton service. `register(string $typeClass)`, `all()`, `resolve(string $key)`, `blocks()`, `definitions()`. Validates classes extend SectionType.
+
+### Storage
+- JSON column `sections` on `pages` table, stores `[{type, data}, ...]`
+- Cast: `'sections' => 'array'` in Page model
+- Filament Builder component in PageResource Sections tab
+
+### Registration
+- ServiceProvider registers SectionRegistry singleton, reads from `config('cms-sections.types')`
+- Host app publishes `cms-sections.php` and lists its SectionType classes
+- Sections tab auto-hidden when no types registered
+
 ## Config
 
 - `config/cms-core.php` — admin path
 - `config/cms-media.php` — proxy (imgproxy), unsplash, media upload settings
+- `config/cms-icons.php` — icon sets, output mode, pagination, cache TTL, labels, variants
+- `config/cms-sections.php` — section type classes registration (host app publishes and adds its types)
 
 Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `UNSPLASH_APP_ID`, `UNSPLASH_APP_KEY`, `UNSPLASH_SECRET_KEY`.
 
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -288,3 +358,6 @@ Test files in host app `tests/Feature/Filament/`:
 - `RedirectTest.php` — columns, permissions (super_admin/editor/viewer), CRUD, casts, recordHit, scopeActive, middleware (301/302/410/inactive/non-matching), cache invalidation
 - `SitemapTest.php` — sitemap settings columns, casts (boolean/array), default values, settings storage, command registration, disabled exit
 - `SiteSettingsTest.php` — SiteSetting model (columns, singleton, casts, defaults), SiteSettings page (access, save, password hashing), restricted access middleware (enabled/disabled, admin bypass, cookie, password validation), activity log (logging on all CMS models, resource access, purge command), permissions
+- `IconPickerTest.php` — IconSelection VO, IconSelectionCast, IconDiscoveryService, API routes, config, cms_icon() helper
+- `PageTest.php` — Pages table columns, permissions, model CRUD, SoftDeletes, states (Draft ↔ Published), scopes, static helpers, casts, Filament resource
+- `SectionTest.php` — SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions), config, Filament integration (Builder::fake())

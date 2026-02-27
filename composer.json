@@ -13,6 +13,10 @@
         "spatie/laravel-sitemap": "^7.0",
         "spatie/laravel-activitylog": "^4.0"
     },
+    "suggest": {
+        "owenvoke/blade-fontawesome": "Font Awesome icons for the Icon Picker (^2.0)",
+        "codeat3/blade-simple-icons": "Brand/company icons (Netflix, Docker, Laravel, etc.) for the Icon Picker (^5.0)"
+    },
     "autoload": {
         "psr-4": {
             "Alexisgt01\\CmsCore\\": "src/"
