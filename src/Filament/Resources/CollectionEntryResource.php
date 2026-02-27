@@ -194,33 +194,39 @@ class CollectionEntryResource extends Resource
         $typeClass = static::resolveCollectionType();
         $titleField = $typeClass ? $typeClass::slugFrom() : 'title';
 
+        $columns = [
+            Tables\Columns\TextColumn::make('data.' . $titleField)
+                ->label($typeClass ? $typeClass::singularLabel() : 'Titre')
+                ->searchable(query: function (Builder $query, string $search) use ($titleField): Builder {
+                    return $query->where('data->' . $titleField, 'like', "%{$search}%");
+                })
+                ->limit(50),
+            Tables\Columns\TextColumn::make('slug')
+                ->label('Slug')
+                ->searchable()
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('position')
+                ->label('Position')
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ];
+
+        if ($typeClass && $typeClass::hasStates()) {
+            $columns[] = Tables\Columns\TextColumn::make('state')
+                ->label('Statut')
+                ->badge()
+                ->formatStateUsing(fn ($state): string => $state instanceof \Spatie\ModelStates\State ? $state->label() : '—')
+                ->color(fn ($state): string => $state instanceof \Spatie\ModelStates\State ? $state->color() : 'gray');
+        }
+
+        $columns[] = Tables\Columns\TextColumn::make('updated_at')
+            ->label('Modifie le')
+            ->dateTime('d/m/Y H:i')
+            ->sortable()
+            ->toggleable();
+
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('data.' . $titleField)
-                    ->label($typeClass ? $typeClass::singularLabel() : 'Titre')
-                    ->searchable(query: function (Builder $query, string $search) use ($titleField): Builder {
-                        return $query->where('data->' . $titleField, 'like', "%{$search}%");
-                    })
-                    ->limit(50),
-                Tables\Columns\TextColumn::make('slug')
-                    ->label('Slug')
-                    ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('position')
-                    ->label('Position')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('state')
-                    ->label('Statut')
-                    ->badge()
-                    ->formatStateUsing(fn ($state): string => $state instanceof \Spatie\ModelStates\State ? $state->label() : '—')
-                    ->color(fn ($state): string => $state instanceof \Spatie\ModelStates\State ? $state->color() : 'gray'),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Modifie le')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(),
-            ])
+            ->columns($columns)
             ->defaultSort('position')
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
