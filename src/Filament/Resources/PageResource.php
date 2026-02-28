@@ -130,6 +130,7 @@ class PageResource extends Resource
                                     ->blocks(fn () => app(SectionRegistry::class)->blocks())
                                     ->addActionLabel('Ajouter une section')
                                     ->collapsible()
+                                    ->collapsed()
                                     ->blockNumbers(false)
                                     ->columnSpanFull(),
                             ])
