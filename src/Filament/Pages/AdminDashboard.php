@@ -42,11 +42,10 @@ class AdminDashboard extends Dashboard
                         ->label('Adresse email')
                         ->email()
                         ->required()
-                        ->default(fn (): ?string => auth()->user()?->email)
-                        ->helperText('Testez votre score spam avec [mail-tester.com](https://www.mail-tester.com)'),
+                        ->default(fn (): ?string => auth()->user()?->email),
                 ])
                 ->modalHeading('Envoyer un email de test')
-                ->modalDescription('Un email de test sera envoye pour verifier la configuration SMTP.')
+                ->modalDescription('Un email de test sera envoye pour verifier la configuration SMTP. Testez votre score spam avec mail-tester.com.')
                 ->modalSubmitActionLabel('Envoyer')
                 ->action(function (array $data): void {
                     $settings = SiteSetting::instance();
