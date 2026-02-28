@@ -1466,6 +1466,7 @@ Page.sections (JSON column)       → stocke [{type, data}, ...] par page
 | `toggle` | `SectionField::toggle('show')` | Toggle |
 | `select` | `SectionField::select('style')` | Select |
 | `link` | `SectionField::link('cta')` | 2x TextInput (url + label) |
+| `url` | `SectionField::url('cta')` | Radio (page/externe) + Select pages + TextInput url + TextInput label |
 | `list` | `SectionField::list('items')` | Repeater simple |
 | `repeater` | `SectionField::repeater('cards')` | Repeater (sous-champs) |
 | `number` | `SectionField::number('cols')` | TextInput numeric |
@@ -1854,7 +1855,7 @@ packages/cms/core/
     │   ├── CollectionType.php       # Abstract blueprint class
     │   └── CollectionRegistry.php   # Singleton registry service
     ├── Sections/
-    │   ├── SectionField.php         # Fluent builder (14 field types)
+    │   ├── SectionField.php         # Fluent builder (15 field types)
     │   ├── SectionType.php          # Abstract blueprint class
     │   └── SectionRegistry.php      # Singleton registry service
     ├── Services/
@@ -1883,6 +1884,6 @@ Test files live in the host app at `tests/Feature/Filament/`:
 | `SiteSettingsTest.php` | SiteSetting model (columns, singleton, casts, defaults), SiteSettings page (access, save, password hashing), restricted access middleware (enabled/disabled, admin bypass, cookie, password validation), activity log (logging on all CMS models, resource access, purge command), permissions |
 | `IconPickerTest.php` | IconSelection VO, IconSelectionCast, IconDiscoveryService, IconPicker component, cms_icon() helper, API routes |
 | `PageTest.php` | Pages table columns, permissions (super_admin/editor/viewer), model CRUD, SoftDeletes (delete/restore), states (Draft ↔ Published), scopes (roots/published), static helpers (findByKey/home/generateSlug), casts, Filament resource (list/create/edit, form submission, viewer denied) |
-| `SectionTest.php` | SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType contract (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions, invalid class rejection), config, Filament integration (form render, save via Builder::fake(), hidden tab) |
+| `SectionTest.php` | SectionField factories (15 types incl. url smart link), fluent API, toFormComponent (each type), toDefinition, SectionType contract (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions, invalid class rejection), config, Filament integration (form render, save via Builder::fake(), hidden tab) |
 | `SeoMetaTest.php` | SeoMeta VO (properties, toArray, toHtml, Stringable, HTML escaping), SeoResolver (global defaults, page by key, non-existent key, BlogPost/Category/Tag/Author direct, title/description/canonical fallbacks, robots inheritance SiteSetting/BlogSetting, OG/Twitter fallbacks, schema JSON-LD), seo_meta() helper (key, model, no args, Blade usage) |
 | `CollectionTest.php` | CollectionType contract (methods, schema, definition), CollectionRegistry (register/resolve, definitions, invalid class rejection), migration columns, permissions (super_admin/editor/viewer), model CRUD, field accessor, scopes (forType/ordered/published), SoftDeletes, slug generation, state machine (Draft ↔ Published), casts, config, Filament resource access, dynamic navigation items, collection_entries()/collection_entry() helpers, SeoResolver with CollectionEntry |

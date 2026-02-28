@@ -115,6 +115,11 @@ class SectionField
         return new static('color', $name);
     }
 
+    public static function url(string $name): static
+    {
+        return new static('url', $name);
+    }
+
     // ── Fluent setters ───────────────────────────────────────────
 
     public function label(string $label): static
@@ -254,6 +259,7 @@ class SectionField
             'repeater' => $this->buildRepeater(),
             'number' => $this->buildNumber(),
             'color' => $this->buildColor(),
+            'url' => $this->buildUrl(),
             default => [],
         };
     }
@@ -553,6 +559,71 @@ class SectionField
         }
 
         return [$field];
+    }
+
+    /**
+     * @return array<int, Forms\Components\Component>
+     */
+    private function buildUrl(): array
+    {
+        $label = $this->labelText ?? $this->name;
+
+        $type = Forms\Components\Radio::make($this->name . '_type')
+            ->label($label . ' — Type')
+            ->options([
+                'page' => 'Page interne',
+                'external' => 'Lien externe',
+            ])
+            ->default('external')
+            ->inline()
+            ->live();
+
+        $page = Forms\Components\Select::make($this->name . '_page')
+            ->label($label . ' — Page')
+            ->options(function (): array {
+                $options = [];
+                $pages = \Alexisgt01\CmsCore\Models\Page::query()
+                    ->published()
+                    ->roots()
+                    ->orderBy('name')
+                    ->with('children')
+                    ->get();
+
+                foreach ($pages as $root) {
+                    $options[$root->id] = $root->name;
+
+                    foreach ($root->children->sortBy('name') as $child) {
+                        $options[$child->id] = '— ' . $child->name;
+                    }
+                }
+
+                return $options;
+            })
+            ->searchable()
+            ->visible(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'page');
+
+        if ($this->isRequired) {
+            $page->required(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'page');
+        }
+
+        $url = Forms\Components\TextInput::make($this->name . '_url')
+            ->label($label . ' — URL')
+            ->inputMode('url')
+            ->rule('url')
+            ->visible(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'external');
+
+        if ($this->isRequired) {
+            $url->required(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'external');
+        }
+
+        if ($this->placeholderText !== null) {
+            $url->placeholder($this->placeholderText);
+        }
+
+        $labelField = Forms\Components\TextInput::make($this->name . '_label')
+            ->label($label . ' — Libelle');
+
+        return [$type, $page, $url, $labelField];
     }
 
     // ── Shared helpers ───────────────────────────────────────────
