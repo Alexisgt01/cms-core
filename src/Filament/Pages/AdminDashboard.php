@@ -4,10 +4,14 @@ namespace Alexisgt01\CmsCore\Filament\Pages;
 
 use Alexisgt01\CmsCore\Filament\Widgets\AdminStatsOverview;
 use Alexisgt01\CmsCore\Filament\Widgets\LatestUsersTable;
+use Alexisgt01\CmsCore\Mail\TestEmail;
+use Alexisgt01\CmsCore\Models\SiteSetting;
 use Filament\Actions\Action;
+use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Mail;
 
 class AdminDashboard extends Dashboard
 {
@@ -29,6 +33,48 @@ class AdminDashboard extends Dashboard
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('send_test_email')
+                ->label('Tester l\'email')
+                ->icon('heroicon-o-envelope')
+                ->color('info')
+                ->form([
+                    Forms\Components\TextInput::make('email')
+                        ->label('Adresse email')
+                        ->email()
+                        ->required()
+                        ->default(fn (): ?string => auth()->user()?->email)
+                        ->helperText('Testez votre score spam avec [mail-tester.com](https://www.mail-tester.com)'),
+                ])
+                ->modalHeading('Envoyer un email de test')
+                ->modalDescription('Un email de test sera envoye pour verifier la configuration SMTP.')
+                ->modalSubmitActionLabel('Envoyer')
+                ->action(function (array $data): void {
+                    $settings = SiteSetting::instance();
+                    $siteName = $settings->site_name ?: config('app.name');
+
+                    $mailable = new TestEmail($siteName);
+
+                    if ($settings->from_email_address) {
+                        $mailable->from($settings->from_email_address, $settings->from_email_name ?: $siteName);
+                    }
+
+                    try {
+                        Mail::to($data['email'])->send($mailable);
+
+                        Notification::make()
+                            ->title('Email envoye')
+                            ->body('Un email de test a ete envoye a ' . $data['email'])
+                            ->success()
+                            ->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->title('Erreur d\'envoi')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                }),
+
             Action::make('clear_cache')
                 ->label('Vider le cache')
                 ->icon('heroicon-o-trash')

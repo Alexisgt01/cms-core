@@ -1273,6 +1273,10 @@ Acces : `view users`. Widgets :
 - **AdminStatsOverview** — utilisateurs (avec distribution par role), roles, fichiers medias, dossiers
 - **LatestUsersTable** — 10 derniers utilisateurs avec roles en badges, liens vers edition
 
+Actions en header :
+- **Tester l'email** — envoie un email de test a une adresse libre (pre-remplie avec l'email de l'utilisateur connecte). Utilise les parametres `from` de Site Settings si configures. Hint vers mail-tester.com pour tester le score spam.
+- **Vider le cache** — vide tous les caches de l'application (config, routes, vues, events)
+
 ## Redirections
 
 Gestion complete des redirections URL depuis le panel admin (groupe SEO).

@@ -170,7 +170,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | Page | Nav group | Description |
 |------|-----------|-------------|
 | BlogDashboard | Tableaux de bord | Blog stats, chart, latest posts. Route: `/blog`. Requires `view blog posts` |
-| AdminDashboard | Tableaux de bord | Users, roles, media stats. Route: `/admin-overview`. Requires `view users` |
+| AdminDashboard | Tableaux de bord | Users, roles, media stats, test email action, clear cache action. Route: `/admin-overview`. Requires `view users` |
 | MediaLibrary | Medias | Full media management (folders, upload, search, filters, bulk ops, Unsplash, imgproxy) |
 | BlogSettings | Blog | Tabbed settings form (General, RSS, Images, SEO+SerpPreview, OG+OgPreview, Twitter+TwitterPreview, Schema+JSON-LD validation). Requires `manage blog settings` |
 | SiteSettings | Administration | Tabbed settings form (Identite, Contact, Acces restreint, SEO Global, Mentions legales, Reseaux sociaux, Admin). Requires `manage site settings` |
