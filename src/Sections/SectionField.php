@@ -437,7 +437,8 @@ class SectionField
     {
         $url = Forms\Components\TextInput::make($this->name . '_url')
             ->label(($this->labelText ?? $this->name) . ' — URL')
-            ->url();
+            ->inputMode('url')
+            ->rule('url');
 
         if ($this->isRequired) {
             $url->required();
