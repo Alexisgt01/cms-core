@@ -593,7 +593,7 @@ class SectionField
         $url = Forms\Components\TextInput::make($this->name . '_url')
             ->label($label . ' — URL')
             ->inputMode('url')
-            ->rule('url')
+            ->rule('regex:/^(https?:\/\/|\/|#)/')
             ->visible(fn (Forms\Get $get): bool => $get($this->name . '_link') === 'external');
 
         if ($this->isRequired) {

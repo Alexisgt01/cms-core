@@ -34,7 +34,22 @@ class SiteSetting extends Model
             'default_robots_follow' => 'boolean',
             'show_version_in_footer' => 'boolean',
             'copyright_start_year' => 'integer',
+            'meta' => 'array',
         ];
+    }
+
+    public function getMeta(string $key, mixed $default = null): mixed
+    {
+        return data_get($this->meta, $key, $default);
+    }
+
+    public function setMeta(string $key, mixed $value): static
+    {
+        $meta = $this->meta ?? [];
+        data_set($meta, $key, $value);
+        $this->meta = $meta;
+
+        return $this;
     }
 
     protected static function booted(): void

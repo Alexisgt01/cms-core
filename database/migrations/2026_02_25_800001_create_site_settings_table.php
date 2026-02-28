@@ -46,6 +46,9 @@ return new class extends Migration
             // Admin
             $table->boolean('show_version_in_footer')->default(false);
 
+            // Application-specific settings
+            $table->json('meta')->nullable();
+
             $table->timestamps();
         });
     }
