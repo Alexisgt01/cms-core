@@ -80,9 +80,15 @@ class CollectionEntryResource extends Resource
      *
      * @return class-string<\Alexisgt01\CmsCore\Collections\CollectionType>|null
      */
-    protected static function resolveCollectionType(): ?string
+    protected static function resolveCollectionType(?Form $form = null): ?string
     {
+        // 1. Query parameter (initial page load, list navigation)
         $key = request()->query('collectionType');
+
+        // 2. From the record being edited (Livewire update requests lose query params)
+        if (! $key && $form?->getRecord()) {
+            $key = $form->getRecord()->collection_type;
+        }
 
         if (! $key) {
             return null;
@@ -93,8 +99,8 @@ class CollectionEntryResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $typeClass = static::resolveCollectionType();
-        $collectionTypeKey = request()->query('collectionType', '');
+        $typeClass = static::resolveCollectionType($form);
+        $collectionTypeKey = $form?->getRecord()?->collection_type ?? request()->query('collectionType', '');
 
         $tabs = [];
 
