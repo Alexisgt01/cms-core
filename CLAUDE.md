@@ -350,7 +350,7 @@ super_admin = all. editor = view/create/edit authors/categories/tags + view/crea
 Blueprint system for structured page content. Host app defines SectionType classes, pages store instances as JSON.
 
 ### Key Classes (`src/Sections/`)
-- **SectionField** — Fluent builder with 15 field types: text, title (2 components: text + H1-H6 select), paragraph (Textarea), richtext (TiptapEditor), icon (IconPicker), image (MediaPicker), toggle, select, link (2 components: url + label), url (4 components: Radio page/external + Select pages + TextInput url + TextInput label), list (Repeater simple), repeater (Repeater with sub-fields), number, color. Methods: `toFormComponent(): array`, `toDefinition(): array`.
+- **SectionField** — Fluent builder with 15 field types: text, title (2 components: text + H1-H6 select), paragraph (Textarea), richtext (TiptapEditor), icon (IconPicker), image (MediaPicker), toggle, select, link (2 components: url + label), url (3 components: Select grouped pages+routes+external + TextInput url + TextInput label), list (Repeater simple), repeater (Repeater with sub-fields), number, color. Methods: `toFormComponent(): array`, `toDefinition(): array`.
 - **SectionType** — Abstract class with `key()`, `label()`, `icon()`, `fields()`, `description()`. Auto-generates `schema()` (Filament components), `toBlock()` (Builder\Block), `toDefinition()` (serializable).
 - **SectionRegistry** — Singleton service. `register(string $typeClass)`, `all()`, `resolve(string $key)`, `blocks()`, `definitions()`. Validates classes extend SectionType.
 

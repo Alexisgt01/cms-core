@@ -1470,7 +1470,7 @@ Page.sections (JSON column)       → stocke [{type, data}, ...] par page
 | `toggle` | `SectionField::toggle('show')` | Toggle |
 | `select` | `SectionField::select('style')` | Select |
 | `link` | `SectionField::link('cta')` | 2x TextInput (url + label) |
-| `url` | `SectionField::url('cta')` | Radio (page/externe) + Select pages + TextInput url + TextInput label |
+| `url` | `SectionField::url('cta')` | Select groupe (Pages CMS + Routes Laravel + Lien externe) + TextInput url + TextInput label |
 | `list` | `SectionField::list('items')` | Repeater simple |
 | `repeater` | `SectionField::repeater('cards')` | Repeater (sous-champs) |
 | `number` | `SectionField::number('cols')` | TextInput numeric |

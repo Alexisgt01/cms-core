@@ -568,52 +568,29 @@ class SectionField
     {
         $label = $this->labelText ?? $this->name;
 
-        $type = Forms\Components\Radio::make($this->name . '_type')
-            ->label($label . ' — Type')
-            ->options([
-                'page' => 'Page interne',
-                'external' => 'Lien externe',
-            ])
-            ->default('external')
-            ->inline()
-            ->live();
-
-        $page = Forms\Components\Select::make($this->name . '_page')
-            ->label($label . ' — Page')
-            ->options(function (): array {
-                $options = [];
-                $pages = \Alexisgt01\CmsCore\Models\Page::query()
-                    ->published()
-                    ->roots()
-                    ->orderBy('name')
-                    ->with('children')
-                    ->get();
-
-                foreach ($pages as $root) {
-                    $options[$root->id] = $root->name;
-
-                    foreach ($root->children->sortBy('name') as $child) {
-                        $options[$child->id] = '— ' . $child->name;
-                    }
-                }
-
-                return $options;
-            })
+        $link = Forms\Components\Select::make($this->name . '_link')
+            ->label($label)
+            ->options(fn (): array => $this->buildUrlOptions())
             ->searchable()
-            ->visible(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'page');
+            ->live()
+            ->placeholder('Choisir un lien');
 
         if ($this->isRequired) {
-            $page->required(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'page');
+            $link->required();
+        }
+
+        if ($this->helperTextValue !== null) {
+            $link->helperText($this->helperTextValue);
         }
 
         $url = Forms\Components\TextInput::make($this->name . '_url')
             ->label($label . ' — URL')
             ->inputMode('url')
             ->rule('url')
-            ->visible(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'external');
+            ->visible(fn (Forms\Get $get): bool => $get($this->name . '_link') === 'external');
 
         if ($this->isRequired) {
-            $url->required(fn (Forms\Get $get): bool => $get($this->name . '_type') === 'external');
+            $url->required(fn (Forms\Get $get): bool => $get($this->name . '_link') === 'external');
         }
 
         if ($this->placeholderText !== null) {
@@ -623,7 +600,90 @@ class SectionField
         $labelField = Forms\Components\TextInput::make($this->name . '_label')
             ->label($label . ' — Libelle');
 
-        return [$type, $page, $url, $labelField];
+        return [$link, $url, $labelField];
+    }
+
+    /**
+     * @return array<string, array<string, string>|string>
+     */
+    private function buildUrlOptions(): array
+    {
+        $options = [];
+        $pageSlugs = [];
+
+        // ── Pages CMS ───────────────────────────────────────
+        $pages = \Alexisgt01\CmsCore\Models\Page::query()
+            ->published()
+            ->roots()
+            ->orderBy('name')
+            ->with('children')
+            ->get();
+
+        $pageOptions = [];
+
+        foreach ($pages as $root) {
+            $slug = '/' . ltrim($root->slug, '/');
+            $pageOptions['page:' . $root->id] = $root->name . '  (' . $slug . ')';
+            $pageSlugs[] = $slug;
+
+            foreach ($root->children->sortBy('name') as $child) {
+                $childSlug = '/' . ltrim($child->slug, '/');
+                $pageOptions['page:' . $child->id] = '— ' . $child->name . '  (' . $childSlug . ')';
+                $pageSlugs[] = $childSlug;
+            }
+        }
+
+        if ($pageOptions !== []) {
+            $options['Pages'] = $pageOptions;
+        }
+
+        // ── Routes Laravel ──────────────────────────────────
+        $excludePrefixes = ['admin', 'filament', 'livewire', 'sanctum', 'api', 'cms'];
+        $routeOptions = [];
+
+        foreach (\Illuminate\Support\Facades\Route::getRoutes() as $route) {
+            if (! in_array('GET', $route->methods(), true)) {
+                continue;
+            }
+
+            $name = $route->getName();
+
+            if ($name === null || $name === '') {
+                continue;
+            }
+
+            $uri = '/' . ltrim($route->uri(), '/');
+
+            if (str_contains($uri, '{')) {
+                continue;
+            }
+
+            $skip = false;
+
+            foreach ($excludePrefixes as $prefix) {
+                if (str_starts_with(ltrim($route->uri(), '/'), $prefix)) {
+                    $skip = true;
+
+                    break;
+                }
+            }
+
+            if ($skip || in_array($uri, $pageSlugs, true)) {
+                continue;
+            }
+
+            $routeOptions['route:' . $name] = $name . '  (' . $uri . ')';
+        }
+
+        if ($routeOptions !== []) {
+            ksort($routeOptions);
+            $options['Routes'] = $routeOptions;
+        }
+
+        // ── Lien externe ────────────────────────────────────
+        $options['Autre'] = ['external' => 'Lien externe'];
+
+        return $options;
     }
 
     // ── Shared helpers ───────────────────────────────────────────
