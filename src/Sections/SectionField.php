@@ -429,6 +429,13 @@ class SectionField
         $this->applyCommon($field);
         $field->options($this->optionsArray ?? []);
 
+        // Use searchable (Alpine dropdown) when options are grouped (nested arrays)
+        // to avoid native <select> state sync issues with Livewire
+        $hasGroupedOptions = collect($this->optionsArray ?? [])->contains(fn ($v) => is_array($v));
+        if ($hasGroupedOptions) {
+            $field->searchable();
+        }
+
         if ($this->defaultValue !== null) {
             $field->default($this->defaultValue);
         }
