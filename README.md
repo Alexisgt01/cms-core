@@ -61,6 +61,7 @@ Headless CMS core package with Filament admin panel — user management, media l
   - [Sections](#sections)
   - [SEO Helper](#seo-helper)
   - [Collections](#collections)
+  - [Contact](#contact)
 - [Appendix — Artisan commands](#appendix--artisan-commands)
 - [Appendix — Permissions reference](#appendix--permissions-reference)
 - [Appendix — Package structure](#appendix--package-structure)
@@ -1671,6 +1672,136 @@ Chaque CollectionType enregistre genere automatiquement un item de navigation da
 
 ---
 
+## Contact
+
+Module unifie de gestion des contacts et formulaires avec systeme de webhooks.
+
+### Quick start
+
+```php
+use function contact_event;
+
+// Formulaire de contact
+$request = contact_event('contact', [
+    'email' => 'john@example.com',
+    'name' => 'John Doe',
+    'phone' => '+33612345678',
+    'message' => 'Hello',
+]);
+
+// Newsletter
+$request = contact_event('newsletter', [
+    'email' => 'subscriber@example.com',
+    'tags' => ['newsletter'],
+], [
+    'form_id' => 'footer-newsletter',
+    'idempotency_key' => 'newsletter-' . md5('subscriber@example.com'),
+    'meta' => ['ip' => request()->ip(), 'user_agent' => request()->userAgent()],
+]);
+```
+
+### Payload
+
+| Champ | Type | Description |
+|---|---|---|
+| `email` | string? | Upsert contact si present |
+| `name` | string? | Nom complet |
+| `first_name` + `last_name` | string? | Alternative a `name` |
+| `phone` | string? | Telephone |
+| `tags` | array? | Tags a fusionner sur le contact |
+| `consents` | array? | Consentements a fusionner |
+| `attribs` | array? | Attributs libres a fusionner |
+| (autres) | mixed | Stockes dans `payload` de la request |
+
+### Options
+
+| Option | Type | Description |
+|---|---|---|
+| `idempotency_key` | string? | Evite les doublons (unique en BDD) |
+| `hook_key` | string\|array\|null | Webhook(s) specifique(s), null = tous actifs |
+| `form_id` | string? | Identifiant du formulaire |
+| `meta` | array? | Metadonnees (ip, user_agent, utm, source) |
+
+### Webhooks
+
+Configuration via l'admin (Contact > Webhooks). Chaque endpoint recoit un POST JSON signe HMAC.
+
+**Signature :**
+```
+X-Contacts-Signature: hash_hmac('sha256', {timestamp}.{body}, {secret})
+```
+
+**Headers envoyes :**
+- `X-Contacts-Event` : type de l'evenement
+- `X-Contacts-Hook-Key` : cle du webhook
+- `X-Contacts-Timestamp` : timestamp UNIX
+- `X-Contacts-Signature` : signature HMAC-SHA256
+
+**Body JSON :**
+```json
+{
+  "event": "contact",
+  "hook_key": "my-crm",
+  "contact": { "id": 1, "email": "...", "name": "...", "phone": "..." },
+  "request": { "id": 1, "type": "contact", "form_id": null, "state": "new", "payload": {}, "meta": {}, "created_at": "..." }
+}
+```
+
+**Retry :** configurable par endpoint (retries, backoff array). Commande `cms:contact-retry-hooks` pour relancer les deliveries en attente.
+
+### Statuts des demandes
+
+| Statut | Nom BDD | Couleur |
+|---|---|---|
+| Nouveau | `new` | info |
+| Traite | `processed` | success |
+| Archive | `archived` | gray |
+
+Transitions : new ↔ processed ↔ archived, archived → new.
+
+### Config (`cms-contacts.php`)
+
+```php
+return [
+    'default_async' => true,     // Dispatch webhooks via la queue
+    'retention_days' => 90,      // Duree de retention
+    'max_body_log_size' => 4096, // Taille max des logs request/response
+];
+```
+
+### Permissions
+
+| Permission | super_admin | editor |
+|---|:---:|:---:|
+| view contacts | oui | oui |
+| create contacts | oui | — |
+| edit contacts | oui | — |
+| delete contacts | oui | — |
+| view contact requests | oui | oui |
+| create contact requests | oui | — |
+| edit contact requests | oui | — |
+| delete contact requests | oui | — |
+| view contact hooks | oui | oui |
+| create contact hooks | oui | — |
+| edit contact hooks | oui | — |
+| delete contact hooks | oui | — |
+| manage contact settings | oui | — |
+| replay contact hooks | oui | oui |
+
+### Admin Filament
+
+4 resources + 1 page dans le groupe "Contact" :
+
+| Element | Type | Description |
+|---|---|---|
+| Contacts | Resource | Liste, edition (pas de creation manuelle) |
+| Demandes | Resource | Liste, vue detail, action "Relancer les hooks" |
+| Webhooks | Resource | CRUD complet |
+| Deliveries | Resource | Liste, vue detail (read-only), action "Relancer" |
+| Parametres | Page | Async toggle, secret inbound, retention |
+
+---
+
 # Appendix — Artisan commands
 
 | Command | Description |
@@ -1679,6 +1810,8 @@ Chaque CollectionType enregistre genere automatiquement un item de navigation da
 | `cms:publish-scheduled` | Publie les articles planifies dont la date `scheduled_for` est passee. A executer via le scheduler (hourly) |
 | `cms:sitemap` | Genere un sitemap.xml par crawl HTTP du site. Options : `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth` |
 | `cms:purge-activity` | Purge les entrees du journal d'activite plus anciennes que N jours. Option : `--days=30` (defaut) |
+| `cms:contact-retry-hooks` | Relance les deliveries de webhooks en attente de retry |
+| `cms:contact-purge` | Purge les demandes et deliveries plus anciennes que la periode de retention. Option : `--days=` |
 
 ---
 

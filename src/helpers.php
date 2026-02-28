@@ -127,6 +127,19 @@ if (! function_exists('collection_entry')) {
     }
 }
 
+if (! function_exists('contact_event')) {
+    /**
+     * Create a contact request through the pipeline.
+     *
+     * @param  array<string, mixed>  $payload
+     * @param  array{idempotency_key?: string, hook_key?: string|array<int, string>, form_id?: string, meta?: array<string, mixed>}  $options
+     */
+    function contact_event(string $type, array $payload = [], array $options = []): \Alexisgt01\CmsCore\Models\ContactRequest
+    {
+        return app(\Alexisgt01\CmsCore\Services\ContactPipeline::class)->handle($type, $payload, $options);
+    }
+}
+
 if (! function_exists('media_url_build_options')) {
     /**
      * @param  array<string, mixed>  $options

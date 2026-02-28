@@ -17,6 +17,10 @@ use Alexisgt01\CmsCore\Filament\CmsCorePlugin;
 use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
 use Alexisgt01\CmsCore\Policies\CollectionEntryPolicy;
+use Alexisgt01\CmsCore\Policies\ContactPolicy;
+use Alexisgt01\CmsCore\Policies\ContactRequestPolicy;
+use Alexisgt01\CmsCore\Policies\HookDeliveryPolicy;
+use Alexisgt01\CmsCore\Policies\HookEndpointPolicy;
 use Alexisgt01\CmsCore\Policies\PermissionPolicy;
 use Alexisgt01\CmsCore\Policies\RolePolicy;
 use Alexisgt01\CmsCore\Policies\PagePolicy;
@@ -24,7 +28,9 @@ use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
 use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
 use Alexisgt01\CmsCore\Console\Commands\PurgeActivityLog;
+use Alexisgt01\CmsCore\Console\Commands\PurgeContactDataCommand;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
+use Alexisgt01\CmsCore\Console\Commands\RetryContactHooksCommand;
 use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
 use Alexisgt01\CmsCore\Filament\Widgets\AdminStatsOverview;
 use Alexisgt01\CmsCore\Filament\Widgets\BlogStatsOverview;
@@ -34,8 +40,13 @@ use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRestrictedAccess;
 use Alexisgt01\CmsCore\Models\CollectionEntry;
+use Alexisgt01\CmsCore\Models\Contact;
+use Alexisgt01\CmsCore\Models\ContactRequest;
+use Alexisgt01\CmsCore\Models\HookDelivery;
+use Alexisgt01\CmsCore\Models\HookEndpoint;
 use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\SiteSetting;
+use Alexisgt01\CmsCore\Services\ContactPipeline;
 use Alexisgt01\CmsCore\Services\IconDiscoveryService;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
 use Livewire\Livewire;
@@ -49,6 +60,9 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-icons.php', 'cms-icons');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-sections.php', 'cms-sections');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-collections.php', 'cms-collections');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-contacts.php', 'cms-contacts');
+
+        $this->app->singleton(ContactPipeline::class);
 
         $this->app['config']->set(
             'filament-tiptap-editor.media_action',
@@ -95,6 +109,7 @@ class CmsCoreServiceProvider extends ServiceProvider
             __DIR__ . '/../config/cms-icons.php' => config_path('cms-icons.php'),
             __DIR__ . '/../config/cms-sections.php' => config_path('cms-sections.php'),
             __DIR__ . '/../config/cms-collections.php' => config_path('cms-collections.php'),
+            __DIR__ . '/../config/cms-contacts.php' => config_path('cms-contacts.php'),
         ], 'cms-core-config');
 
         Gate::policy(User::class, UserPolicy::class);
@@ -103,12 +118,18 @@ class CmsCoreServiceProvider extends ServiceProvider
         Gate::policy(Page::class, PagePolicy::class);
         Gate::policy(CollectionEntry::class, CollectionEntryPolicy::class);
         Gate::policy(CmsMedia::class, CmsMediaPolicy::class);
+        Gate::policy(Contact::class, ContactPolicy::class);
+        Gate::policy(ContactRequest::class, ContactRequestPolicy::class);
+        Gate::policy(HookEndpoint::class, HookEndpointPolicy::class);
+        Gate::policy(HookDelivery::class, HookDeliveryPolicy::class);
 
         $this->commands([
             MakeAdminCommand::class,
             PublishScheduledPosts::class,
             GenerateSitemap::class,
             PurgeActivityLog::class,
+            RetryContactHooksCommand::class,
+            PurgeContactDataCommand::class,
         ]);
 
         $this->app[\Illuminate\Contracts\Http\Kernel::class]->appendMiddlewareToGroup('web', HandleRestrictedAccess::class);

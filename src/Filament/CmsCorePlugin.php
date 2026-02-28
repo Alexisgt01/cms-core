@@ -10,12 +10,17 @@ use Illuminate\Support\Facades\Cache;
 use Alexisgt01\CmsCore\Filament\Pages\AdminDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogSettings;
+use Alexisgt01\CmsCore\Filament\Pages\ContactSettings;
 use Alexisgt01\CmsCore\Filament\Pages\EditProfile;
 use Alexisgt01\CmsCore\Filament\Pages\MediaLibrary;
 use Alexisgt01\CmsCore\Filament\Pages\SiteSettings;
 use Alexisgt01\CmsCore\Filament\Resources\ActivityLogResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
 use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource;
+use Alexisgt01\CmsCore\Filament\Resources\ContactRequestResource;
+use Alexisgt01\CmsCore\Filament\Resources\ContactResource;
+use Alexisgt01\CmsCore\Filament\Resources\HookDeliveryResource;
+use Alexisgt01\CmsCore\Filament\Resources\HookEndpointResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
@@ -53,6 +58,10 @@ class CmsCorePlugin implements Plugin
                 RedirectResource::class,
                 CollectionEntryResource::class,
                 ActivityLogResource::class,
+                ContactResource::class,
+                ContactRequestResource::class,
+                HookEndpointResource::class,
+                HookDeliveryResource::class,
             ])
             ->pages([
                 BlogDashboard::class,
@@ -60,6 +69,7 @@ class CmsCorePlugin implements Plugin
                 MediaLibrary::class,
                 BlogSettings::class,
                 SiteSettings::class,
+                ContactSettings::class,
             ])
             ->profile(EditProfile::class);
     }

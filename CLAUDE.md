@@ -25,6 +25,11 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `Redirect` | `redirects` | URL redirections (301/302/307/410), hit tracking, cache auto-invalidation, `scopeActive()`, `recordHit()`, `getCachedRedirects()` |
 | `Page` | `pages` | HasStates (PageDraft/PagePublished), SoftDeletes, LogsActivity, hierarchical (parent/children + position), key (front-end identifier), is_home, sections (JSON array via SectionRegistry/Builder), full SEO fields, MediaSelectionCast on og_image/twitter_image |
 | `CollectionEntry` | `collection_entries` | HasStates (EntryDraft/EntryPublished), SoftDeletes, LogsActivity, collection_type discriminator, data (JSON), slug (unique per type), position, full SEO fields (optional per CollectionType), field() accessor for data, scopes: forType/ordered/published |
+| `Contact` | `contacts` | LogsActivity, email unique, upsertByEmail() static, hasMany ContactRequest, casts attribs/tags/consents as array |
+| `ContactRequest` | `contact_requests` | HasStates (RequestNew/RequestProcessed/RequestArchived), LogsActivity, belongsTo Contact, hasMany HookDelivery, casts state/payload/meta, idempotency_key unique |
+| `ContactSetting` | `contact_settings` | Singleton via `ContactSetting::instance()`, cached 1h, casts default_async boolean + retention_days integer |
+| `HookEndpoint` | `contact_hook_endpoints` | Webhook configuration, casts enabled/events/backoff/headers, hasMany HookDelivery, acceptsEvent() method |
+| `HookDelivery` | `contact_hook_deliveries` | Webhook delivery tracking, casts next_retry_at datetime, belongsTo HookEndpoint + ContactRequest |
 
 ## State Machine (spatie/laravel-model-states)
 
@@ -46,6 +51,13 @@ Cast: `'state' => PageState::class` in Page model.
 - `EntryDraft` (default) ↔ `EntryPublished`
 
 Cast: `'state' => EntryState::class` in CollectionEntry model.
+
+- `RequestState` (abstract) — 3-state machine for ContactRequest
+- `RequestNew` (default) → RequestProcessed, RequestArchived
+- `RequestProcessed` → RequestNew, RequestArchived
+- `RequestArchived` → RequestNew
+
+Cast: `'state' => RequestState::class` in ContactRequest model.
 
 ## Value Objects & Casts
 
@@ -91,6 +103,21 @@ collection_entries('services', publishedOnly: false); // all entries
 
 // collection_entry() — get a single entry by slug
 collection_entry('services', 'web-design');          // CollectionEntry|null
+```
+
+```php
+// contact_event() — unified contact form ingestion
+contact_event('contact', [
+    'email' => 'john@example.com',
+    'name' => 'John Doe',
+    'message' => 'Hello',
+]);
+// Options: idempotency_key, hook_key (string|array|null), form_id, meta
+contact_event('newsletter', ['email' => 'sub@example.com'], [
+    'idempotency_key' => 'unique-123',
+    'form_id' => 'footer-newsletter',
+    'meta' => ['ip' => request()->ip()],
+]);
 ```
 
 ## MediaPicker (Filament Form Component)
@@ -149,6 +176,9 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 **SeoResolver** (`src/Services/SeoResolver.php`):
 - `resolve(Model|string|null $entity = null): SeoMeta` — resolves all SEO with fallback chains: entity → BlogSetting (for blog entities) → SiteSetting (global). String arg looks up Page by key. Handles title template (`%title% · %site%`), robots directives, OG/Twitter images from MediaSelection, schema JSON-LD auto-generation.
 
+**ContactPipeline** (`src/Services/ContactPipeline.php`):
+- `handle(string $type, array $payload, array $options): ContactRequest` — unified contact form ingestion: normalizes name (name or first_name+last_name), upserts Contact by email (merging tags/consents/attribs), creates ContactRequest with state=new, dispatches hooks to matching HookEndpoints (async via queue or sync). Options: idempotency_key (skip if exists), hook_key (string|array|null, null=all active), form_id, meta.
+
 ## Filament Resources
 
 | Resource | Nav group | Model | Permissions |
@@ -164,6 +194,10 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | RedirectResource | SEO | Redirect | view/create/edit/delete redirects |
 | CollectionEntryResource | Collections | CollectionEntry | view/create/edit/delete collection entries, publish collection entries |
 | ActivityLogResource | Administration | Spatie Activity | view activity log, read-only (no create/edit/delete) |
+| ContactResource | Contact | Contact | view/edit/delete contacts, no create (created via pipeline) |
+| ContactRequestResource | Contact | ContactRequest | view/delete contact requests, no create, replay hooks action |
+| HookEndpointResource | Contact | HookEndpoint | full CRUD for contact hooks |
+| HookDeliveryResource | Contact | HookDelivery | read-only, replay action |
 
 ## Filament Pages
 
@@ -174,6 +208,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | MediaLibrary | Medias | Full media management (folders, upload, search, filters, bulk ops, Unsplash, imgproxy) |
 | BlogSettings | Blog | Tabbed settings form (General, RSS, Images, SEO+SerpPreview, OG+OgPreview, Twitter+TwitterPreview, Schema+JSON-LD validation). Requires `manage blog settings` |
 | SiteSettings | Administration | Tabbed settings form (Identite, Contact, Acces restreint, SEO Global, Mentions legales, Reseaux sociaux, Admin). Requires `manage site settings` |
+| ContactSettings | Contact | Contact settings (async mode, inbound secret, retention). Requires `manage contact settings` |
 | EditProfile | — | Profile editing page |
 
 ## Dashboard Widgets
@@ -336,7 +371,9 @@ All created via migrations (NOT seeders). Pattern: `Permission::create()` + role
 
 **Collection permissions**: view/create/edit/delete/publish collection entries.
 
-super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit/publish pages (no delete) + view/create/edit redirects (no delete) + view/create/edit/publish collection entries (no delete) + view activity log. viewer = none.
+**Contact permissions**: view/create/edit/delete contacts, view/create/edit/delete contact requests, view/create/edit/delete contact hooks, manage contact settings, replay contact hooks.
+
+super_admin = all. editor = view/create/edit authors/categories/tags + view/create/edit/publish posts (no delete, no settings) + view/create/edit/publish pages (no delete) + view/create/edit redirects (no delete) + view/create/edit/publish collection entries (no delete) + view contacts/contact requests/contact hooks + replay contact hooks + view activity log. viewer = none.
 
 ## Commands
 
@@ -344,6 +381,30 @@ super_admin = all. editor = view/create/edit authors/categories/tags + view/crea
 - `cms:publish-scheduled` — finds Scheduled posts with `scheduled_for <= now()`, transitions to Published, sets published_at/first_published_at. Run hourly via scheduler.
 - `cms:sitemap` — generates sitemap.xml by HTTP crawling the site using spatie/laravel-sitemap. Reads config from BlogSetting (base_url, max_urls, concurrency, depth, exclude_patterns, change_freq, priority). Options: `--url`, `--output`, `--max-urls`, `--concurrency`, `--depth`.
 - `cms:purge-activity` — purges activity log entries older than N days. Option: `--days=30`.
+- `cms:contact-retry-hooks` — retries pending contact hook deliveries that are due for retry (next_retry_at <= now).
+- `cms:contact-purge` — purges contact requests and hook deliveries older than retention period. Option: `--days=` (overrides ContactSetting/config).
+
+## Contact Module
+
+Unified contact form ingestion system with webhook dispatch.
+
+### Pipeline Flow
+1. `contact_event($type, $payload, $options)` → `ContactPipeline::handle()`
+2. Check idempotency_key → skip if already processed
+3. Upsert Contact by email (merge tags/consents/attribs)
+4. Create ContactRequest (state=new, payload, meta)
+5. Dispatch hooks to matching HookEndpoints (async or sync)
+
+### Webhook System
+- HMAC signature: `hash_hmac('sha256', timestamp . '.' . json_body, endpoint.secret)`
+- Headers: `X-Contacts-Event`, `X-Contacts-Hook-Key`, `X-Contacts-Timestamp`, `X-Contacts-Signature`
+- Retry with configurable backoff array (default [5, 30, 120] seconds)
+- `DeliverContactHookJob` handles delivery with retry logic
+
+### Config (`cms-contacts.php`)
+- `default_async` (bool, default true) — queue vs sync webhook dispatch
+- `retention_days` (int, default 90) — purge threshold
+- `max_body_log_size` (int, default 4096) — truncate logged request/response bodies
 
 ## Sections Module
 
@@ -400,13 +461,14 @@ Blueprint system for structured, reusable content types. Host app defines Collec
 - `config/cms-icons.php` — icon sets, output mode, pagination, cache TTL, labels, variants
 - `config/cms-sections.php` — section type classes registration (host app publishes and adds its types)
 - `config/cms-collections.php` — collection type classes registration (host app publishes and adds its types)
+- `config/cms-contacts.php` — contact module settings (default_async, retention_days, max_body_log_size)
 
 Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `UNSPLASH_APP_ID`, `UNSPLASH_APP_KEY`, `UNSPLASH_SECRET_KEY`.
 
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages), 1000xxx (collections)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages), 1000xxx (collections), 1100xxx (contact)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -429,3 +491,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `SectionTest.php` — SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions), config, Filament integration (Builder::fake())
 - `SeoMetaTest.php` — SeoMeta VO (properties, serialization, toHtml, Stringable, escaping), SeoResolver (global defaults, page by key, model direct for all entities, fallback chains title/description/canonical/robots/OG/Twitter/Schema), seo_meta() helper
 - `CollectionTest.php` — CollectionType (methods, schema, definition), CollectionRegistry (register/resolve, definitions, rejection), migration columns, permissions, model CRUD, field accessor, scopes, SoftDeletes, slug generation, state machine, casts, config, Filament resource access, dynamic nav items, helpers (collection_entries/collection_entry), SeoResolver with CollectionEntry
+- `ContactTest.php` — Migrations (5 tables), permissions (14), ContactSetting singleton, Contact CRUD/upsert/casts/relations, ContactRequest states (new→processed→archived, transitions), pipeline (contact_event, idempotency, tag merge, hook dispatch, event filtering), HookEndpoint (CRUD, acceptsEvent, casts), HookDelivery (creation, relations), Job (success/failed/retry, HMAC signature), commands (retry-hooks, contact-purge), Filament resource access, helper
