@@ -42,6 +42,9 @@ class SectionField
     /** @var array<int, SectionField> */
     protected array $childFields = [];
 
+    /** @var array<string, array<string, string>|string>|null */
+    protected static ?array $urlOptionsCache = null;
+
     protected function __construct(string $type, string $name)
     {
         $this->type = $type;
@@ -615,6 +618,10 @@ class SectionField
      */
     private function buildUrlOptions(): array
     {
+        if (static::$urlOptionsCache !== null) {
+            return static::$urlOptionsCache;
+        }
+
         $options = [];
         $pageSlugs = [];
 
@@ -689,6 +696,8 @@ class SectionField
 
         // ── Lien externe ────────────────────────────────────
         $options['Autre'] = ['external' => 'Lien externe'];
+
+        static::$urlOptionsCache = $options;
 
         return $options;
     }
