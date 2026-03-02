@@ -21,11 +21,15 @@ class HandleRedirects
 
         $match = $redirects[$path];
 
-        // Record hit asynchronously
+        // Record hit asynchronously — direct update, no find()
         dispatch(function () use ($match): void {
-            Redirect::withoutEvents(function () use ($match): void {
-                $redirect = Redirect::find($match['id']);
-                $redirect?->recordHit();
+            Redirect::withoutTimestamps(function () use ($match): void {
+                Redirect::query()
+                    ->where('id', $match['id'])
+                    ->update([
+                        'hit_count' => \Illuminate\Support\Facades\DB::raw('hit_count + 1'),
+                        'last_hit_at' => now(),
+                    ]);
             });
         })->afterResponse();
 
