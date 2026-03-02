@@ -10,6 +10,9 @@ class SectionRegistry
     /** @var array<string, class-string<SectionType>> */
     protected array $types = [];
 
+    /** @var array<int, Block>|null */
+    protected ?array $cachedBlocks = null;
+
     /**
      * Register a SectionType class.
      *
@@ -24,6 +27,7 @@ class SectionRegistry
         }
 
         $this->types[$typeClass::key()] = $typeClass;
+        $this->cachedBlocks = null;
     }
 
     /**
@@ -45,15 +49,21 @@ class SectionRegistry
     }
 
     /**
-     * All registered types as Filament Builder\Block instances.
+     * All registered types as Filament Builder\Block instances (cached in memory).
      *
      * @return array<int, Block>
      */
     public function blocks(): array
     {
-        return array_values(
+        if ($this->cachedBlocks !== null) {
+            return $this->cachedBlocks;
+        }
+
+        $this->cachedBlocks = array_values(
             array_map(fn (string $class) => $class::toBlock(), $this->types)
         );
+
+        return $this->cachedBlocks;
     }
 
     /**

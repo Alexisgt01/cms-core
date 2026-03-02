@@ -5,6 +5,7 @@ namespace Alexisgt01\CmsCore\Models;
 use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Alexisgt01\CmsCore\Models\States\PageState;
+use Alexisgt01\CmsCore\Sections\SectionField;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,12 @@ class Page extends Model
     use SoftDeletes;
 
     protected $guarded = ['id'];
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => SectionField::flushUrlOptionsCache());
+        static::deleted(fn () => SectionField::flushUrlOptionsCache());
+    }
 
     /**
      * @return array<string, string>

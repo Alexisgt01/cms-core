@@ -6,6 +6,7 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\IconPicker;
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 use Filament\Forms;
 use FilamentTiptapEditor\TiptapEditor;
+use Illuminate\Support\Facades\Cache;
 
 class SectionField
 {
@@ -580,9 +581,9 @@ class SectionField
 
         $link = Forms\Components\Select::make($this->name . '_link')
             ->label($label)
-            ->options(fn (): array => $this->buildUrlOptions())
+            ->options(fn (): array => static::resolveUrlOptions())
             ->searchable()
-            ->live()
+            ->live(onBlur: true)
             ->placeholder('Choisir un lien');
 
         if ($this->isRequired) {
@@ -614,14 +615,37 @@ class SectionField
     }
 
     /**
+     * Resolve URL options with persistent cache (survives across Livewire requests).
+     *
      * @return array<string, array<string, string>|string>
      */
-    private function buildUrlOptions(): array
+    public static function resolveUrlOptions(): array
     {
         if (static::$urlOptionsCache !== null) {
             return static::$urlOptionsCache;
         }
 
+        static::$urlOptionsCache = Cache::remember('cms_section_url_options', 300, function (): array {
+            return static::buildUrlOptionsFromSources();
+        });
+
+        return static::$urlOptionsCache;
+    }
+
+    /**
+     * Flush the URL options cache (call after creating/updating/deleting pages).
+     */
+    public static function flushUrlOptionsCache(): void
+    {
+        static::$urlOptionsCache = null;
+        Cache::forget('cms_section_url_options');
+    }
+
+    /**
+     * @return array<string, array<string, string>|string>
+     */
+    private static function buildUrlOptionsFromSources(): array
+    {
         $options = [];
         $pageSlugs = [];
 
@@ -696,8 +720,6 @@ class SectionField
 
         // ── Lien externe ────────────────────────────────────
         $options['Autre'] = ['external' => 'Lien externe'];
-
-        static::$urlOptionsCache = $options;
 
         return $options;
     }
