@@ -1434,11 +1434,12 @@ Pages statiques du site avec hierarchie parent/enfant, SEO complet et SoftDelete
 - **SEO complet** — meme pattern que BlogPost : h1, focus_keyword, secondary_keywords, indexing, canonical_url, meta_title, meta_description, robots (7 directives), OG complet, Twitter complet, schema multi-types + JSON-LD
 - **Hierarchie** — parent/enfant avec position ordering, scopes `roots()` et `published()`
 - **Helpers statiques** — `Page::findByKey('about')`, `Page::home()`, `Page::generateSlug('name')`
-- **Formulaire avec onglets** — Page (nom, slug, cle, parent, position, accueil, meta, statut, date publication), SEO, Open Graph, Twitter, Schema
+- **Formulaire avec onglets** — Page (nom, slug, cle, parent, position, accueil, meta, statut, date publication), Sections (SectionBuilder avec modal), SEO, Open Graph, Twitter, Schema
 - **Permissions** — view/create/edit/delete/publish pages. Sans `publish pages`, seul "Brouillon" est disponible
 - **SoftDeletes** — corbeille avec restauration et suppression definitive (TrashedFilter, RestoreAction, ForceDeleteAction)
+- **Duplication** — ReplicateAction dans la table et le header d'edition. Duplique tout (sections, meta, SEO), vide key/slug (auto-genere), remet en brouillon. Necessite `create pages`
 - **Nav group** — Contenu
-- **Migrations** — 900001 (table pages), 900002 (permissions)
+- **Migrations** — 900001 (table pages), 900002 (permissions), 900004 (section_templates)
 
 ## Sections
 
@@ -1520,7 +1521,30 @@ return [
 - **Config** — `config/cms-sections.php` (publiable via `cms-core-config`)
 - **Stockage** — colonne JSON `sections` sur la table `pages`, stocke `[{type, data}, ...]`
 - **Onglet Sections** — automatiquement visible dans PageResource quand au moins un type est enregistre
-- **Migration** — 900003 (ajout colonne sections)
+- **Migration** — 900003 (ajout colonne sections), 900004 (section_templates)
+
+### SectionBuilder (composant Filament personnalise)
+
+Le composant `SectionBuilder` remplace le `Builder` standard avec :
+
+- **Modal de selection** — remplace le dropdown natif par un modal plein ecran avec recherche, icones, descriptions et grille responsive. Teleporte au body pour eviter les problemes d'overflow/z-index
+- **Modeles de section** — permet d'enregistrer une section comme modele reutilisable (bouton bookmark sur chaque block). Les modeles apparaissent dans le modal a cote des types, avec possibilite de les charger (donnees pre-remplies) ou de les supprimer
+- **Table `section_templates`** — name, section_type, data (JSON). Les modeles dont le type n'est plus enregistre sont automatiquement filtres
+
+### Catalogue des sections (page admin)
+
+La page **Sections** (nav group "Contenu") affiche tous les types de sections enregistres sous forme de grille de cards. Chaque card montre l'icone, le label, la description, le nombre de champs et le nombre de modeles existants. Un lien "Creer un modele" redirige vers le formulaire de creation de modele pre-configure pour ce type.
+
+### Gestion des modeles (resource admin)
+
+La resource **Modeles de section** (nav group "Contenu") offre un CRUD complet pour les modeles de section :
+
+- **Liste** — tableau avec nom, type (badge), date de creation. Filtre par type de section. Action header avec modal de selection du type avant creation
+- **Creation** — formulaire dynamique qui charge les champs du SectionType selectionne via `?sectionType=key`
+- **Edition** — meme formulaire dynamique, type non modifiable
+- **Suppression** — depuis la liste ou la page d'edition
+
+Les permissions reutilisent celles des pages (view/create/edit/delete pages).
 
 ## SEO Helper
 

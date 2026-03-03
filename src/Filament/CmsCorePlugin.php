@@ -13,6 +13,7 @@ use Alexisgt01\CmsCore\Filament\Pages\BlogSettings;
 use Alexisgt01\CmsCore\Filament\Pages\ContactSettings;
 use Alexisgt01\CmsCore\Filament\Pages\EditProfile;
 use Alexisgt01\CmsCore\Filament\Pages\MediaLibrary;
+use Alexisgt01\CmsCore\Filament\Pages\SectionCatalog;
 use Alexisgt01\CmsCore\Filament\Pages\SiteSettings;
 use Alexisgt01\CmsCore\Filament\Resources\ActivityLogResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
@@ -28,6 +29,7 @@ use Alexisgt01\CmsCore\Filament\Resources\PageResource;
 use Alexisgt01\CmsCore\Filament\Resources\PermissionResource;
 use Alexisgt01\CmsCore\Filament\Resources\RedirectResource;
 use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
+use Alexisgt01\CmsCore\Filament\Resources\SectionTemplateResource;
 use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 use Alexisgt01\CmsCore\Models\SiteSetting;
 
@@ -62,6 +64,7 @@ class CmsCorePlugin implements Plugin
                 ContactRequestResource::class,
                 HookEndpointResource::class,
                 HookDeliveryResource::class,
+                SectionTemplateResource::class,
             ])
             ->pages([
                 BlogDashboard::class,
@@ -70,6 +73,7 @@ class CmsCorePlugin implements Plugin
                 BlogSettings::class,
                 SiteSettings::class,
                 ContactSettings::class,
+                SectionCatalog::class,
             ])
             ->profile(EditProfile::class);
     }

@@ -4,6 +4,8 @@ namespace Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
 use Alexisgt01\CmsCore\Jobs\SavePageSectionsJob;
+use Alexisgt01\CmsCore\Models\Page;
+use Alexisgt01\CmsCore\Models\States\PageDraft;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -20,6 +22,18 @@ class EditPage extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ReplicateAction::make()
+                ->label('Dupliquer')
+                ->excludeAttributes(['key', 'slug'])
+                ->beforeReplicaSaved(function (Page $replica): void {
+                    $replica->slug = Page::generateSlug($replica->name);
+                    $replica->state = new PageDraft($replica);
+                    $replica->published_at = null;
+                    $replica->is_home = false;
+                })
+                ->successRedirectUrl(fn (Page $replica): string => PageResource::getUrl('edit', ['record' => $replica]))
+                ->successNotificationTitle('Page dupliquée')
+                ->visible(fn (): bool => auth()->user()?->can('create pages') ?? false),
             Actions\DeleteAction::make(),
             Actions\RestoreAction::make(),
             Actions\ForceDeleteAction::make(),

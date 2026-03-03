@@ -66,6 +66,9 @@ if (! function_exists('cms_icon')) {
             return '';
         }
 
+        // Default to 1em sizing so SVGs respect the container's font-size (like <i> tags)
+        $attributes = array_merge(['width' => '1em', 'height' => '1em'], $attributes);
+
         if ($icon instanceof \Alexisgt01\CmsCore\ValueObjects\IconSelection) {
             return $icon->toSvg($class, $attributes);
         }

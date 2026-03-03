@@ -3,6 +3,7 @@
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
+use Alexisgt01\CmsCore\Filament\Forms\Components\SectionBuilder;
 use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 use Alexisgt01\CmsCore\Models\Page;
@@ -125,7 +126,7 @@ class PageResource extends Resource
 
                         Forms\Components\Tabs\Tab::make('Sections')
                             ->schema([
-                                Forms\Components\Builder::make('sections')
+                                SectionBuilder::make('sections')
                                     ->label('Sections')
                                     ->blocks(fn () => app(SectionRegistry::class)->blocks())
                                     ->addActionLabel('Ajouter une section')
@@ -224,6 +225,18 @@ class PageResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ReplicateAction::make()
+                    ->label('Dupliquer')
+                    ->excludeAttributes(['key', 'slug'])
+                    ->beforeReplicaSaved(function (Page $replica): void {
+                        $replica->slug = Page::generateSlug($replica->name);
+                        $replica->state = new PageDraft($replica);
+                        $replica->published_at = null;
+                        $replica->is_home = false;
+                    })
+                    ->successRedirectUrl(fn (Page $replica): string => static::getUrl('edit', ['record' => $replica]))
+                    ->successNotificationTitle('Page dupliquée')
+                    ->visible(fn (): bool => auth()->user()?->can('create pages') ?? false),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),

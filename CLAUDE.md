@@ -30,6 +30,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `ContactSetting` | `contact_settings` | Singleton via `ContactSetting::instance()`, cached 1h, casts default_async boolean + retention_days integer |
 | `HookEndpoint` | `contact_hook_endpoints` | Webhook configuration, casts enabled/events/backoff/headers, hasMany HookDelivery, acceptsEvent() method |
 | `HookDelivery` | `contact_hook_deliveries` | Webhook delivery tracking, casts next_retry_at datetime, belongsTo HookEndpoint + ContactRequest |
+| `SectionTemplate` | `section_templates` | Reusable section templates with pre-filled data. Fields: name, section_type, data (JSON cast). Managed through SectionBuilder UI (save/load/delete) and SectionTemplateResource (CRUD with dynamic form fields per SectionType) |
 
 ## State Machine (spatie/laravel-model-states)
 
@@ -198,6 +199,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | ContactRequestResource | Contact | ContactRequest | view/delete contact requests, no create, replay hooks action |
 | HookEndpointResource | Contact | HookEndpoint | full CRUD for contact hooks |
 | HookDeliveryResource | Contact | HookDelivery | read-only, replay action |
+| SectionTemplateResource | Contenu | SectionTemplate | view/create/edit/delete pages (reuses page permissions) |
 
 ## Filament Pages
 
@@ -209,6 +211,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | BlogSettings | Blog | Tabbed settings form (General, RSS, Images, SEO+SerpPreview, OG+OgPreview, Twitter+TwitterPreview, Schema+JSON-LD validation). Requires `manage blog settings` |
 | SiteSettings | Administration | Tabbed settings form (Identite, Contact, Acces restreint, SEO Global, Mentions legales, Reseaux sociaux, Admin). Requires `manage site settings` |
 | ContactSettings | Contact | Contact settings (async mode, inbound secret, retention). Requires `manage contact settings` |
+| SectionCatalog | Contenu | Grid catalog of registered section types with template counts and "Create template" links. Requires `view pages` |
 | EditProfile | — | Profile editing page |
 
 ## Dashboard Widgets
@@ -266,11 +269,13 @@ Tiptap uploads go through `MediaService::storeUploadedFile()` via `CmsMediaActio
 
 ## Page Form Structure
 
-Tabs: Page (name, slug, key, parent_id select hierarchical, position if parent set, is_home, meta KeyValue, state, published_at) → Sections (Builder component, visible only when types registered) → SEO (h1, focus_keyword, secondary_keywords, indexing, canonical, meta_title, meta_description, robots, SerpPreview) → Open Graph → Twitter → Schema.
+Tabs: Page (name, slug, key, parent_id select hierarchical, position if parent set, is_home, meta KeyValue, state, published_at) → Sections (SectionBuilder component with modal picker, visible only when types registered) → SEO (h1, focus_keyword, secondary_keywords, indexing, canonical, meta_title, meta_description, robots, SerpPreview) → Open Graph → Twitter → Schema.
 
 Without `publish pages` permission, state select only shows "Brouillon" (PageDraft).
 
 SoftDeletes support: TrashedFilter in list, RestoreAction + ForceDeleteAction in edit header and table actions.
+
+Page duplication: ReplicateAction in table actions and edit page header. Requires `create pages` permission.
 
 ## BlogSettings Form Structure
 
@@ -418,12 +423,40 @@ Blueprint system for structured page content. Host app defines SectionType class
 ### Storage
 - JSON column `sections` on `pages` table, stores `[{type, data}, ...]`
 - Cast: `'sections' => 'array'` in Page model
-- Filament Builder component in PageResource Sections tab
+- SectionBuilder component in PageResource Sections tab (custom Builder with modal picker)
 
 ### Registration
 - ServiceProvider registers SectionRegistry singleton, reads from `config('cms-sections.types')`
 - Host app publishes `cms-sections.php` and lists its SectionType classes
 - Sections tab auto-hidden when no types registered
+
+### SectionBuilder (`src/Filament/Forms/Components/SectionBuilder.php`)
+Custom Filament Builder component extending `Filament\Forms\Components\Builder` with:
+- **Modal section picker**: replaces default dropdown with a full modal (search, icons, descriptions, grid layout). Fixes overflow/z-index issues.
+- **Section templates**: save any section as a reusable template (stores type + data in `section_templates` table). Templates appear in the modal alongside regular types. Templates with unregistered types are auto-filtered.
+- **Actions**: `addFromTemplate` (add block with pre-filled data), `saveAsTemplate` (per-block extra item action, icon bookmark), `deleteTemplate` (with confirmation modal).
+- **View**: `cms-core::filament.forms.components.section-builder` (Alpine.js modal with teleport to body, search filtering, responsive grid)
+
+### Page Duplication
+- `ReplicateAction` on both table and edit page header
+- Duplicates all data including sections (JSON copy)
+- Clears: key (null), slug (auto-generated unique), state (draft), published_at (null), is_home (false)
+- Permission: `create pages`
+
+### SectionCatalog Page (`src/Filament/Pages/SectionCatalog.php`)
+- Nav group: Contenu, label: Sections, icon: heroicon-o-squares-2x2, sort: 2
+- Custom Blade view with responsive card grid (1/2/3 cols)
+- Each card shows: icon, label, description, fields count badge, templates count badge, "Creer un modele" link
+- Data from `SectionRegistry::all()` + template counts from `SectionTemplate`
+- Permission: `view pages`
+
+### SectionTemplateResource (`src/Filament/Resources/SectionTemplateResource.php`)
+- Nav group: Contenu, label: Modeles de section, icon: heroicon-o-bookmark, sort: 3
+- CRUD resource for `SectionTemplate` model
+- **Dynamic form**: resolves SectionType from `?sectionType=key` (create) or `$record->section_type` (edit), renders type's schema fields via `Group::make($typeClass::schema())->statePath('data')`
+- **List page**: custom header action opens modal to select section type, then redirects to create with query param
+- **Table**: name (searchable), section_type (badge with label from registry), created_at. Filter by section_type
+- Permissions: reuses page permissions (view/create/edit/delete pages)
 
 ## Collections Module
 
@@ -468,7 +501,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages), 1000xxx (collections), 1100xxx (contact)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages + section templates), 1000xxx (collections), 1100xxx (contact)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -487,7 +520,7 @@ Test files in host app `tests/Feature/Filament/`:
 - `SitemapTest.php` — sitemap settings columns, casts (boolean/array), default values, settings storage, command registration, disabled exit
 - `SiteSettingsTest.php` — SiteSetting model (columns, singleton, casts, defaults), SiteSettings page (access, save, password hashing), restricted access middleware (enabled/disabled, admin bypass, cookie, password validation), activity log (logging on all CMS models, resource access, purge command), permissions
 - `IconPickerTest.php` — IconSelection VO, IconSelectionCast, IconDiscoveryService, API routes, config, cms_icon() helper
-- `PageTest.php` — Pages table columns, permissions, model CRUD, SoftDeletes, states (Draft ↔ Published), scopes, static helpers, casts, Filament resource
+- `PageTest.php` — Pages table columns, permissions, model CRUD, SoftDeletes, states (Draft ↔ Published), scopes, static helpers, casts, Filament resource, page duplication (ReplicateAction with sections/slug/key/state), SectionTemplate model CRUD and filtering
 - `SectionTest.php` — SectionField factories (13 types), fluent API, toFormComponent (each type), toDefinition, SectionType (schema, toBlock, toDefinition), SectionRegistry (register/resolve, blocks, definitions), config, Filament integration (Builder::fake())
 - `SeoMetaTest.php` — SeoMeta VO (properties, serialization, toHtml, Stringable, escaping), SeoResolver (global defaults, page by key, model direct for all entities, fallback chains title/description/canonical/robots/OG/Twitter/Schema), seo_meta() helper
 - `CollectionTest.php` — CollectionType (methods, schema, definition), CollectionRegistry (register/resolve, definitions, rejection), migration columns, permissions, model CRUD, field accessor, scopes, SoftDeletes, slug generation, state machine, casts, config, Filament resource access, dynamic nav items, helpers (collection_entries/collection_entry), SeoResolver with CollectionEntry
