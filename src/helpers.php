@@ -70,6 +70,14 @@ if (! function_exists('cms_icon')) {
             return $icon->toSvg($class, $attributes);
         }
 
+        // Convert CSS class format to blade-fontawesome format
+        $icon = match (true) {
+            str_starts_with($icon, 'fa-solid fa-')  => 'fas-'.substr($icon, 12),
+            str_starts_with($icon, 'fa-regular fa-') => 'far-'.substr($icon, 14),
+            str_starts_with($icon, 'fa-brands fa-')  => 'fab-'.substr($icon, 13),
+            default => $icon,
+        };
+
         return svg($icon, $class, $attributes)->toHtml();
     }
 }
