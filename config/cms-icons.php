@@ -16,6 +16,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Render Mode
+    |--------------------------------------------------------------------------
+    |
+    | How cms_icon() renders icons in the frontend:
+    |
+    | 'svg'   — Inline SVG via blade-icons (default, backward compatible).
+    | 'class' — CSS class <i> tags for Font Awesome icons. Icons that have
+    |           no CSS font equivalent (Heroicons, Simple Icons) fall back
+    |           to inline SVG automatically.
+    |
+    */
+
+    'render_mode' => env('CMS_ICON_RENDER_MODE', 'svg'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Output Mode
     |--------------------------------------------------------------------------
     |

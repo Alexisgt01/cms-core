@@ -58,6 +58,10 @@ if (! function_exists('cms_icon')) {
     /**
      * Render an icon from an IconSelection or blade-icons name.
      *
+     * Respects 'cms-icons.render_mode':
+     *   'svg'   — Always renders inline SVG (default).
+     *   'class' — Font Awesome icons render as <i class="...">, others fall back to SVG.
+     *
      * @param  array<string, string>  $attributes
      */
     function cms_icon(string|\Alexisgt01\CmsCore\ValueObjects\IconSelection|null $icon, string $class = '', array $attributes = []): string
@@ -66,18 +70,35 @@ if (! function_exists('cms_icon')) {
             return '';
         }
 
-        // Default to 1em sizing so SVGs respect the container's font-size (like <i> tags)
+        // Default to 1em sizing so SVGs respect the container's font-size
         $attributes = array_merge(['width' => '1em', 'height' => '1em'], $attributes);
 
         if ($icon instanceof \Alexisgt01\CmsCore\ValueObjects\IconSelection) {
-            return $icon->toSvg($class, $attributes);
+            return $icon->toHtml($class, $attributes);
         }
 
-        // Convert CSS class format to blade-fontawesome format
+        // Class mode: try to render as <i> tag for Font Awesome
+        if (config('cms-icons.render_mode') === 'class') {
+            $faClass = \Alexisgt01\CmsCore\ValueObjects\IconSelection::toFontAwesomeClass($icon);
+
+            if ($faClass !== null) {
+                $classes = trim($faClass . ($class !== '' ? ' ' . $class : ''));
+                $attrs = '';
+                foreach ($attributes as $key => $value) {
+                    if ($key !== 'width' && $key !== 'height') {
+                        $attrs .= ' ' . e($key) . '="' . e($value) . '"';
+                    }
+                }
+
+                return '<i class="' . e($classes) . '"' . $attrs . '></i>';
+            }
+        }
+
+        // SVG mode (default) or non-FA icon fallback
         $icon = match (true) {
-            str_starts_with($icon, 'fa-solid fa-')  => 'fas-'.substr($icon, 12),
-            str_starts_with($icon, 'fa-regular fa-') => 'far-'.substr($icon, 14),
-            str_starts_with($icon, 'fa-brands fa-')  => 'fab-'.substr($icon, 13),
+            str_starts_with($icon, 'fa-solid fa-')  => 'fas-' . substr($icon, 12),
+            str_starts_with($icon, 'fa-regular fa-') => 'far-' . substr($icon, 14),
+            str_starts_with($icon, 'fa-brands fa-')  => 'fab-' . substr($icon, 13),
             default => $icon,
         };
 
