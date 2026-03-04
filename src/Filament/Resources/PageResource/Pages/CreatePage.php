@@ -3,10 +3,11 @@
 namespace Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
-use Alexisgt01\CmsCore\Models\Page;
+use Alexisgt01\CmsCore\Jobs\SavePageSectionsJob;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class CreatePage extends CreateRecord
 {
@@ -29,11 +30,10 @@ class CreatePage extends CreateRecord
         $record = static::getModel()::create($data);
 
         if (! empty($sections)) {
-            Page::withoutEvents(fn () => Page::withoutTimestamps(
-                fn () => Page::query()
-                    ->where('id', $record->id)
-                    ->update(['sections' => json_encode($sections)])
-            ));
+            $cacheKey = "page_sections:{$record->id}:" . now()->timestamp;
+            Cache::put($cacheKey, json_encode($sections, JSON_UNESCAPED_UNICODE), 300);
+
+            SavePageSectionsJob::dispatch($record->id, $cacheKey);
         }
 
         return $record;

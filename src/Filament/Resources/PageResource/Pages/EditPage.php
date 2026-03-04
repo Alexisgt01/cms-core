@@ -3,12 +3,14 @@
 namespace Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
+use Alexisgt01\CmsCore\Jobs\SavePageSectionsJob;
 use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\States\PageDraft;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class EditPage extends EditRecord
 {
@@ -55,11 +57,10 @@ class EditPage extends EditRecord
         $record->update($data);
 
         if ($sections !== null) {
-            Page::withoutEvents(fn () => Page::withoutTimestamps(
-                fn () => Page::query()
-                    ->where('id', $record->id)
-                    ->update(['sections' => json_encode($sections)])
-            ));
+            $cacheKey = "page_sections:{$record->id}:" . now()->timestamp;
+            Cache::put($cacheKey, json_encode($sections, JSON_UNESCAPED_UNICODE), 300);
+
+            SavePageSectionsJob::dispatch($record->id, $cacheKey);
         }
 
         return $record;
