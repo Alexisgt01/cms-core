@@ -595,13 +595,20 @@ class SectionField
         }
 
         $url = Forms\Components\TextInput::make($this->name . '_url')
-            ->label($label . ' — URL')
+            ->label(fn (Forms\Get $get): string => $get($this->name . '_link') === 'anchor'
+                ? $label . ' — Ancre'
+                : $label . ' — URL')
             ->inputMode('url')
-            ->rule('regex:/^(https?:\/\/|\/|#)/')
-            ->visible(fn (Forms\Get $get): bool => $get($this->name . '_link') === 'external');
+            ->rule(fn (Forms\Get $get): string => $get($this->name . '_link') === 'anchor'
+                ? 'regex:/^#.+/'
+                : 'regex:/^(https?:\/\/|\/|#)/')
+            ->placeholder(fn (Forms\Get $get): string => $get($this->name . '_link') === 'anchor'
+                ? '#ma-section'
+                : '')
+            ->visible(fn (Forms\Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
 
         if ($this->isRequired) {
-            $url->required(fn (Forms\Get $get): bool => $get($this->name . '_link') === 'external');
+            $url->required(fn (Forms\Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
         }
 
         if ($this->placeholderText !== null) {
@@ -718,8 +725,11 @@ class SectionField
             $options['Routes'] = $routeOptions;
         }
 
-        // ── Lien externe ────────────────────────────────────
-        $options['Autre'] = ['external' => 'Lien externe'];
+        // ── Autre ─────────────────────────────────────────────
+        $options['Autre'] = [
+            'anchor' => 'Ancre (même page)',
+            'external' => 'Lien externe',
+        ];
 
         return $options;
     }
