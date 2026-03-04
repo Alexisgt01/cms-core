@@ -159,10 +159,11 @@
                         wire:key="{{ $this->getId() }}.{{ $item->getStatePath() }}.{{ $field::class }}.item"
                         x-data="{
                             isCollapsed: @js($isCollapsed($item)),
+                            hasBeenOpened: @js(! $isCollapsed($item)),
                         }"
-                        x-on:builder-expand.window="$event.detail === '{{ $statePath }}' && (isCollapsed = false)"
+                        x-on:builder-expand.window="$event.detail === '{{ $statePath }}' && (isCollapsed = false, hasBeenOpened = true)"
                         x-on:builder-collapse.window="$event.detail === '{{ $statePath }}' && (isCollapsed = true)"
-                        x-on:expand="isCollapsed = false"
+                        x-on:expand="isCollapsed = false; hasBeenOpened = true"
                         x-sortable-item="{{ $uuid }}"
                         class="fi-fo-builder-item rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-white/5 dark:ring-white/10"
                         x-bind:class="{ 'fi-collapsed': isCollapsed }"
@@ -170,7 +171,7 @@
                         @if ($reorderActionIsVisible || $moveUpActionIsVisible || $moveDownActionIsVisible || $hasBlockIcons || $hasBlockLabels || $editActionIsVisible || $cloneActionIsVisible || $deleteActionIsVisible || $isCollapsible || $visibleExtraItemActions)
                             <div
                                 @if ($isCollapsible)
-                                    x-on:click.stop="isCollapsed = !isCollapsed"
+                                    x-on:click.stop="isCollapsed = !isCollapsed; if (!isCollapsed) hasBeenOpened = true"
                                 @endif
                                 @class([
                                     'fi-fo-builder-item-header flex items-center gap-x-3 overflow-hidden px-4 py-3',
@@ -280,34 +281,36 @@
                             </div>
                         @endif
 
-                        <div
-                            x-show="! isCollapsed"
-                            @class([
-                                'fi-fo-builder-item-content relative border-t border-gray-100 dark:border-white/10',
-                                'p-4' => ! ($hasBlockPreviews && $item->getParentComponent()->hasPreview()),
-                            ])
-                        >
-                            @if ($hasBlockPreviews && $item->getParentComponent()->hasPreview())
-                                <div
-                                    @class([
-                                        'fi-fo-builder-item-preview',
-                                        'pointer-events-none' => ! $hasInteractiveBlockPreviews,
-                                    ])
-                                >
-                                    {{ $item->getParentComponent()->renderPreview($item->getRawState()) }}
-                                </div>
-
-                                @if ($editActionIsVisible && (! $hasInteractiveBlockPreviews))
+                        <template x-if="hasBeenOpened">
+                            <div
+                                x-show="! isCollapsed"
+                                @class([
+                                    'fi-fo-builder-item-content relative border-t border-gray-100 dark:border-white/10',
+                                    'p-4' => ! ($hasBlockPreviews && $item->getParentComponent()->hasPreview()),
+                                ])
+                            >
+                                @if ($hasBlockPreviews && $item->getParentComponent()->hasPreview())
                                     <div
-                                        class="absolute inset-0 z-[1] cursor-pointer"
-                                        role="button"
-                                        x-on:click.stop="{{ '$wire.mountFormComponentAction(\'' . $statePath . '\', \'edit\', { item: \'' . $uuid . '\' })' }}"
-                                    ></div>
+                                        @class([
+                                            'fi-fo-builder-item-preview',
+                                            'pointer-events-none' => ! $hasInteractiveBlockPreviews,
+                                        ])
+                                    >
+                                        {{ $item->getParentComponent()->renderPreview($item->getRawState()) }}
+                                    </div>
+
+                                    @if ($editActionIsVisible && (! $hasInteractiveBlockPreviews))
+                                        <div
+                                            class="absolute inset-0 z-[1] cursor-pointer"
+                                            role="button"
+                                            x-on:click.stop="{{ '$wire.mountFormComponentAction(\'' . $statePath . '\', \'edit\', { item: \'' . $uuid . '\' })' }}"
+                                        ></div>
+                                    @endif
+                                @else
+                                    {{ $item }}
                                 @endif
-                            @else
-                                {{ $item }}
-                            @endif
-                        </div>
+                            </div>
+                        </template>
                     </li>
 
                     @if (! $loop->last)
