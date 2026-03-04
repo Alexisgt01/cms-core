@@ -16,6 +16,11 @@ class EditPage extends EditRecord
 {
     protected static string $resource = PageResource::class;
 
+    protected function getRedirectUrl(): ?string
+    {
+        return $this->getResource()::getUrl('edit', ['record' => $this->getRecord()]);
+    }
+
     /**
      * @return array<Actions\Action>
      */
