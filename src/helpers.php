@@ -35,7 +35,8 @@ if (! function_exists('media_url')) {
 
         $processingOptions = media_url_build_options($options);
         $optionsPath = $processingOptions !== '' ? $processingOptions : 'raw:true';
-        $path = "/{$optionsPath}/plain/{$sourceUrl}";
+        $encodedSource = str_replace(['?', '#', '&'], ['%3F', '%23', '%26'], $sourceUrl);
+        $path = "/{$optionsPath}/plain/{$encodedSource}";
 
         $key = (string) config('cms-media.proxy.key');
         $salt = (string) config('cms-media.proxy.salt');
