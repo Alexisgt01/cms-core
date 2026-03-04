@@ -62,6 +62,7 @@ class SiteSetting extends Model
     {
         return LogOptions::defaults()
             ->logOnly(['*'])
+            ->logExcept(['restricted_access_password'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

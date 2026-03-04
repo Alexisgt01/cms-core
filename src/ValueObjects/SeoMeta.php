@@ -107,7 +107,7 @@ class SeoMeta implements \JsonSerializable, \Stringable
         }
 
         if ($this->schemaJsonLd) {
-            $json = json_encode($this->schemaJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $json = json_encode($this->schemaJsonLd, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
             $tags[] = '<script type="application/ld+json">'.$json.'</script>';
         }
 

@@ -68,6 +68,8 @@ class HookEndpointResource extends Resource
                     ->maxLength(2048),
                 Forms\Components\TextInput::make('secret')
                     ->label('Secret HMAC')
+                    ->password()
+                    ->revealable()
                     ->required()
                     ->maxLength(255)
                     ->default(fn (): string => Str::random(40))

@@ -32,6 +32,8 @@ class IconPicker extends Field
                 $decoded = json_decode($state, true);
                 if (is_array($decoded)) {
                     $component->state($decoded);
+                } else {
+                    $component->state(['name' => $state, 'set' => '', 'variant' => null, 'label' => null, 'svg' => null]);
                 }
             }
         });

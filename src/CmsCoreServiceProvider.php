@@ -227,7 +227,7 @@ class CmsCoreServiceProvider extends ServiceProvider
                 })->name('cms.icons.sets');
             });
 
-        Route::middleware('web')
+        Route::middleware(['web', 'throttle:5,1'])
             ->post('cms/restricted-access', function (Request $request) {
                 $settings = SiteSetting::instance();
 

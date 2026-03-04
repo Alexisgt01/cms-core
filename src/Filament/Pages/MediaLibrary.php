@@ -420,9 +420,11 @@ class MediaLibrary extends Page
                         ->success()
                         ->send();
                 } catch (\RuntimeException $e) {
+                    report($e);
+
                     Notification::make()
                         ->title('Impossible de supprimer')
-                        ->body($e->getMessage())
+                        ->body('Le dossier ne peut pas etre supprime. Consultez les logs pour plus de details.')
                         ->danger()
                         ->send();
                 }

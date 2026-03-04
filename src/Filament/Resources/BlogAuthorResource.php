@@ -189,7 +189,7 @@ class BlogAuthorResource extends Resource
                     ->icon('heroicon-o-link-slash')
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->visible(fn (BlogAuthor $record): bool => $record->user_id !== null)
+                    ->visible(fn (BlogAuthor $record): bool => $record->user_id !== null && (auth()->user()?->can('edit blog authors') ?? false))
                     ->action(function (BlogAuthor $record): void {
                         $record->update(['user_id' => null]);
                     }),

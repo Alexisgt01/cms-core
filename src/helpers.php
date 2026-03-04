@@ -51,6 +51,8 @@ if (! function_exists('media_url')) {
             return "{$baseUrl}/{$signature}{$path}";
         }
 
+        \Illuminate\Support\Facades\Log::warning('imgproxy: generating unsigned URL (/unsafe). Set IMGPROXY_KEY and IMGPROXY_SALT for signed URLs.');
+
         return "{$baseUrl}/unsafe{$path}";
     }
 }

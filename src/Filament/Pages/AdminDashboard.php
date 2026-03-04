@@ -37,6 +37,7 @@ class AdminDashboard extends Dashboard
                 ->label('Tester l\'email')
                 ->icon('heroicon-o-envelope')
                 ->color('info')
+                ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') ?? false)
                 ->form([
                     Forms\Components\TextInput::make('email')
                         ->label('Adresse email')
@@ -66,9 +67,11 @@ class AdminDashboard extends Dashboard
                             ->success()
                             ->send();
                     } catch (\Throwable $e) {
+                        report($e);
+
                         Notification::make()
                             ->title('Erreur d\'envoi')
-                            ->body($e->getMessage())
+                            ->body('Une erreur est survenue lors de l\'envoi. Consultez les logs pour plus de details.')
                             ->danger()
                             ->send();
                     }
@@ -78,6 +81,7 @@ class AdminDashboard extends Dashboard
                 ->label('Vider le cache')
                 ->icon('heroicon-o-trash')
                 ->color('danger')
+                ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') ?? false)
                 ->requiresConfirmation()
                 ->modalHeading('Vider le cache')
                 ->modalDescription('Cette action va vider tous les caches de l\'application (config, routes, vues, events).')
