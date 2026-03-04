@@ -41,14 +41,25 @@
             pickerOpen: false,
             afterItemUuid: null,
             search: '',
+            openCategories: {},
 
             openPicker(afterItem = null) {
                 this.afterItemUuid = afterItem;
                 this.search = '';
+                this.openCategories = {};
                 this.pickerOpen = true;
                 this.$nextTick(() => {
                     this.$refs.searchInput?.focus();
                 });
+            },
+
+            toggleCategory(cat) {
+                this.openCategories[cat] = !this.openCategories[cat];
+            },
+
+            isCategoryOpen(cat) {
+                if (this.search !== '') return true;
+                return !!this.openCategories[cat];
             },
 
             addType(typeKey) {
@@ -422,36 +433,72 @@
 
                     {{-- Content --}}
                     <div class="flex-1 overflow-y-auto p-6">
-                        {{-- Section types --}}
+                        @php
+                            $grouped = collect($sectionTypes)->groupBy(fn ($t) => filled($t['category']) ? $t['category'] : 'Autre');
+                            $sortedGroups = $grouped->sortKeys();
+                        @endphp
+
+                        {{-- Section types grouped by category --}}
                         @if (count($sectionTypes) > 0)
-                            <h4 class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                Types de section
-                            </h4>
-                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                @foreach ($sectionTypes as $type)
-                                    <button
-                                        type="button"
-                                        x-show="search === '' || '{{ strtolower(e($type['label'] . ' ' . ($type['description'] ?? ''))) }}'.includes(search.toLowerCase())"
-                                        x-on:click="addType('{{ $type['key'] }}')"
-                                        class="group flex items-start gap-3 rounded-lg border border-gray-200 p-3 text-left transition hover:border-primary-500 hover:bg-primary-50 dark:border-white/10 dark:hover:border-primary-500 dark:hover:bg-primary-500/10"
+                            <div class="space-y-2">
+                                @foreach ($sortedGroups as $category => $types)
+                                    @php
+                                        $catSlug = \Illuminate\Support\Str::slug($category);
+                                        $searchableTexts = $types->map(fn ($t) => strtolower(e($t['label'] . ' ' . ($t['description'] ?? '') . ' ' . ($t['category'] ?? ''))))->implode('||');
+                                    @endphp
+                                    <div
+                                        x-show="search === '' || '{{ $searchableTexts }}'.includes(search.toLowerCase())"
+                                        class="overflow-hidden rounded-lg border border-gray-200 dark:border-white/10"
                                     >
-                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-primary-100 group-hover:text-primary-600 dark:bg-white/10 dark:text-gray-400 dark:group-hover:bg-primary-500/20 dark:group-hover:text-primary-400">
+                                        <button
+                                            type="button"
+                                            x-on:click="toggleCategory('{{ $catSlug }}')"
+                                            class="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-gray-50 dark:hover:bg-white/5"
+                                        >
+                                            <span class="flex items-center gap-2">
+                                                <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $category }}</span>
+                                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-white/10 dark:text-gray-400">{{ $types->count() }}</span>
+                                            </span>
                                             <x-filament::icon
-                                                :icon="$type['icon']"
-                                                class="h-5 w-5"
+                                                icon="heroicon-m-chevron-down"
+                                                class="h-4 w-4 text-gray-400 transition-transform duration-200 dark:text-gray-500"
+                                                x-bind:class="{ 'rotate-180': isCategoryOpen('{{ $catSlug }}') }"
                                             />
+                                        </button>
+                                        <div
+                                            x-show="isCategoryOpen('{{ $catSlug }}')"
+                                            x-collapse
+                                            class="border-t border-gray-200 dark:border-white/10"
+                                        >
+                                            <div class="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2">
+                                                @foreach ($types as $type)
+                                                    <button
+                                                        type="button"
+                                                        x-show="search === '' || '{{ strtolower(e($type['label'] . ' ' . ($type['description'] ?? '') . ' ' . ($type['category'] ?? ''))) }}'.includes(search.toLowerCase())"
+                                                        x-on:click="addType('{{ $type['key'] }}')"
+                                                        class="group flex items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-primary-50 dark:hover:bg-primary-500/10"
+                                                    >
+                                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-primary-100 group-hover:text-primary-600 dark:bg-white/10 dark:text-gray-400 dark:group-hover:bg-primary-500/20 dark:group-hover:text-primary-400">
+                                                            <x-filament::icon
+                                                                :icon="$type['icon']"
+                                                                class="h-4 w-4"
+                                                            />
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="text-sm font-medium text-gray-950 dark:text-white">
+                                                                {{ $type['label'] }}
+                                                            </p>
+                                                            @if (! empty($type['description']))
+                                                                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                    {{ $type['description'] }}
+                                                                </p>
+                                                            @endif
+                                                        </div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-sm font-medium text-gray-950 dark:text-white">
-                                                {{ $type['label'] }}
-                                            </p>
-                                            @if (! empty($type['description']))
-                                                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                                    {{ $type['description'] }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                    </button>
+                                    </div>
                                 @endforeach
                             </div>
                         @endif
@@ -509,15 +556,6 @@
                                 Aucune section disponible
                             </div>
                         @endif
-
-                        {{-- No results --}}
-                        <div
-                            x-show="search !== '' && document.querySelectorAll('[x-show*=search]').length === 0"
-                            x-cloak
-                            class="py-8 text-center text-sm text-gray-500 dark:text-gray-400"
-                        >
-                            Aucun résultat
-                        </div>
                     </div>
                 </div>
             </div>

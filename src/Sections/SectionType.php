@@ -37,6 +37,14 @@ abstract class SectionType
     }
 
     /**
+     * Optional category for grouping in the block picker (e.g. 'Hero', 'Contact').
+     */
+    public static function category(): string
+    {
+        return '';
+    }
+
+    /**
      * Convert fields() to Filament form component array.
      *
      * @return array<int, \Filament\Forms\Components\Component>

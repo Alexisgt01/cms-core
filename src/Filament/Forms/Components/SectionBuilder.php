@@ -68,6 +68,7 @@ class SectionBuilder extends Builder
                 'label' => $class::label(),
                 'icon' => $class::icon(),
                 'description' => $class::description(),
+                'category' => $class::category(),
             ])
             ->values()
             ->all();
