@@ -3,12 +3,10 @@
 namespace Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
-use Alexisgt01\CmsCore\Jobs\SavePageSectionsJob;
 use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\States\PageDraft;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Filament\Actions;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 
@@ -57,13 +55,11 @@ class EditPage extends EditRecord
         $record->update($data);
 
         if ($sections !== null) {
-            SavePageSectionsJob::dispatch($record->id, $sections);
-
-            Notification::make()
-                ->title('Sections en cours de sauvegarde')
-                ->body('Les sections sont enregistrées en arrière-plan.')
-                ->info()
-                ->send();
+            Page::withoutEvents(fn () => Page::withoutTimestamps(
+                fn () => Page::query()
+                    ->where('id', $record->id)
+                    ->update(['sections' => json_encode($sections)])
+            ));
         }
 
         return $record;
