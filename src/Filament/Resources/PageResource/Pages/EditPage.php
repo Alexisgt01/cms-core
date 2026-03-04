@@ -8,6 +8,7 @@ use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\States\PageDraft;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -15,11 +16,6 @@ use Illuminate\Support\Facades\Cache;
 class EditPage extends EditRecord
 {
     protected static string $resource = PageResource::class;
-
-    protected function getRedirectUrl(): ?string
-    {
-        return $this->getResource()::getUrl('edit', ['record' => $this->getRecord()]);
-    }
 
     /**
      * @return array<Actions\Action>
@@ -69,5 +65,28 @@ class EditPage extends EditRecord
         }
 
         return $record;
+    }
+
+    protected function afterSave(): void
+    {
+        Notification::make()
+            ->title('Page sauvegardée')
+            ->success()
+            ->send();
+
+        $this->skipRender();
+    }
+
+    /**
+     * Prevent Filament's default "Saved" notification and redirect.
+     */
+    protected function getSavedNotification(): ?Notification
+    {
+        return null;
+    }
+
+    protected function getRedirectUrl(): ?string
+    {
+        return null;
     }
 }
