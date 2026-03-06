@@ -65,6 +65,12 @@ class GenerateSitemap extends Command
                     return false;
                 }
 
+                if ($url->getQuery() !== '') {
+                    $this->skippedCount++;
+
+                    return false;
+                }
+
                 $path = $url->getPath();
 
                 foreach ($excludePatterns as $pattern) {
