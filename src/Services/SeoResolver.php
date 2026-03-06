@@ -113,13 +113,38 @@ class SeoResolver
         }
 
         $baseUrl = $this->site->canonical_base_url;
-        $slug = $this->getAttr($entity, 'slug');
+        $slug = $this->buildFullSlug($entity);
 
         if ($baseUrl && $slug) {
             return rtrim($baseUrl, '/').'/'.ltrim($slug, '/');
         }
 
         return null;
+    }
+
+    private function buildFullSlug(Model $entity): ?string
+    {
+        $slug = $this->getAttr($entity, 'slug');
+
+        if (! $slug) {
+            return null;
+        }
+
+        if ($entity instanceof Page && $entity->parent_id) {
+            $segments = [$slug];
+            $parent = $entity->parent;
+
+            while ($parent) {
+                if ($parent->slug) {
+                    array_unshift($segments, $parent->slug);
+                }
+                $parent = $parent->parent;
+            }
+
+            return implode('/', $segments);
+        }
+
+        return $slug;
     }
 
     private function resolveRobots(?Model $entity): string
