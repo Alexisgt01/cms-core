@@ -2,6 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 
+use Alexisgt01\CmsCore\Filament\Concerns\HasExpandableSections;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
 use Alexisgt01\CmsCore\Jobs\SavePageSectionsJob;
 use Alexisgt01\CmsCore\Models\Page;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Cache;
 
 class EditPage extends EditRecord
 {
+    use HasExpandableSections;
+
     protected static string $resource = PageResource::class;
 
     /**

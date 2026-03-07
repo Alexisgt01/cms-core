@@ -436,6 +436,14 @@ Custom Filament Builder component extending `Filament\Forms\Components\Builder` 
 - **Section templates**: save any section as a reusable template (stores type + data in `section_templates` table). Templates appear in the modal alongside regular types. Templates with unregistered types are auto-filtered.
 - **Actions**: `addFromTemplate` (add block with pre-filled data), `saveAsTemplate` (per-block extra item action, icon bookmark), `deleteTemplate` (with confirmation modal).
 - **View**: `cms-core::filament.forms.components.section-builder` (Alpine.js modal with teleport to body, search filtering, responsive grid)
+- **Deferred rendering**: Section form HTML is only rendered server-side for expanded sections. Collapsed sections show a lightweight header only, drastically reducing Livewire payload size and server render time. Requires `HasExpandableSections` trait on the Livewire page component.
+- **Memoized data**: `getSectionTypeDefinitions()` and `getTemplates()` are cached per render cycle.
+
+### HasExpandableSections Trait (`src/Filament/Concerns/HasExpandableSections.php`)
+Used by EditPage and CreatePage for PageResource. Provides:
+- `$expandedSections` / `$knownSectionUuids` — Livewire public properties tracking which sections render their form
+- `expandSection($uuid)` / `collapseSection($uuid)` — called from Blade via `$wire`
+- `syncSectionUuids(array $uuids)` — auto-detects newly added sections and expands them, cleans up removed sections
 
 ### Page Duplication
 - `ReplicateAction` on both table and edit page header

@@ -31,8 +31,15 @@
 
     $statePath = $getStatePath();
 
-    $sectionTypes = $getSectionTypeDefinitions();
-    $templates = $getTemplates();
+    // Expandable sections: detect trait on Livewire component
+    $supportsExpandable = method_exists($this, 'isSectionExpanded');
+    $expandedSections = $supportsExpandable ? $this->expandedSections : [];
+
+    // Sync known UUIDs to auto-expand newly added sections
+    if ($supportsExpandable && count($containers)) {
+        $this->syncSectionUuids(array_keys($containers));
+        $expandedSections = $this->expandedSections;
+    }
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
@@ -152,18 +159,18 @@
                         $moveUpAction = $moveUpAction(['item' => $uuid])->disabled($loop->first);
                         $moveUpActionIsVisible = $isReorderableWithButtons && $moveUpAction->isVisible();
                         $reorderActionIsVisible = $isReorderableWithDragAndDrop && $reorderAction->isVisible();
+                        $isExpanded = $supportsExpandable ? in_array($uuid, $expandedSections, true) : ! $isCollapsed($item);
                     @endphp
 
                     <li
                         wire:ignore.self
                         wire:key="{{ $this->getId() }}.{{ $item->getStatePath() }}.{{ $field::class }}.item"
                         x-data="{
-                            isCollapsed: @js($isCollapsed($item)),
-                            hasBeenOpened: @js(! $isCollapsed($item)),
+                            isCollapsed: @js(! $isExpanded),
+                            isExpanded: @js($isExpanded),
                         }"
-                        x-on:builder-expand.window="$event.detail === '{{ $statePath }}' && (isCollapsed = false, hasBeenOpened = true)"
+                        x-on:builder-expand.window="$event.detail === '{{ $statePath }}' && (isCollapsed = false)"
                         x-on:builder-collapse.window="$event.detail === '{{ $statePath }}' && (isCollapsed = true)"
-                        x-on:expand="isCollapsed = false; hasBeenOpened = true"
                         x-sortable-item="{{ $uuid }}"
                         class="fi-fo-builder-item rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-white/5 dark:ring-white/10"
                         x-bind:class="{ 'fi-collapsed': isCollapsed }"
@@ -171,7 +178,19 @@
                         @if ($reorderActionIsVisible || $moveUpActionIsVisible || $moveDownActionIsVisible || $hasBlockIcons || $hasBlockLabels || $editActionIsVisible || $cloneActionIsVisible || $deleteActionIsVisible || $isCollapsible || $visibleExtraItemActions)
                             <div
                                 @if ($isCollapsible)
-                                    x-on:click.stop="isCollapsed = !isCollapsed; if (!isCollapsed) hasBeenOpened = true"
+                                    x-on:click.stop="
+                                        if (isCollapsed) {
+                                            isCollapsed = false;
+                                            @if ($supportsExpandable && ! $isExpanded)
+                                                $wire.expandSection('{{ $uuid }}');
+                                            @endif
+                                        } else {
+                                            isCollapsed = true;
+                                            @if ($supportsExpandable)
+                                                $wire.collapseSection('{{ $uuid }}');
+                                            @endif
+                                        }
+                                    "
                                 @endif
                                 @class([
                                     'fi-fo-builder-item-header flex items-center gap-x-3 overflow-hidden px-4 py-3',
@@ -258,7 +277,19 @@
                                         @if ($isCollapsible)
                                             <li
                                                 class="relative transition"
-                                                x-on:click.stop="isCollapsed = !isCollapsed"
+                                                x-on:click.stop="
+                                                    if (isCollapsed) {
+                                                        isCollapsed = false;
+                                                        @if ($supportsExpandable && ! $isExpanded)
+                                                            $wire.expandSection('{{ $uuid }}');
+                                                        @endif
+                                                    } else {
+                                                        isCollapsed = true;
+                                                        @if ($supportsExpandable)
+                                                            $wire.collapseSection('{{ $uuid }}');
+                                                        @endif
+                                                    }
+                                                "
                                                 x-bind:class="{ '-rotate-180': isCollapsed }"
                                             >
                                                 <div
@@ -281,7 +312,8 @@
                             </div>
                         @endif
 
-                        <template x-if="hasBeenOpened">
+                        {{-- Section content: only render form HTML for expanded sections --}}
+                        @if ($isExpanded)
                             <div
                                 x-show="! isCollapsed"
                                 @class([
@@ -310,7 +342,21 @@
                                     {{ $item }}
                                 @endif
                             </div>
-                        </template>
+                        @else
+                            {{-- Placeholder shown while loading --}}
+                            <div
+                                x-show="! isCollapsed"
+                                class="fi-fo-builder-item-content border-t border-gray-100 p-6 dark:border-white/10"
+                            >
+                                <div class="flex items-center justify-center gap-2 text-sm text-gray-400 dark:text-gray-500">
+                                    <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Chargement de la section...
+                                </div>
+                            </div>
+                        @endif
                     </li>
 
                     @if (! $loop->last)
@@ -375,6 +421,11 @@
         @endif
 
         {{-- Section picker modal --}}
+        @php
+            $sectionTypes = $getSectionTypeDefinitions();
+            $templates = $getTemplates();
+        @endphp
+
         <template x-teleport="body">
             <div
                 x-show="pickerOpen"
@@ -509,7 +560,7 @@
                         {{-- Templates --}}
                         @if (count($templates) > 0)
                             <h4 class="mb-3 mt-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                Modèles enregistrés
+                                Modeles enregistres
                             </h4>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 @foreach ($templates as $template)
@@ -541,7 +592,7 @@
                                             type="button"
                                             x-on:click.stop="deleteTemplate({{ $template['id'] }})"
                                             class="absolute right-2 top-2 rounded p-1 text-gray-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-                                            title="Supprimer le modèle"
+                                            title="Supprimer le modele"
                                         >
                                             <x-filament::icon
                                                 icon="heroicon-m-trash"

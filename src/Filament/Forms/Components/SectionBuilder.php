@@ -14,6 +14,12 @@ class SectionBuilder extends Builder
 {
     protected string $view = 'cms-core::filament.forms.components.section-builder';
 
+    /** @var array<int, array<string, mixed>>|null */
+    protected ?array $cachedSectionTypeDefinitions = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    protected ?array $cachedTemplates = null;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -60,9 +66,13 @@ class SectionBuilder extends Builder
      */
     public function getSectionTypeDefinitions(): array
     {
+        if ($this->cachedSectionTypeDefinitions !== null) {
+            return $this->cachedSectionTypeDefinitions;
+        }
+
         $registry = app(SectionRegistry::class);
 
-        return collect($registry->all())
+        $this->cachedSectionTypeDefinitions = collect($registry->all())
             ->map(fn (string $class) => [
                 'key' => $class::key(),
                 'label' => $class::label(),
@@ -72,6 +82,8 @@ class SectionBuilder extends Builder
             ])
             ->values()
             ->all();
+
+        return $this->cachedSectionTypeDefinitions;
     }
 
     /**
@@ -79,10 +91,14 @@ class SectionBuilder extends Builder
      */
     public function getTemplates(): array
     {
+        if ($this->cachedTemplates !== null) {
+            return $this->cachedTemplates;
+        }
+
         $registry = app(SectionRegistry::class);
         $registeredKeys = array_keys($registry->all());
 
-        return SectionTemplate::query()
+        $this->cachedTemplates = SectionTemplate::query()
             ->orderBy('name')
             ->get()
             ->filter(fn (SectionTemplate $template) => in_array($template->section_type, $registeredKeys))
@@ -100,6 +116,8 @@ class SectionBuilder extends Builder
             })
             ->values()
             ->all();
+
+        return $this->cachedTemplates;
     }
 
     protected function getAddFromTemplateAction(): Action

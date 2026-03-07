@@ -2,6 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 
+use Alexisgt01\CmsCore\Filament\Concerns\HasExpandableSections;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
 use Alexisgt01\CmsCore\Jobs\SavePageSectionsJob;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Cache;
 
 class CreatePage extends CreateRecord
 {
+    use HasExpandableSections;
+
     protected static string $resource = PageResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

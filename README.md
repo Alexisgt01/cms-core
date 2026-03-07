@@ -1530,6 +1530,7 @@ Le composant `SectionBuilder` remplace le `Builder` standard avec :
 - **Modal de selection** — remplace le dropdown natif par un modal plein ecran avec recherche, icones, descriptions et grille responsive. Teleporte au body pour eviter les problemes d'overflow/z-index
 - **Modeles de section** — permet d'enregistrer une section comme modele reutilisable (bouton bookmark sur chaque block). Les modeles apparaissent dans le modal a cote des types, avec possibilite de les charger (donnees pre-remplies) ou de les supprimer
 - **Table `section_templates`** — name, section_type, data (JSON). Les modeles dont le type n'est plus enregistre sont automatiquement filtres
+- **Rendu differe (performance)** — seules les sections ouvertes sont rendues cote serveur. Les sections fermees affichent uniquement leur en-tete, ce qui reduit drastiquement la taille du payload Livewire et le temps de rendu serveur. Necessite le trait `HasExpandableSections` sur la page Livewire (ajoute a EditPage et CreatePage). Les sections nouvellement ajoutees sont automatiquement ouvertes
 
 ### Catalogue des sections (page admin)
 
