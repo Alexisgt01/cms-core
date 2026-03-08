@@ -429,13 +429,19 @@ class SectionField
      */
     private function buildSelect(): array
     {
+        $options = $this->optionsArray ?? [];
+        $hasGroupedOptions = collect($options)->contains(fn ($v) => is_array($v));
+
+        if ($hasGroupedOptions && self::isColorPalette($options)) {
+            return $this->buildColorPaletteSelect();
+        }
+
         $field = Forms\Components\Select::make($this->name);
         $this->applyCommon($field);
-        $field->options($this->optionsArray ?? []);
+        $field->options($options);
 
         // Use searchable (Alpine dropdown) when options are grouped (nested arrays)
         // to avoid native <select> state sync issues with Livewire
-        $hasGroupedOptions = collect($this->optionsArray ?? [])->contains(fn ($v) => is_array($v));
         if ($hasGroupedOptions) {
             $field->searchable();
         }
@@ -445,6 +451,110 @@ class SectionField
         }
 
         return [$field];
+    }
+
+    /**
+     * @return array<int, Forms\Components\Component>
+     */
+    private function buildColorPaletteSelect(): array
+    {
+        $flatOptions = [];
+
+        foreach ($this->optionsArray ?? [] as $group => $items) {
+            if (is_array($items)) {
+                $shortGroup = str_replace(' — ', ' · ', $group);
+
+                foreach ($items as $value => $label) {
+                    $flatOptions[$value] = self::colorOptionHtml($value, $shortGroup . ' · ' . $label);
+                }
+            } else {
+                $flatOptions[$group] = self::colorOptionHtml($group, $items);
+            }
+        }
+
+        $field = Forms\Components\Select::make($this->name)
+            ->options($flatOptions)
+            ->searchable()
+            ->allowHtml()
+            ->getOptionLabelUsing(function (string $value) use ($flatOptions): string {
+                return $flatOptions[$value] ?? self::colorOptionHtml($value, $value);
+            })
+            ->createOptionForm([
+                Forms\Components\ColorPicker::make('color')
+                    ->label('Choisir une couleur')
+                    ->required(),
+            ])
+            ->createOptionUsing(fn (array $data): string => $data['color'])
+            ->createOptionAction(fn (Forms\Components\Actions\Action $action) => $action
+                ->label('Personnalisée')
+                ->icon('heroicon-o-swatch')
+                ->modalHeading('Couleur personnalisée')
+            );
+
+        $this->applyCommon($field);
+
+        if ($this->defaultValue !== null) {
+            $field->default($this->defaultValue);
+        }
+
+        return [$field];
+    }
+
+    private static function isColorPalette(array $options): bool
+    {
+        $total = 0;
+        $colors = 0;
+
+        foreach ($options as $items) {
+            if (is_array($items)) {
+                foreach (array_keys($items) as $key) {
+                    $total++;
+
+                    if (preg_match('/^#[0-9A-Fa-f]{3,8}$/', (string) $key) || $key === 'transparent') {
+                        $colors++;
+                    }
+                }
+            }
+        }
+
+        return $total > 0 && ($colors / $total) >= 0.5;
+    }
+
+    private static function colorOptionHtml(string $color, string $label): string
+    {
+        $swatch = '';
+
+        if ($color === 'transparent') {
+            $swatch = '<span class="w-3 h-3 shrink-0 rounded-full border border-gray-300 dark:border-gray-600" style="background:repeating-conic-gradient(#d1d5db 0% 25%,transparent 0% 50%) 50%/6px 6px"></span>';
+        } elseif (preg_match('/^#[0-9A-Fa-f]{3,8}$/', $color)) {
+            $border = self::isLightHex($color) ? 'border:1px solid #d1d5db;' : '';
+            $swatch = '<span class="w-3 h-3 shrink-0 rounded-full" style="background:' . e($color) . ';' . $border . '"></span>';
+        }
+
+        if ($swatch === '') {
+            return e($label);
+        }
+
+        return '<span class="flex items-center gap-1.5">' . $swatch . '<span>' . e($label) . '</span></span>';
+    }
+
+    private static function isLightHex(string $hex): bool
+    {
+        $hex = ltrim($hex, '#');
+
+        if (strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+
+        if (strlen($hex) < 6) {
+            return false;
+        }
+
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        return (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255 > 0.85;
     }
 
     /**
