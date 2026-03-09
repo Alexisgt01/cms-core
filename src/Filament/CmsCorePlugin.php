@@ -3,6 +3,7 @@
 namespace Alexisgt01\CmsCore\Filament;
 
 use Filament\Contracts\Plugin;
+use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Blade;
@@ -11,8 +12,10 @@ use Alexisgt01\CmsCore\Filament\Pages\AdminDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogSettings;
 use Alexisgt01\CmsCore\Filament\Pages\ContactSettings;
+use Alexisgt01\CmsCore\Filament\Pages\Documentation;
 use Alexisgt01\CmsCore\Filament\Pages\EditProfile;
 use Alexisgt01\CmsCore\Filament\Pages\MediaLibrary;
+use Alexisgt01\CmsCore\Filament\Pages\Releases;
 use Alexisgt01\CmsCore\Filament\Pages\SectionCatalog;
 use Alexisgt01\CmsCore\Filament\Pages\SiteSettings;
 use Alexisgt01\CmsCore\Filament\Resources\ActivityLogResource;
@@ -74,8 +77,20 @@ class CmsCorePlugin implements Plugin
                 SiteSettings::class,
                 ContactSettings::class,
                 SectionCatalog::class,
+                Documentation::class,
+                Releases::class,
             ])
-            ->profile(EditProfile::class);
+            ->profile(EditProfile::class)
+            ->userMenuItems([
+                'documentation' => MenuItem::make()
+                    ->label('Guide d\'utilisation')
+                    ->url(fn (): string => Documentation::getUrl())
+                    ->icon('heroicon-o-book-open'),
+                'releases' => MenuItem::make()
+                    ->label('Nouveautes')
+                    ->url(fn (): string => Releases::getUrl())
+                    ->icon('heroicon-o-sparkles'),
+            ]);
     }
 
     public function boot(Panel $panel): void
@@ -83,6 +98,13 @@ class CmsCorePlugin implements Plugin
         $panel->renderHook(
             PanelsRenderHook::FOOTER,
             fn (): string => $this->renderVersionFooter(),
+        );
+
+        $panel->renderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): string => auth()->check()
+                ? Blade::render('<livewire:cms-release-popup />')
+                : '',
         );
     }
 

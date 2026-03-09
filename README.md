@@ -1842,6 +1842,32 @@ return [
 
 # Appendix — Permissions reference
 
+## Documentation & Releases
+
+### User Documentation
+
+Built-in end-user documentation accessible from the user profile menu ("Guide d'utilisation"). Written in French for a non-technical audience. Stored as Markdown files in `resources/docs/` with frontmatter (title, icon, order).
+
+**10 sections:** Premiers pas, Tableau de bord, Blog, Pages, Médias, SEO, Redirections, Collections, Contact, Administration.
+
+### Release Notes
+
+Versioned release notes accessible from the user profile menu ("Nouveautés"). Each minor version has a dedicated Markdown file in `resources/releases/` with frontmatter (slug, version, title, date).
+
+A **release popup** automatically shows the latest release when a user has unread releases. All releases are marked as read on dismiss.
+
+| Table | Description |
+|---|---|
+| `user_release_views` | Tracks which releases each user has seen (user_id + release_slug) |
+
+### Development Rule
+
+Every new feature MUST include:
+1. Updated documentation in `resources/docs/`
+2. New or updated release entry in `resources/releases/`
+
+---
+
 ## Roles
 
 | Role | Description |

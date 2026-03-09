@@ -5,8 +5,8 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 
 ## Architecture
 
-- **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`), overrides Tiptap media_action config, auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies, commands, middlewares (HandleRestrictedAccess + HandleRedirects), Livewire widgets, and restricted-access POST route
-- **Plugin**: `CmsCorePlugin` — registers all Filament resources, pages, and Git version footer render hook
+- **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`), overrides Tiptap media_action config, auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies, commands, middlewares (HandleRestrictedAccess + HandleRedirects), Livewire widgets, Livewire components (ReleasePopup), and restricted-access POST route
+- **Plugin**: `CmsCorePlugin` — registers all Filament resources, pages, user menu items (Documentation + Releases), release popup render hook, and Git version footer render hook
 - **Views namespace**: `cms-core` (e.g. `cms-core::filament.pages.blog-settings`)
 - **Helpers**: `src/helpers.php` loaded via Composer `files` autoload. After modifying, run `composer update alexisgt01/cms-core`
 
@@ -14,6 +14,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 
 | Model | Table | Key features |
 |-------|-------|-------------|
+| `UserReleaseView` | `user_release_views` | Tracks which release versions each user has seen. Fields: user_id, release_slug, viewed_at. Unique constraint on user_id+release_slug. Cascade delete on user. |
 | `BlogPost` | `blog_posts` | HasStates (Draft/Scheduled/Published), Tiptap content, featured_images (JSON array), belongs to BlogCategory, many-to-many BlogTag, exhaustive SEO fields, MediaSelectionCast on og_image/twitter_image |
 | `BlogAuthor` | `blog_authors` | Optional user linking, social profiles, avatar (MediaSelectionCast), SEO fields |
 | `BlogCategory` | `blog_categories` | Hierarchical (parent/children), has many BlogPost, SEO fields, MediaSelectionCast on og_image/twitter_image |
@@ -180,6 +181,18 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 **ContactPipeline** (`src/Services/ContactPipeline.php`):
 - `handle(string $type, array $payload, array $options): ContactRequest` — unified contact form ingestion: normalizes name (name or first_name+last_name), upserts Contact by email (merging tags/consents/attribs), creates ContactRequest with state=new, dispatches hooks to matching HookEndpoints (async via queue or sync). Options: idempotency_key (skip if exists), hook_key (string|array|null, null=all active), form_id, meta.
 
+**DocumentationService** (`src/Services/DocumentationService.php`):
+- `all(): Collection` — reads all Markdown files from `resources/docs/`, parses frontmatter (title, icon, order), renders Markdown to HTML, returns sorted by order
+- `find(string $slug): ?array` — returns a single doc section by slug
+
+**ReleaseService** (`src/Services/ReleaseService.php`):
+- `all(): Collection` — reads all Markdown files from `resources/releases/`, parses frontmatter (slug, version, title, date), renders Markdown to HTML, returns sorted by date descending
+- `find(string $slug): ?array` — returns a single release by slug
+- `getUnreadReleases(Authenticatable $user): Collection` — returns releases not yet viewed by user
+- `getLatestUnreadRelease(Authenticatable $user): ?array` — returns the most recent unread release
+- `hasUnreadReleases(Authenticatable $user): bool` — quick check
+- `markAllAsRead(Authenticatable $user): void` — bulk inserts all unseen releases into `user_release_views`
+
 ## Filament Resources
 
 | Resource | Nav group | Model | Permissions |
@@ -212,6 +225,8 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | SiteSettings | Administration | Tabbed settings form (Identite, Contact, Acces restreint, SEO Global, Mentions legales, Reseaux sociaux, Admin). Requires `manage site settings` |
 | ContactSettings | Contact | Contact settings (async mode, inbound secret, retention). Requires `manage contact settings` |
 | SectionCatalog | Contenu | Grid catalog of registered section types with template counts and "Create template" links. Requires `view pages` |
+| Documentation | — (user menu) | Markdown-based user guide with sidebar navigation. Route: `/documentation`. Accessible to all authenticated users |
+| Releases | — (user menu) | Chronological release notes with collapsible sections. Route: `/releases`. Accessible to all authenticated users |
 | EditProfile | — | Profile editing page |
 
 ## Dashboard Widgets
@@ -347,6 +362,27 @@ For `App\Models\User`: must be added manually by host app (package cannot modify
 
 ### Commands
 - `cms:purge-activity {--days=30}` — purges entries older than N days
+
+## Documentation & Releases Module
+
+### User Documentation (`resources/docs/`)
+Markdown files with frontmatter (title, icon, order) providing end-user documentation in French. 10 sections: Premiers pas, Tableau de bord, Blog, Pages, Médias, SEO, Redirections, Collections, Contact, Administration. Rendered via `DocumentationService`, displayed on the Documentation Filament page with sidebar navigation. Accessible via user profile menu "Guide d'utilisation".
+
+### Release Notes (`resources/releases/`)
+Markdown files with frontmatter (slug, version, title, date) documenting each minor version release. 10 releases from 1.0.0 to 2.4.0. Patches are grouped within their parent minor version file. Rendered via `ReleaseService`, displayed on the Releases Filament page with collapsible accordion. Accessible via user profile menu "Nouveautés".
+
+### Release Popup (`src/Livewire/ReleasePopup.php`)
+Livewire component injected via `PanelsRenderHook::BODY_END`. Shows a modal with the latest unread release when user has unread releases. On dismiss, marks ALL releases as read (prevents spam). Only ONE popup shown even if multiple releases are unread.
+
+### User Menu Items
+Two items added to Filament user profile dropdown via `$panel->userMenuItems()`:
+- "Guide d'utilisation" → Documentation page (heroicon-o-book-open)
+- "Nouveautés" → Releases page (heroicon-o-sparkles)
+
+### Development Rule
+**MANDATORY**: Every new feature/version MUST include:
+1. Updated documentation in `resources/docs/` (relevant section)
+2. New or updated release entry in `resources/releases/` (new minor version file)
 
 ## Git Version Footer
 
@@ -509,7 +545,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 ## Conventions
 
 - French UI labels throughout (Filament resources, form fields, table columns)
-- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages + section templates), 1000xxx (collections), 1100xxx (contact)
+- Migrations use sequence: 200xxx (users/roles), 300xxx (media), 500xxx (blog), 600xxx (SEO enhancements), 700xxx (redirections/sitemap), 800xxx (site settings/activity log), 900xxx (pages + section templates), 1000xxx (collections), 1100xxx (contact), 1200xxx (documentation/releases)
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
@@ -519,7 +555,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 
 ## Tests
 
-Test files in host app `tests/Feature/Filament/`:
+Test files in host app `tests/Feature/` and `tests/Feature/Filament/`:
 - `MediaLibraryTest.php` — media CRUD, folders, bulk ops, filters
 - `MediaPickerTest.php` — MediaSelection, MediaSelectionCast, media_url(), UnsplashClient
 - `BlogTest.php` — BlogSetting, BlogAuthor, BlogCategory, BlogTag, BlogPost, states/transitions, publish-scheduled command, permissions
@@ -533,3 +569,4 @@ Test files in host app `tests/Feature/Filament/`:
 - `SeoMetaTest.php` — SeoMeta VO (properties, serialization, toHtml, Stringable, escaping), SeoResolver (global defaults, page by key, model direct for all entities, fallback chains title/description/canonical/robots/OG/Twitter/Schema), seo_meta() helper
 - `CollectionTest.php` — CollectionType (methods, schema, definition), CollectionRegistry (register/resolve, definitions, rejection), migration columns, permissions, model CRUD, field accessor, scopes, SoftDeletes, slug generation, state machine, casts, config, Filament resource access, dynamic nav items, helpers (collection_entries/collection_entry), SeoResolver with CollectionEntry
 - `ContactTest.php` — Migrations (5 tables), permissions (14), ContactSetting singleton, Contact CRUD/upsert/casts/relations, ContactRequest states (new→processed→archived, transitions), pipeline (contact_event, idempotency, tag merge, hook dispatch, event filtering), HookEndpoint (CRUD, acceptsEvent, casts), HookDelivery (creation, relations), Job (success/failed/retry, HMAC signature), commands (retry-hooks, contact-purge), Filament resource access, helper
+- `DocumentationAndReleasesTest.php` — Migration (user_release_views table, unique constraint, cascade delete), DocumentationService (load/find/sort/render markdown), ReleaseService (load/find/sort/unread detection/markAllAsRead/per-user tracking), Filament pages (access for super_admin/editor, guest redirect, no sidebar nav), ReleasePopup Livewire component (show/dismiss/mark read), user menu items registration, release content integrity

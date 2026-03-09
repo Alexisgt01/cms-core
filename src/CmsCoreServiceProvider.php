@@ -39,6 +39,7 @@ use Alexisgt01\CmsCore\Filament\Widgets\LatestUsersTable;
 use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRestrictedAccess;
+use Alexisgt01\CmsCore\Livewire\ReleasePopup;
 use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\Contact;
 use Alexisgt01\CmsCore\Models\ContactRequest;
@@ -136,6 +137,7 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->app[\Illuminate\Contracts\Http\Kernel::class]->pushMiddleware(HandleRedirects::class);
 
         $this->registerLivewireWidgets();
+        $this->registerLivewireComponents();
         $this->registerRoutes();
         $this->registerAuthListeners();
     }
@@ -157,6 +159,11 @@ class CmsCoreServiceProvider extends ServiceProvider
 
             Livewire::component($name, $widget);
         }
+    }
+
+    protected function registerLivewireComponents(): void
+    {
+        Livewire::component('cms-release-popup', ReleasePopup::class);
     }
 
     protected function registerAuthListeners(): void
