@@ -633,9 +633,22 @@ class MediaLibrary extends Page
                 }
 
                 $optionsPath = $options !== [] ? implode('/', $options) : 'raw:true';
-                $sourceUrl = $media->url;
+                $sourceUrl = str_replace(['?', '#', '&'], ['%3F', '%23', '%26'], $media->url);
+                $path = "/{$optionsPath}/plain/{$sourceUrl}";
 
-                $url = "{$baseUrl}/unsafe/{$optionsPath}/plain/{$sourceUrl}";
+                $key = (string) config('cms-media.proxy.key');
+                $salt = (string) config('cms-media.proxy.salt');
+
+                if ($key !== '' && $salt !== '') {
+                    $keyBin = hex2bin($key);
+                    $saltBin = hex2bin($salt);
+                    $signature = rtrim(strtr(base64_encode(
+                        hash_hmac('sha256', $saltBin . $path, $keyBin, true)
+                    ), '+/', '-_'), '=');
+                    $url = "{$baseUrl}/{$signature}{$path}";
+                } else {
+                    $url = "{$baseUrl}/unsafe{$path}";
+                }
                 $escapedUrl = \Illuminate\Support\Js::from($url);
 
                 $this->js("window.open({$escapedUrl}, '_blank')");
