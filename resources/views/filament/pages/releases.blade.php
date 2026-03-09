@@ -1,39 +1,59 @@
 <x-filament-panels::page>
+    <style>
+        .cms-markdown h2 { font-size: 1.15rem; font-weight: 600; margin: 1.25rem 0 0.5rem; line-height: 1.3; }
+        .cms-markdown h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem; line-height: 1.3; }
+        .cms-markdown p { margin: 0.5rem 0; line-height: 1.65; }
+        .cms-markdown ul, .cms-markdown ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+        .cms-markdown ul { list-style-type: disc; }
+        .cms-markdown ol { list-style-type: decimal; }
+        .cms-markdown li { margin: 0.25rem 0; line-height: 1.5; }
+        .cms-markdown a { color: rgb(var(--primary-600)); text-decoration: underline; }
+        .cms-markdown strong { font-weight: 600; }
+        .cms-markdown code { font-size: 0.875em; background: rgba(0,0,0,0.05); padding: 0.15rem 0.35rem; border-radius: 0.25rem; }
+        .cms-markdown hr { border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1rem 0; }
+        .dark .cms-markdown a { color: rgb(var(--primary-400)); }
+        .dark .cms-markdown code { background: rgba(255,255,255,0.1); }
+        .dark .cms-markdown hr { border-top-color: rgba(255,255,255,0.1); }
+    </style>
+
     @php
         $releases = $this->getReleases();
     @endphp
 
     @if (count($releases) === 0)
-        <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 p-12 dark:border-gray-700">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; border: 2px dashed rgba(0,0,0,0.15); border-radius: 0.75rem;">
             <x-filament::icon
                 icon="heroicon-o-sparkles"
-                class="mb-4 h-12 w-12 text-gray-400 dark:text-gray-500"
+                style="width: 3rem; height: 3rem; color: rgb(156 163 175); margin-bottom: 1rem;"
             />
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+            <h3 style="font-size: 1.125rem; font-weight: 500; color: rgb(17 24 39);">
                 Aucune nouveaute pour le moment
             </h3>
         </div>
     @else
-        <div class="space-y-6">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             @foreach ($releases as $index => $release)
                 <div
                     x-data="{ open: {{ $index === 0 ? 'true' : 'false' }} }"
-                    class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                    class="fi-section rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10"
+                    style="overflow: hidden;"
                 >
                     <button
                         x-on:click="open = !open"
-                        class="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                        style="display: flex; width: 100%; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; text-align: left; border: none; cursor: pointer; background: transparent; transition: background-color 0.15s;"
+                        onmouseover="this.style.background='rgba(0,0,0,0.02)'"
+                        onmouseout="this.style.background='transparent'"
                     >
-                        <div class="flex items-center gap-4">
-                            <span class="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-sm font-bold text-primary-700 dark:bg-primary-500/10 dark:text-primary-400">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="display: inline-flex; align-items: center; border-radius: 9999px; background: rgb(var(--primary-50)); padding: 0.25rem 0.75rem; font-size: 0.875rem; font-weight: 700; color: rgb(var(--primary-700));">
                                 v{{ $release['version'] }}
                             </span>
                             <div>
-                                <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                                <h3 style="font-size: 1rem; font-weight: 600; color: rgb(17 24 39); margin: 0;">
                                     {{ $release['title'] }}
                                 </h3>
                                 @if ($release['date'])
-                                    <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                    <p style="margin: 0.125rem 0 0; font-size: 0.75rem; color: rgb(107 114 128);">
                                         {{ \Carbon\Carbon::parse($release['date'])->translatedFormat('j F Y') }}
                                     </p>
                                 @endif
@@ -41,8 +61,8 @@
                         </div>
                         <x-filament::icon
                             icon="heroicon-m-chevron-down"
-                            class="h-5 w-5 text-gray-400 transition-transform duration-200 dark:text-gray-500"
-                            x-bind:class="{ 'rotate-180': open }"
+                            style="width: 1.25rem; height: 1.25rem; color: rgb(156 163 175); transition: transform 0.2s;"
+                            x-bind:style="open ? 'transform: rotate(180deg)' : ''"
                         />
                     </button>
 
@@ -50,8 +70,8 @@
                         x-show="open"
                         x-collapse
                     >
-                        <div class="border-t border-gray-100 px-6 py-5 dark:border-gray-800">
-                            <div class="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-h2:text-lg prose-h3:text-base prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-ul:my-2 prose-li:my-0.5">
+                        <div style="border-top: 1px solid rgba(0,0,0,0.05); padding: 1.25rem 1.5rem;">
+                            <div class="cms-markdown" style="color: rgb(55 65 81);">
                                 {!! $release['content'] !!}
                             </div>
                         </div>
