@@ -160,6 +160,19 @@ Les liens vers vos profils sur les réseaux sociaux :
 
 > 💡 **Astuce** : Renseignez vos réseaux sociaux ici pour qu'ils apparaissent automatiquement dans le pied de page et les métadonnées de votre site.
 
+#### 🎛️ Fonctionnalités
+
+L'onglet Fonctionnalités vous permet d'**activer ou désactiver les modules** visibles dans la barre latérale. Cela permet de simplifier l'interface en masquant les modules que vous n'utilisez pas.
+
+- Chaque **groupe** (Blog, Contact, Pages...) peut être désactivé entièrement
+- Chaque **élément** au sein d'un groupe peut être masqué individuellement (ex : cacher les Webhooks tout en gardant le reste du module Contact)
+- Les modules désactivés sont **masqués et inaccessibles** pour tous les utilisateurs
+- Les modifications prennent effet après sauvegarde et rechargement de la page
+
+> 💡 **Astuce** : Si votre site n'utilise pas le blog, désactivez simplement le module Blog pour alléger la barre latérale. Vous pourrez toujours le réactiver plus tard.
+
+> ⚠️ **Attention** : Si vous désactivez « Paramètres du site », vous ne pourrez plus accéder à cette page. Un administrateur technique devra réactiver la fonctionnalité en base de données.
+
 #### 🔧 Admin
 
 Paramètres avancés de l'administration :

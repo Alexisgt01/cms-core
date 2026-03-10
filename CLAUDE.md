@@ -5,8 +5,8 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 
 ## Architecture
 
-- **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`), overrides Tiptap media_action config, auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies, commands, middlewares (HandleRestrictedAccess + HandleRedirects), Livewire widgets, Livewire components (ReleasePopup), and restricted-access POST route
-- **Plugin**: `CmsCorePlugin` — registers all Filament resources, pages, user menu items (Documentation + Releases), release popup render hook, and Git version footer render hook
+- **ServiceProvider**: `CmsCoreServiceProvider` — registers configs (`cms-core`, `cms-media`, `cms-features`), overrides Tiptap media_action config, auto-registers plugin via `Panel::configureUsing()` in `register()` (NOT boot), loads migrations/views, registers policies, commands, middlewares (HandleRestrictedAccess + HandleRedirects), Livewire widgets, Livewire components (ReleasePopup), and restricted-access POST route
+- **Plugin**: `CmsCorePlugin` — conditionally registers Filament resources/pages based on `cms_feature()` toggles, user menu items (Documentation + Releases), release popup render hook, and Git version footer render hook. Uses `resolveResources()` and `resolvePages()` methods
 - **Views namespace**: `cms-core` (e.g. `cms-core::filament.pages.blog-settings`)
 - **Helpers**: `src/helpers.php` loaded via Composer `files` autoload. After modifying, run `composer update alexisgt01/cms-core`
 
@@ -22,7 +22,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `BlogSetting` | `blog_settings` | Singleton via `BlogSetting::instance()`, 70+ config fields, MediaSelectionCast on image fallbacks |
 | `CmsMedia` | `media` (Spatie) | Extends Spatie Media, belongs to CmsMediaFolder, appends url/human_readable_size |
 | `CmsMediaFolder` | `cms_media_folders` | Hierarchical (parent/children), has many CmsMedia |
-| `SiteSetting` | `site_settings` | Singleton via `SiteSetting::instance()`, identity (site_name, baseline, logos, favicon, timezone, formats, footer_copyright, footer_text, copyright_start_year), contact (phone, secondary_phone, recipients, from, reply-to, google_maps_url, opening_hours), legal (company_name, legal_form, share_capital, address, SIRET, SIREN, TVA, RCS, APE, director, hosting provider, DPO), social media (10 platforms), restricted access (enabled, hashed password, cookie TTL, message, admin bypass), global SEO (title, description, template, OG image, robots, canonical), admin (show_version_in_footer). MediaSelectionCast on logo_light/logo_dark/favicon/default_og_image |
+| `SiteSetting` | `site_settings` | Singleton via `SiteSetting::instance()`, identity (site_name, baseline, logos, favicon, timezone, formats, footer_copyright, footer_text, copyright_start_year), contact (phone, secondary_phone, recipients, from, reply-to, google_maps_url, opening_hours), legal (company_name, legal_form, share_capital, address, SIRET, SIREN, TVA, RCS, APE, director, hosting provider, DPO), social media (10 platforms), restricted access (enabled, hashed password, cookie TTL, message, admin bypass), global SEO (title, description, template, OG image, robots, canonical), admin (show_version_in_footer), **features** (JSON, feature toggles). MediaSelectionCast on logo_light/logo_dark/favicon/default_og_image |
 | `Redirect` | `redirects` | URL redirections (301/302/307/410), hit tracking, cache auto-invalidation, `scopeActive()`, `recordHit()`, `getCachedRedirects()` |
 | `Page` | `pages` | HasStates (PageDraft/PagePublished), SoftDeletes, LogsActivity, hierarchical (parent/children + position), key (front-end identifier), is_home, sections (JSON array via SectionRegistry/Builder), full SEO fields, MediaSelectionCast on og_image/twitter_image |
 | `CollectionEntry` | `collection_entries` | HasStates (EntryDraft/EntryPublished), SoftDeletes, LogsActivity, collection_type discriminator, data (JSON), slug (unique per type), position, full SEO fields (optional per CollectionType), field() accessor for data, scopes: forType/ordered/published |
@@ -120,6 +120,13 @@ contact_event('newsletter', ['email' => 'sub@example.com'], [
     'form_id' => 'footer-newsletter',
     'meta' => ['ip' => request()->ip()],
 ]);
+```
+
+```php
+// cms_feature() — check if a CMS module is enabled
+cms_feature('blog');            // true if blog module is enabled
+cms_feature('contact_webhooks'); // false if contact or contact_webhooks is disabled
+// Reads from SiteSetting.features (DB) with cms-features.php config fallback
 ```
 
 ## MediaPicker (Filament Form Component)
@@ -384,6 +391,56 @@ Two items added to Filament user profile dropdown via `$panel->userMenuItems()`:
 1. Updated documentation in `resources/docs/` (relevant section)
 2. New or updated release entry in `resources/releases/` (new minor version file)
 
+## Feature Toggles
+
+System for enabling/disabling CMS modules from the admin UI. Stored in `SiteSetting.features` (JSON column) with `cms-features.php` config as defaults.
+
+### Helper
+```php
+cms_feature('blog');            // parent key — controls entire Blog group
+cms_feature('blog_authors');    // child key — disabled if parent 'blog' is false
+cms_feature('contact_webhooks'); // child of 'contact'
+```
+
+### Key Convention
+- Parent keys: `blog`, `pages`, `contact`, `dashboards`, `seo`, `media`, `collections`
+- Child keys use underscore: `blog_authors`, `contact_webhooks`, `pages_sections`
+- Parent disabled → all children disabled automatically
+- DB value overrides config, config defaults to `true`
+
+### Feature Keys → Resources/Pages Map
+| Key | Controls |
+|-----|----------|
+| `dashboards` | All dashboards (parent) |
+| `dashboards_blog` | BlogDashboard page |
+| `dashboards_admin` | AdminDashboard page |
+| `blog` | BlogPostResource + all blog children (parent) |
+| `blog_authors` | BlogAuthorResource |
+| `blog_categories` | BlogCategoryResource |
+| `blog_tags` | BlogTagResource |
+| `blog_settings` | BlogSettings page |
+| `media` | MediaLibrary page |
+| `pages` | PageResource + children (parent) |
+| `pages_sections` | SectionCatalog page |
+| `pages_templates` | SectionTemplateResource |
+| `seo` | SEO group (parent) |
+| `seo_redirections` | RedirectResource |
+| `collections` | CollectionEntryResource |
+| `contact` | All contact children (parent) |
+| `contact_contacts` | ContactResource |
+| `contact_requests` | ContactRequestResource |
+| `contact_webhooks` | HookEndpointResource |
+| `contact_deliveries` | HookDeliveryResource |
+| `contact_settings` | ContactSettings page |
+| `administration_users` | UserResource |
+| `administration_roles` | RoleResource |
+| `administration_permissions` | PermissionResource |
+| `administration_site_settings` | SiteSettings page |
+| `administration_activity_log` | ActivityLogResource |
+
+### Admin UI
+SiteSettings page → "Fonctionnalités" tab. Toggles organized by group with reactive visibility (children hidden when parent disabled).
+
 ## Git Version Footer
 
 Implemented in `CmsCorePlugin::boot()` via `PanelsRenderHook::FOOTER`. Reads `SiteSetting::show_version_in_footer`, if enabled runs `git describe --tags --abbrev=0` (cached 1h), renders version in footer.
@@ -539,6 +596,7 @@ Blueprint system for structured, reusable content types. Host app defines Collec
 - `config/cms-sections.php` — section type classes registration (host app publishes and adds its types)
 - `config/cms-collections.php` — collection type classes registration (host app publishes and adds its types)
 - `config/cms-contacts.php` — contact module settings (default_async, retention_days, max_body_log_size)
+- `config/cms-features.php` — feature toggle defaults (all true). DB values in SiteSetting.features override these
 
 Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `UNSPLASH_APP_ID`, `UNSPLASH_APP_KEY`, `UNSPLASH_SECRET_KEY`.
 
@@ -570,3 +628,4 @@ Test files in host app `tests/Feature/` and `tests/Feature/Filament/`:
 - `CollectionTest.php` — CollectionType (methods, schema, definition), CollectionRegistry (register/resolve, definitions, rejection), migration columns, permissions, model CRUD, field accessor, scopes, SoftDeletes, slug generation, state machine, casts, config, Filament resource access, dynamic nav items, helpers (collection_entries/collection_entry), SeoResolver with CollectionEntry
 - `ContactTest.php` — Migrations (5 tables), permissions (14), ContactSetting singleton, Contact CRUD/upsert/casts/relations, ContactRequest states (new→processed→archived, transitions), pipeline (contact_event, idempotency, tag merge, hook dispatch, event filtering), HookEndpoint (CRUD, acceptsEvent, casts), HookDelivery (creation, relations), Job (success/failed/retry, HMAC signature), commands (retry-hooks, contact-purge), Filament resource access, helper
 - `DocumentationAndReleasesTest.php` — Migration (user_release_views table, unique constraint, cascade delete), DocumentationService (load/find/sort/render markdown), ReleaseService (load/find/sort/unread detection/markAllAsRead/per-user tracking), Filament pages (access for super_admin/editor, guest redirect, no sidebar nav), ReleasePopup Livewire component (show/dismiss/mark read), user menu items registration, release content integrity
+- `FeatureTogglesTest.php` — Migration (features column), SiteSetting cast, cms_feature() helper (defaults, DB read, parent/child hierarchy, config fallback, DB override), CmsCorePlugin conditional registration (resolveResources/resolvePages for all modules: blog, contact, pages, media, SEO, collections, dashboards, administration), SiteSettings page (Fonctionnalités tab), config keys

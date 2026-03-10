@@ -50,36 +50,12 @@ class CmsCorePlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+        $resources = $this->resolveResources();
+        $pages = $this->resolvePages();
+
         $panel
-            ->resources([
-                UserResource::class,
-                RoleResource::class,
-                PermissionResource::class,
-                BlogAuthorResource::class,
-                BlogCategoryResource::class,
-                BlogPostResource::class,
-                BlogTagResource::class,
-                PageResource::class,
-                RedirectResource::class,
-                CollectionEntryResource::class,
-                ActivityLogResource::class,
-                ContactResource::class,
-                ContactRequestResource::class,
-                HookEndpointResource::class,
-                HookDeliveryResource::class,
-                SectionTemplateResource::class,
-            ])
-            ->pages([
-                BlogDashboard::class,
-                AdminDashboard::class,
-                MediaLibrary::class,
-                BlogSettings::class,
-                SiteSettings::class,
-                ContactSettings::class,
-                SectionCatalog::class,
-                Documentation::class,
-                Releases::class,
-            ])
+            ->resources($resources)
+            ->pages($pages)
             ->profile(EditProfile::class)
             ->userMenuItems([
                 'documentation' => MenuItem::make()
@@ -91,6 +67,127 @@ class CmsCorePlugin implements Plugin
                     ->url(fn (): string => Releases::getUrl())
                     ->icon('heroicon-o-sparkles'),
             ]);
+    }
+
+    /**
+     * @return array<class-string>
+     */
+    protected function resolveResources(): array
+    {
+        $resources = [];
+
+        // Administration
+        if (cms_feature('administration_users')) {
+            $resources[] = UserResource::class;
+        }
+        if (cms_feature('administration_roles')) {
+            $resources[] = RoleResource::class;
+        }
+        if (cms_feature('administration_permissions')) {
+            $resources[] = PermissionResource::class;
+        }
+        if (cms_feature('administration_activity_log')) {
+            $resources[] = ActivityLogResource::class;
+        }
+
+        // Blog
+        if (cms_feature('blog')) {
+            $resources[] = BlogPostResource::class;
+
+            if (cms_feature('blog_authors')) {
+                $resources[] = BlogAuthorResource::class;
+            }
+            if (cms_feature('blog_categories')) {
+                $resources[] = BlogCategoryResource::class;
+            }
+            if (cms_feature('blog_tags')) {
+                $resources[] = BlogTagResource::class;
+            }
+        }
+
+        // Pages
+        if (cms_feature('pages')) {
+            $resources[] = PageResource::class;
+
+            if (cms_feature('pages_templates')) {
+                $resources[] = SectionTemplateResource::class;
+            }
+        }
+
+        // SEO
+        if (cms_feature('seo_redirections')) {
+            $resources[] = RedirectResource::class;
+        }
+
+        // Collections
+        if (cms_feature('collections')) {
+            $resources[] = CollectionEntryResource::class;
+        }
+
+        // Contact
+        if (cms_feature('contact')) {
+            if (cms_feature('contact_contacts')) {
+                $resources[] = ContactResource::class;
+            }
+            if (cms_feature('contact_requests')) {
+                $resources[] = ContactRequestResource::class;
+            }
+            if (cms_feature('contact_webhooks')) {
+                $resources[] = HookEndpointResource::class;
+            }
+            if (cms_feature('contact_deliveries')) {
+                $resources[] = HookDeliveryResource::class;
+            }
+        }
+
+        return $resources;
+    }
+
+    /**
+     * @return array<class-string>
+     */
+    protected function resolvePages(): array
+    {
+        $pages = [];
+
+        // Dashboards
+        if (cms_feature('dashboards_blog')) {
+            $pages[] = BlogDashboard::class;
+        }
+        if (cms_feature('dashboards_admin')) {
+            $pages[] = AdminDashboard::class;
+        }
+
+        // Media
+        if (cms_feature('media')) {
+            $pages[] = MediaLibrary::class;
+        }
+
+        // Blog settings
+        if (cms_feature('blog_settings')) {
+            $pages[] = BlogSettings::class;
+        }
+
+        // Site settings
+        if (cms_feature('administration_site_settings')) {
+            $pages[] = SiteSettings::class;
+        }
+
+        // Contact settings
+        if (cms_feature('contact_settings')) {
+            $pages[] = ContactSettings::class;
+        }
+
+        // Sections catalog
+        if (cms_feature('pages_sections')) {
+            $pages[] = SectionCatalog::class;
+        }
+
+        // Always registered (user menu, not sidebar)
+        $pages[] = Documentation::class;
+        $pages[] = Releases::class;
+
+        return $pages;
     }
 
     public function boot(Panel $panel): void

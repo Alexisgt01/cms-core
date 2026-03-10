@@ -33,6 +33,7 @@ class SiteSetting extends Model
             'default_robots_index' => 'boolean',
             'default_robots_follow' => 'boolean',
             'show_version_in_footer' => 'boolean',
+            'features' => 'array',
             'copyright_start_year' => 'integer',
             'meta' => 'array',
         ];

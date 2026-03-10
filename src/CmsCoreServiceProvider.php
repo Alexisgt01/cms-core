@@ -62,6 +62,7 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-sections.php', 'cms-sections');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-collections.php', 'cms-collections');
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-contacts.php', 'cms-contacts');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-features.php', 'cms-features');
 
         $this->app->singleton(ContactPipeline::class);
 
@@ -111,6 +112,7 @@ class CmsCoreServiceProvider extends ServiceProvider
             __DIR__ . '/../config/cms-sections.php' => config_path('cms-sections.php'),
             __DIR__ . '/../config/cms-collections.php' => config_path('cms-collections.php'),
             __DIR__ . '/../config/cms-contacts.php' => config_path('cms-contacts.php'),
+            __DIR__ . '/../config/cms-features.php' => config_path('cms-features.php'),
         ], 'cms-core-config');
 
         Gate::policy(User::class, UserPolicy::class);

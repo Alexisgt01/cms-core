@@ -219,3 +219,32 @@ if (! function_exists('media_url_build_options')) {
         return implode('/', $parts);
     }
 }
+
+if (! function_exists('cms_feature')) {
+    /**
+     * Check if a CMS feature is enabled.
+     *
+     * Reads from SiteSetting.features (DB, cached) with config fallback.
+     * Parent keys control groups: disabling 'blog' also disables 'blog_authors', etc.
+     */
+    function cms_feature(string $key): bool
+    {
+        try {
+            $features = \Alexisgt01\CmsCore\Models\SiteSetting::instance()->features ?? [];
+        } catch (\Throwable) {
+            $features = [];
+        }
+
+        $parent = explode('_', $key, 2)[0];
+
+        if ($parent !== $key) {
+            $parentEnabled = $features[$parent] ?? config("cms-features.{$parent}", true);
+
+            if (! $parentEnabled) {
+                return false;
+            }
+        }
+
+        return (bool) ($features[$key] ?? config("cms-features.{$key}", true));
+    }
+}
