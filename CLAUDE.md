@@ -393,7 +393,10 @@ Two items added to Filament user profile dropdown via `$panel->userMenuItems()`:
 
 ## Feature Toggles
 
-System for enabling/disabling CMS modules from the admin UI. Stored in `SiteSetting.features` (JSON column) with `cms-features.php` config as defaults.
+System for enabling/disabling CMS modules from the admin sidebar. Stored in `SiteSetting.features` (JSON column) with `cms-features.php` config as defaults.
+
+### Admin UI
+"Personnaliser la navigation" link at bottom of sidebar (via `SIDEBAR_NAV_END` render hook). Only visible to users with `manage site settings` permission. Opens a modal with checkboxes organized by module. `NavigationCustomizer` Livewire component handles the UI and save. On save, page reloads to re-resolve panel navigation.
 
 ### Helper
 ```php
@@ -409,37 +412,34 @@ cms_feature('contact_webhooks'); // child of 'contact'
 - DB value overrides config, config defaults to `true`
 
 ### Feature Keys → Resources/Pages Map
+
+**Modules (toggle entire group):**
+| Key | Controls | Mandatory when on |
+|-----|----------|-------------------|
+| `dashboards` | Dashboards group | (none, children are all optional) |
+| `blog` | Blog group | BlogPostResource, BlogSettings |
+| `media` | MediaLibrary page | — |
+| `pages` | Contenu group | PageResource |
+| `seo` | SEO group | RedirectResource |
+| `collections` | Collections group | CollectionEntryResource |
+| `contact` | Contact group | ContactResource, ContactRequestResource, ContactSettings |
+
+**Optional sub-items (within active module):**
 | Key | Controls |
 |-----|----------|
-| `dashboards` | All dashboards (parent) |
 | `dashboards_blog` | BlogDashboard page |
 | `dashboards_admin` | AdminDashboard page |
-| `blog` | BlogPostResource + all blog children (parent) |
 | `blog_authors` | BlogAuthorResource |
 | `blog_categories` | BlogCategoryResource |
 | `blog_tags` | BlogTagResource |
-| `blog_settings` | BlogSettings page |
-| `media` | MediaLibrary page |
-| `pages` | PageResource + children (parent) |
 | `pages_sections` | SectionCatalog page |
 | `pages_templates` | SectionTemplateResource |
-| `seo` | SEO group (parent) |
-| `seo_redirections` | RedirectResource |
-| `collections` | CollectionEntryResource |
-| `contact` | All contact children (parent) |
-| `contact_contacts` | ContactResource |
-| `contact_requests` | ContactRequestResource |
 | `contact_webhooks` | HookEndpointResource |
 | `contact_deliveries` | HookDeliveryResource |
-| `contact_settings` | ContactSettings page |
-| `administration_users` | UserResource |
-| `administration_roles` | RoleResource |
 | `administration_permissions` | PermissionResource |
-| `administration_site_settings` | SiteSettings page |
 | `administration_activity_log` | ActivityLogResource |
 
-### Admin UI
-SiteSettings page → "Fonctionnalités" tab. Toggles organized by group with reactive visibility (children hidden when parent disabled).
+**Always on (not toggleable):** UserResource, RoleResource, SiteSettings page.
 
 ## Git Version Footer
 

@@ -35,9 +35,9 @@ class ListBlogAuthors extends ListRecords
 
                             return User::query()
                                 ->whereNotIn('id', $existingUserIds)
-                                ->get()
+                                ->get(['id', 'first_name', 'last_name', 'email'])
                                 ->mapWithKeys(fn (User $user): array => [
-                                    $user->id => ($user->first_name ?? '') . ' ' . ($user->last_name ?? '') . ' (' . $user->email . ')',
+                                    $user->id => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) . ' (' . $user->email . ')',
                                 ])
                                 ->toArray();
                         })

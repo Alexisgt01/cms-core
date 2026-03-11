@@ -166,6 +166,7 @@ class CmsCoreServiceProvider extends ServiceProvider
     protected function registerLivewireComponents(): void
     {
         Livewire::component('cms-release-popup', ReleasePopup::class);
+        Livewire::component('cms-navigation-customizer', \Alexisgt01\CmsCore\Livewire\NavigationCustomizer::class);
     }
 
     protected function registerAuthListeners(): void

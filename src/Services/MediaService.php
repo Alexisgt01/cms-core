@@ -219,8 +219,8 @@ class MediaService
     {
         return CmsMedia::query()
             ->whereNotNull('custom_properties')
-            ->get()
-            ->flatMap(fn (CmsMedia $media) => $media->getCustomProperty('tags', []))
+            ->pluck('custom_properties')
+            ->flatMap(fn (mixed $props) => is_array($props) ? ($props['tags'] ?? []) : (json_decode($props, true)['tags'] ?? []))
             ->unique()
             ->sort()
             ->values()

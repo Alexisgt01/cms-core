@@ -2,12 +2,6 @@
 
 namespace Alexisgt01\CmsCore\Filament;
 
-use Filament\Contracts\Plugin;
-use Filament\Navigation\MenuItem;
-use Filament\Panel;
-use Filament\View\PanelsRenderHook;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Cache;
 use Alexisgt01\CmsCore\Filament\Pages\AdminDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogDashboard;
 use Alexisgt01\CmsCore\Filament\Pages\BlogSettings;
@@ -20,14 +14,14 @@ use Alexisgt01\CmsCore\Filament\Pages\SectionCatalog;
 use Alexisgt01\CmsCore\Filament\Pages\SiteSettings;
 use Alexisgt01\CmsCore\Filament\Resources\ActivityLogResource;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
+use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource;
 use Alexisgt01\CmsCore\Filament\Resources\ContactRequestResource;
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource;
 use Alexisgt01\CmsCore\Filament\Resources\HookDeliveryResource;
 use Alexisgt01\CmsCore\Filament\Resources\HookEndpointResource;
-use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
-use Alexisgt01\CmsCore\Filament\Resources\BlogPostResource;
-use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
 use Alexisgt01\CmsCore\Filament\Resources\PermissionResource;
 use Alexisgt01\CmsCore\Filament\Resources\RedirectResource;
@@ -35,6 +29,12 @@ use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
 use Alexisgt01\CmsCore\Filament\Resources\SectionTemplateResource;
 use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 use Alexisgt01\CmsCore\Models\SiteSetting;
+use Filament\Contracts\Plugin;
+use Filament\Navigation\MenuItem;
+use Filament\Panel;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 
 class CmsCorePlugin implements Plugin
 {
@@ -50,12 +50,9 @@ class CmsCorePlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        $resources = $this->resolveResources();
-        $pages = $this->resolvePages();
-
         $panel
-            ->resources($resources)
-            ->pages($pages)
+            ->resources($this->resolveResources())
+            ->pages($this->resolvePages())
             ->profile(EditProfile::class)
             ->userMenuItems([
                 'documentation' => MenuItem::make()
@@ -76,13 +73,10 @@ class CmsCorePlugin implements Plugin
     {
         $resources = [];
 
-        // Administration
-        if (cms_feature('administration_users')) {
-            $resources[] = UserResource::class;
-        }
-        if (cms_feature('administration_roles')) {
-            $resources[] = RoleResource::class;
-        }
+        // Administration (always on: users, roles, site settings)
+        $resources[] = UserResource::class;
+        $resources[] = RoleResource::class;
+
         if (cms_feature('administration_permissions')) {
             $resources[] = PermissionResource::class;
         }
@@ -90,7 +84,7 @@ class CmsCorePlugin implements Plugin
             $resources[] = ActivityLogResource::class;
         }
 
-        // Blog
+        // Blog (mandatory: posts; optional: authors, categories, tags)
         if (cms_feature('blog')) {
             $resources[] = BlogPostResource::class;
 
@@ -105,7 +99,7 @@ class CmsCorePlugin implements Plugin
             }
         }
 
-        // Pages
+        // Pages (mandatory: pages resource; optional: templates)
         if (cms_feature('pages')) {
             $resources[] = PageResource::class;
 
@@ -114,8 +108,8 @@ class CmsCorePlugin implements Plugin
             }
         }
 
-        // SEO
-        if (cms_feature('seo_redirections')) {
+        // SEO (mandatory: redirections when seo on)
+        if (cms_feature('seo')) {
             $resources[] = RedirectResource::class;
         }
 
@@ -124,14 +118,11 @@ class CmsCorePlugin implements Plugin
             $resources[] = CollectionEntryResource::class;
         }
 
-        // Contact
+        // Contact (mandatory: contacts, requests; optional: webhooks, deliveries)
         if (cms_feature('contact')) {
-            if (cms_feature('contact_contacts')) {
-                $resources[] = ContactResource::class;
-            }
-            if (cms_feature('contact_requests')) {
-                $resources[] = ContactRequestResource::class;
-            }
+            $resources[] = ContactResource::class;
+            $resources[] = ContactRequestResource::class;
+
             if (cms_feature('contact_webhooks')) {
                 $resources[] = HookEndpointResource::class;
             }
@@ -163,18 +154,16 @@ class CmsCorePlugin implements Plugin
             $pages[] = MediaLibrary::class;
         }
 
-        // Blog settings
-        if (cms_feature('blog_settings')) {
+        // Blog settings (mandatory when blog is on)
+        if (cms_feature('blog')) {
             $pages[] = BlogSettings::class;
         }
 
-        // Site settings
-        if (cms_feature('administration_site_settings')) {
-            $pages[] = SiteSettings::class;
-        }
+        // Site settings (always on)
+        $pages[] = SiteSettings::class;
 
-        // Contact settings
-        if (cms_feature('contact_settings')) {
+        // Contact settings (mandatory when contact is on)
+        if (cms_feature('contact')) {
             $pages[] = ContactSettings::class;
         }
 
@@ -201,6 +190,13 @@ class CmsCorePlugin implements Plugin
             PanelsRenderHook::BODY_END,
             fn (): string => auth()->check()
                 ? Blade::render('<livewire:cms-release-popup />')
+                : '',
+        );
+
+        $panel->renderHook(
+            PanelsRenderHook::SIDEBAR_NAV_END,
+            fn (): string => auth()->user()?->can('manage site settings')
+                ? Blade::render('<livewire:cms-navigation-customizer />')
                 : '',
         );
     }
