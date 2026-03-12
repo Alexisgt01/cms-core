@@ -76,19 +76,40 @@ class CollectionEntryResource extends Resource
     }
 
     /**
+     * Resolve the collection type key from all available sources.
+     *
+     * During Livewire update requests (AJAX POST), request()->query() is empty.
+     * We fall back to the record (edit) or the Livewire #[Url] property (create/list).
+     */
+    public static function resolveCollectionTypeKey(?Form $form = null): string
+    {
+        // 1. From the record being edited
+        if ($key = $form?->getRecord()?->collection_type) {
+            return $key;
+        }
+
+        // 2. Query parameter (initial page load)
+        if ($key = request()->query('collectionType')) {
+            return $key;
+        }
+
+        // 3. From Livewire component #[Url] property (persists across Livewire updates)
+        $livewire = $form?->getLivewire();
+        if ($livewire && property_exists($livewire, 'collectionType') && $livewire->collectionType) {
+            return $livewire->collectionType;
+        }
+
+        return '';
+    }
+
+    /**
      * Resolve the current CollectionType class from request context.
      *
      * @return class-string<\Alexisgt01\CmsCore\Collections\CollectionType>|null
      */
     protected static function resolveCollectionType(?Form $form = null): ?string
     {
-        // 1. Query parameter (initial page load, list navigation)
-        $key = request()->query('collectionType');
-
-        // 2. From the record being edited (Livewire update requests lose query params)
-        if (! $key && $form?->getRecord()) {
-            $key = $form->getRecord()->collection_type;
-        }
+        $key = static::resolveCollectionTypeKey($form);
 
         if (! $key) {
             return null;
@@ -100,7 +121,7 @@ class CollectionEntryResource extends Resource
     public static function form(Form $form): Form
     {
         $typeClass = static::resolveCollectionType($form);
-        $collectionTypeKey = $form?->getRecord()?->collection_type ?? request()->query('collectionType', '');
+        $collectionTypeKey = static::resolveCollectionTypeKey($form);
 
         $tabs = [];
 

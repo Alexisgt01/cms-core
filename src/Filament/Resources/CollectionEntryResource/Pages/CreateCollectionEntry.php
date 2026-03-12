@@ -7,13 +7,22 @@ use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource;
 use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\States\EntryPublished;
 use Filament\Resources\Pages\CreateRecord;
+use Livewire\Attributes\Url;
 
 class CreateCollectionEntry extends CreateRecord
 {
     protected static string $resource = CollectionEntryResource::class;
 
+    #[Url(as: 'collectionType')]
+    public ?string $collectionType = null;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        // Ensure collection_type is set from #[Url] property if missing from form data
+        if (empty($data['collection_type']) && $this->collectionType) {
+            $data['collection_type'] = $this->collectionType;
+        }
+
         if (($data['state'] ?? null) === EntryPublished::getMorphClass() && empty($data['published_at'])) {
             $data['published_at'] = now();
         }
@@ -35,7 +44,7 @@ class CreateCollectionEntry extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        $collectionType = $this->data['collection_type'] ?? request()->query('collectionType', '');
+        $collectionType = $this->data['collection_type'] ?? $this->collectionType ?? '';
 
         return static::$resource::getUrl('index') . '?collectionType=' . $collectionType;
     }

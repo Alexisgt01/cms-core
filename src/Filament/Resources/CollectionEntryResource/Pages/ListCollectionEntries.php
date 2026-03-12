@@ -6,10 +6,14 @@ use Alexisgt01\CmsCore\Collections\CollectionRegistry;
 use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Livewire\Attributes\Url;
 
 class ListCollectionEntries extends ListRecords
 {
     protected static string $resource = CollectionEntryResource::class;
+
+    #[Url(as: 'collectionType')]
+    public ?string $collectionType = null;
 
     public function getTitle(): string
     {
@@ -23,7 +27,7 @@ class ListCollectionEntries extends ListRecords
      */
     protected function getHeaderActions(): array
     {
-        $collectionType = request()->query('collectionType');
+        $collectionType = $this->collectionType ?? request()->query('collectionType');
         $typeClass = $this->resolveTypeClass();
 
         $actions = [];
@@ -48,7 +52,7 @@ class ListCollectionEntries extends ListRecords
      */
     protected function resolveTypeClass(): ?string
     {
-        $key = request()->query('collectionType');
+        $key = $this->collectionType ?? request()->query('collectionType');
 
         if (! $key) {
             return null;
