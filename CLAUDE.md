@@ -607,6 +607,7 @@ Env vars: `IMGPROXY_ENABLE`, `IMGPROXY_URL`, `IMGPROXY_KEY`, `IMGPROXY_SALT`, `U
 - Permissions follow pattern: `view/create/edit/delete {resource}` for CRUD, `manage {resource}` for settings pages
 - Permissions and roles are ONLY in migrations, never configs or seeders
 - All image fields use `MediaPicker` component + `MediaSelectionCast`
+- **imgproxy OBLIGATOIRE** : toute image de contenu dans les templates Blade host DOIT passer par `media_url()`. Aucune image de contenu ne doit être servie en `static_asset()` brut sans wrapper `media_url()`. Pattern : `media_url(static_asset('assets/...'), ['width' => X, 'format' => 'webp', 'resizing_type' => 'fit'])`. Utiliser `<picture>` avec `<source type="image/webp">` + fallback `<img>`. Exception : icônes et petits éléments UI < 100px.
 - `$guarded = ['id']` on models (not `$fillable`)
 - Casts defined in `casts()` method (not `$casts` property)
 - Slugs auto-generated with uniqueness via `Model::generateSlug()`
