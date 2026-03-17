@@ -111,16 +111,23 @@ class ContactRequestResource extends Resource
                     ->schema([
                         Infolists\Components\TextEntry::make('payload')
                             ->label('')
-                            ->formatStateUsing(fn (mixed $state): string => json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
-                            ->html(false)
-                            ->copyable(),
+                            ->formatStateUsing(function (mixed $state): string {
+                                return self::formatKeyValueHtml($state);
+                            })
+                            ->html(),
                     ]),
                 Infolists\Components\Section::make('Meta')
                     ->schema([
                         Infolists\Components\TextEntry::make('meta')
                             ->label('')
-                            ->formatStateUsing(fn (mixed $state): string => $state ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '—')
-                            ->html(false),
+                            ->formatStateUsing(function (mixed $state): string {
+                                if (! $state) {
+                                    return '—';
+                                }
+
+                                return self::formatKeyValueHtml($state);
+                            })
+                            ->html(),
                     ])
                     ->collapsible(),
             ]);
@@ -232,6 +239,29 @@ class ContactRequestResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function formatKeyValueHtml(mixed $data): string
+    {
+        if (! is_array($data)) {
+            return nl2br(e((string) $data));
+        }
+
+        $lines = [];
+
+        foreach ($data as $key => $value) {
+            $label = e(ucfirst(str_replace('_', ' ', (string) $key)));
+
+            if (is_array($value)) {
+                $val = e(json_encode($value, JSON_UNESCAPED_UNICODE));
+            } else {
+                $val = nl2br(e((string) $value));
+            }
+
+            $lines[] = '<div style="margin-bottom: 0.5rem;"><strong>' . $label . ' :</strong> ' . $val . '</div>';
+        }
+
+        return implode('', $lines);
     }
 
     public static function getPages(): array

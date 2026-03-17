@@ -194,7 +194,7 @@ class CmsCorePlugin implements Plugin
         );
 
         $panel->renderHook(
-            PanelsRenderHook::SIDEBAR_NAV_END,
+            PanelsRenderHook::SIDEBAR_FOOTER,
             fn (): string => auth()->user()?->can('manage site settings')
                 ? Blade::render('<livewire:cms-navigation-customizer />')
                 : '',
