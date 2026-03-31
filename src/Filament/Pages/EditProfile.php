@@ -2,7 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Filament\Pages;
 
-use Filament\Forms\Components\Component;
+use Filament\Schemas\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
