@@ -13,9 +13,9 @@ class BlogDashboard extends Dashboard
 
     protected static ?string $title = 'Blog';
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Tableaux de bord';
+    protected static string|\UnitEnum|null $navigationGroup = 'Tableaux de bord';
 
     protected static ?int $navigationSort = -3;
 

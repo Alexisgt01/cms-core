@@ -15,11 +15,11 @@ use Alexisgt01\CmsCore\Models\States\Draft;
 use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use FilamentTiptapEditor\TiptapEditor;
+use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Model;
 
 class BlogPostResource extends Resource
@@ -28,9 +28,9 @@ class BlogPostResource extends Resource
 
     protected static ?string $model = BlogPost::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Blog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Articles';
 
@@ -60,7 +60,7 @@ class BlogPostResource extends Resource
         return auth()->user()?->can('delete blog posts') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         $settings = BlogSetting::instance();
 
@@ -128,20 +128,17 @@ class BlogPostResource extends Resource
                                             ->maxLength(255)
                                             ->unique(BlogTag::class, 'slug'),
                                     ]),
-                                TiptapEditor::make('content_seo_top')
+                                RichEditor::make('content_seo_top')
                                     ->label('Contenu SEO (haut de page)')
-                                    ->profile('default')
                                     ->nullable()
                                     ->columnSpanFull(),
-                                TiptapEditor::make('content')
+                                RichEditor::make('content')
                                     ->label('Contenu')
-                                    ->profile('default')
-                                    ->disk('public')
-                                    ->directory('blog-content')
+                                    ->fileAttachmentsDisk('public')
+                                    ->fileAttachmentsDirectory('blog-content')
                                     ->columnSpanFull(),
-                                TiptapEditor::make('content_seo_bottom')
+                                RichEditor::make('content_seo_bottom')
                                     ->label('Contenu SEO (bas de page)')
-                                    ->profile('default')
                                     ->nullable()
                                     ->columnSpanFull(),
                                 Forms\Components\Repeater::make('faq_blocks')

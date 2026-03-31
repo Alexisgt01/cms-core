@@ -8,7 +8,7 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 use Alexisgt01\CmsCore\Models\BlogAuthor;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,9 +20,9 @@ class BlogAuthorResource extends Resource
 
     protected static ?string $model = BlogAuthor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Blog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Auteurs';
 
@@ -52,7 +52,7 @@ class BlogAuthorResource extends Resource
         return auth()->user()?->can('delete blog authors') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

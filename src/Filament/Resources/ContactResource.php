@@ -5,7 +5,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource\Pages;
 use Alexisgt01\CmsCore\Models\Contact;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -16,9 +16,9 @@ class ContactResource extends Resource
 {
     protected static ?string $model = Contact::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Contacts';
 
@@ -48,7 +48,7 @@ class ContactResource extends Resource
         return auth()->user()?->can('delete contacts') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

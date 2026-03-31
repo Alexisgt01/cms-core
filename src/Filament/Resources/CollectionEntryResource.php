@@ -10,7 +10,7 @@ use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\States\EntryDraft;
 use Alexisgt01\CmsCore\Models\States\EntryPublished;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -25,9 +25,9 @@ class CollectionEntryResource extends Resource
 
     protected static ?string $model = CollectionEntry::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup = 'Collections';
+    protected static string|\UnitEnum|null $navigationGroup = 'Collections';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -81,7 +81,7 @@ class CollectionEntryResource extends Resource
      * During Livewire update requests (AJAX POST), request()->query() is empty.
      * We fall back to the record (edit) or the Livewire #[Url] property (create/list).
      */
-    public static function resolveCollectionTypeKey(?Form $form = null): string
+    public static function resolveCollectionTypeKey(?Schema $form = null): string
     {
         // 1. From the record being edited
         if ($key = $form?->getRecord()?->collection_type) {
@@ -107,7 +107,7 @@ class CollectionEntryResource extends Resource
      *
      * @return class-string<\Alexisgt01\CmsCore\Collections\CollectionType>|null
      */
-    protected static function resolveCollectionType(?Form $form = null): ?string
+    protected static function resolveCollectionType(?Schema $form = null): ?string
     {
         $key = static::resolveCollectionTypeKey($form);
 
@@ -118,7 +118,7 @@ class CollectionEntryResource extends Resource
         return app(CollectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         $typeClass = static::resolveCollectionType($form);
         $collectionTypeKey = static::resolveCollectionTypeKey($form);

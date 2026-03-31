@@ -5,7 +5,7 @@ namespace Alexisgt01\CmsCore\Sections;
 use Alexisgt01\CmsCore\Filament\Forms\Components\IconPicker;
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 use Filament\Forms;
-use FilamentTiptapEditor\TiptapEditor;
+use Filament\Forms\Components\RichEditor;
 use Illuminate\Support\Facades\Cache;
 
 class SectionField
@@ -361,8 +361,7 @@ class SectionField
      */
     private function buildRichtext(): array
     {
-        $field = TiptapEditor::make($this->name)
-            ->profile('default')
+        $field = RichEditor::make($this->name)
             ->columnSpanFull();
 
         if ($this->labelText !== null) {

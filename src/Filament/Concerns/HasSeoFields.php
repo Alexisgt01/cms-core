@@ -8,7 +8,7 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Forms\Components\TwitterPreview;
 use Alexisgt01\CmsCore\Models\BlogSetting;
 use Filament\Forms;
-use FilamentTiptapEditor\TiptapEditor;
+use Filament\Forms\Components\RichEditor;
 
 trait HasSeoFields
 {
@@ -229,14 +229,12 @@ trait HasSeoFields
     protected static function contentSeoFields(): array
     {
         return [
-            TiptapEditor::make('content_seo_top')
+            RichEditor::make('content_seo_top')
                 ->label('Contenu SEO (haut de page)')
-                ->profile('default')
                 ->nullable()
                 ->columnSpanFull(),
-            TiptapEditor::make('content_seo_bottom')
+            RichEditor::make('content_seo_bottom')
                 ->label('Contenu SEO (bas de page)')
-                ->profile('default')
                 ->nullable()
                 ->columnSpanFull(),
         ];

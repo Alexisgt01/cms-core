@@ -31,7 +31,6 @@ use Alexisgt01\CmsCore\Console\Commands\PurgeActivityLog;
 use Alexisgt01\CmsCore\Console\Commands\PurgeContactDataCommand;
 use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Console\Commands\RetryContactHooksCommand;
-use Alexisgt01\CmsCore\Filament\Actions\CmsMediaAction;
 use Alexisgt01\CmsCore\Filament\Widgets\AdminStatsOverview;
 use Alexisgt01\CmsCore\Filament\Widgets\BlogStatsOverview;
 use Alexisgt01\CmsCore\Filament\Widgets\LatestPostsTable;
@@ -65,11 +64,6 @@ class CmsCoreServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/cms-features.php', 'cms-features');
 
         $this->app->singleton(ContactPipeline::class);
-
-        $this->app['config']->set(
-            'filament-tiptap-editor.media_action',
-            CmsMediaAction::class,
-        );
 
         $this->app->singleton(Sections\SectionRegistry::class, function () {
             $registry = new Sections\SectionRegistry;

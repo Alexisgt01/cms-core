@@ -6,7 +6,7 @@ use Alexisgt01\CmsCore\Filament\Resources\SectionTemplateResource\Pages;
 use Alexisgt01\CmsCore\Models\SectionTemplate;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -16,9 +16,9 @@ class SectionTemplateResource extends Resource
 {
     protected static ?string $model = SectionTemplate::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bookmark';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bookmark';
 
-    protected static ?string $navigationGroup = 'Contenu';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Modeles de section';
 
@@ -53,7 +53,7 @@ class SectionTemplateResource extends Resource
      *
      * @return class-string<\Alexisgt01\CmsCore\Sections\SectionType>|null
      */
-    protected static function resolveSectionType(?Form $form = null): ?string
+    protected static function resolveSectionType(?Schema $form = null): ?string
     {
         $key = request()->query('sectionType');
 
@@ -68,7 +68,7 @@ class SectionTemplateResource extends Resource
         return app(SectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         $typeClass = static::resolveSectionType($form);
         $sectionTypeKey = $form?->getRecord()?->section_type ?? request()->query('sectionType', '');

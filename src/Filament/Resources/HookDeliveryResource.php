@@ -7,7 +7,7 @@ use Alexisgt01\CmsCore\Jobs\DeliverContactHookJob;
 use Alexisgt01\CmsCore\Models\HookDelivery;
 use Filament\Forms;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -19,9 +19,9 @@ class HookDeliveryResource extends Resource
 {
     protected static ?string $model = HookDelivery::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Deliveries';
 
@@ -51,7 +51,7 @@ class HookDeliveryResource extends Resource
         return false;
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $infolist): Schema
     {
         return $infolist
             ->schema([

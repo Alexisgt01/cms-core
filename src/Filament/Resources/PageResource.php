@@ -11,7 +11,7 @@ use Alexisgt01\CmsCore\Models\States\PageDraft;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,9 +25,9 @@ class PageResource extends Resource
 
     protected static ?string $model = Page::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Contenu';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Pages';
 
@@ -57,7 +57,7 @@ class PageResource extends Resource
         return auth()->user()?->can('delete pages') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

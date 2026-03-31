@@ -5,13 +5,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "filament/filament": "^3.0",
-        "spatie/laravel-permission": "^6.0",
-        "spatie/laravel-medialibrary": "^11.0",
-        "spatie/laravel-model-states": "^2.0",
-        "awcodes/filament-tiptap-editor": "^3.0",
-        "spatie/laravel-sitemap": "^7.0",
-        "spatie/laravel-activitylog": "^4.0"
+        "filament/filament": "^5.0",
+        "spatie/laravel-permission": "^7.2.1",
+        "spatie/laravel-medialibrary": "^11.21",
+        "spatie/laravel-model-states": "^2.13",
+        "spatie/laravel-sitemap": "^7.4",
+        "spatie/laravel-activitylog": "^4.12"
     },
     "suggest": {
         "owenvoke/blade-fontawesome": "Font Awesome icons for the Icon Picker (^2.0)",
