@@ -8,6 +8,7 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Forms\Components\TwitterPreview;
 use Alexisgt01\CmsCore\Models\BlogSetting;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Forms\Components\RichEditor;
 
 trait HasSeoFields
@@ -61,9 +62,9 @@ trait HasSeoFields
         ];
     }
 
-    protected static function robotsFieldset(): Forms\Components\Fieldset
+    protected static function robotsFieldset(): Schemas\Components\Fieldset
     {
-        return Forms\Components\Fieldset::make('Robots')
+        return Schemas\Components\Fieldset::make('Robots')
             ->schema([
                 Forms\Components\Toggle::make('robots_index')
                     ->label('Index'),

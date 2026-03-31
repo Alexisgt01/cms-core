@@ -7,7 +7,7 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Group;
+use Filament\Schemas\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use FilamentTiptapEditor\TiptapEditor;

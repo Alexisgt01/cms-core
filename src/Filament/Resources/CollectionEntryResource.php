@@ -10,6 +10,7 @@ use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\States\EntryDraft;
 use Alexisgt01\CmsCore\Models\States\EntryPublished;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
@@ -142,7 +143,7 @@ class CollectionEntryResource extends Resource
             }
 
             // Dynamic fields from blueprint, wrapped with data. statePath
-            $mainSchema[] = Forms\Components\Group::make($typeClass::schema())
+            $mainSchema[] = Schemas\Components\Group::make($typeClass::schema())
                 ->statePath('data');
 
             if ($typeClass::sortable()) {
@@ -178,12 +179,12 @@ class CollectionEntryResource extends Resource
                 ->default($collectionTypeKey);
         }
 
-        $tabs[] = Forms\Components\Tabs\Tab::make($typeClass ? $typeClass::singularLabel() : 'Entree')
+        $tabs[] = Schemas\Components\Tabs\Tab::make($typeClass ? $typeClass::singularLabel() : 'Entree')
             ->schema($mainSchema);
 
         // SEO tabs (conditional)
         if ($typeClass && $typeClass::hasSeo()) {
-            $tabs[] = Forms\Components\Tabs\Tab::make('SEO')
+            $tabs[] = Schemas\Components\Tabs\Tab::make('SEO')
                 ->schema([
                     Forms\Components\TextInput::make('h1')
                         ->label('H1')
@@ -196,21 +197,21 @@ class CollectionEntryResource extends Resource
                 ])
                 ->columns(2);
 
-            $tabs[] = Forms\Components\Tabs\Tab::make('Open Graph')
+            $tabs[] = Schemas\Components\Tabs\Tab::make('Open Graph')
                 ->schema(static::ogFields())
                 ->columns(2);
 
-            $tabs[] = Forms\Components\Tabs\Tab::make('Twitter')
+            $tabs[] = Schemas\Components\Tabs\Tab::make('Twitter')
                 ->schema(static::twitterFields())
                 ->columns(2);
 
-            $tabs[] = Forms\Components\Tabs\Tab::make('Schema')
+            $tabs[] = Schemas\Components\Tabs\Tab::make('Schema')
                 ->schema(static::schemaFields())
                 ->columns(2);
         }
 
         return $form->schema([
-            Forms\Components\Tabs::make('CollectionEntry')
+            Schemas\Components\Tabs::make('CollectionEntry')
                 ->tabs($tabs)
                 ->columnSpanFull(),
         ]);

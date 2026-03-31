@@ -8,6 +8,7 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 use Alexisgt01\CmsCore\Models\BlogAuthor;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -56,9 +57,9 @@ class BlogAuthorResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Auteur')
+                Schemas\Components\Tabs::make('Auteur')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Identite')
+                        Schemas\Components\Tabs\Tab::make('Identite')
                             ->schema([
                                 Forms\Components\Select::make('user_id')
                                     ->label('Utilisateur lie')
@@ -100,7 +101,7 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Bio & Reseaux')
+                        Schemas\Components\Tabs\Tab::make('Bio & Reseaux')
                             ->schema([
                                 Forms\Components\Textarea::make('bio')
                                     ->label('Biographie')
@@ -129,7 +130,7 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('SEO')
+                        Schemas\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 ...static::seoKeywordFields(),
                                 ...static::seoIndexingFields(),
@@ -139,18 +140,18 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Contenu SEO')
+                        Schemas\Components\Tabs\Tab::make('Contenu SEO')
                             ->schema(static::contentSeoFields()),
 
-                        Forms\Components\Tabs\Tab::make('Open Graph')
+                        Schemas\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Twitter')
+                        Schemas\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Schema')
+                        Schemas\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])

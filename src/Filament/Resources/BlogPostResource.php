@@ -15,6 +15,7 @@ use Alexisgt01\CmsCore\Models\States\Draft;
 use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -66,9 +67,9 @@ class BlogPostResource extends Resource
 
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Article')
+                Schemas\Components\Tabs::make('Article')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Contenu')
+                        Schemas\Components\Tabs\Tab::make('Contenu')
                             ->schema([
                                 Forms\Components\TextInput::make('title')
                                     ->label('Titre')
@@ -163,7 +164,7 @@ class BlogPostResource extends Resource
                                     ->default(false),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Images & Auteur')
+                        Schemas\Components\Tabs\Tab::make('Images & Auteur')
                             ->schema([
                                 ...self::buildFeaturedImageFields($settings),
                                 Forms\Components\Select::make('author_id')
@@ -179,7 +180,7 @@ class BlogPostResource extends Resource
                                     ->helperText('Laissez vide pour un calcul automatique'),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Publication')
+                        Schemas\Components\Tabs\Tab::make('Publication')
                             ->schema([
                                 Forms\Components\Select::make('state')
                                     ->label('Statut')
@@ -206,7 +207,7 @@ class BlogPostResource extends Resource
                                     ->helperText('Laissez vide pour utiliser la date actuelle'),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('SEO')
+                        Schemas\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 ...static::seoKeywordFields(),
                                 ...static::seoIndexingFields(),
@@ -216,15 +217,15 @@ class BlogPostResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Open Graph')
+                        Schemas\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Twitter')
+                        Schemas\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Schema')
+                        Schemas\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])
