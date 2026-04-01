@@ -11,7 +11,7 @@ class PostsPerMonthChart extends ChartWidget
 {
     protected static ?string $heading = 'Articles publiés par mois';
 
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;
 

@@ -11,7 +11,7 @@ use Spatie\Permission\Models\Role;
 
 class AdminStatsOverview extends BaseWidget
 {
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 1;
 
