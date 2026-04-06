@@ -9,12 +9,13 @@ use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource\Pages;
 use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\States\EntryDraft;
 use Alexisgt01\CmsCore\Models\States\EntryPublished;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
-use Filament\Actions;
+use Filament\Schemas;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -172,7 +173,7 @@ class CollectionEntryResource extends Resource
 
                 $mainSchema[] = Forms\Components\DateTimePicker::make('published_at')
                     ->label('Date de publication')
-                    ->visible(fn (Forms\Get $get): bool => $get('state') === EntryPublished::getMorphClass())
+                    ->visible(fn (Get $get): bool => $get('state') === EntryPublished::getMorphClass())
                     ->helperText('Laissez vide pour utiliser la date actuelle');
             }
 

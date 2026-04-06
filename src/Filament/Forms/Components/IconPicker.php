@@ -4,7 +4,7 @@ namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
 use Alexisgt01\CmsCore\Services\IconDiscoveryService;
 use Alexisgt01\CmsCore\ValueObjects\IconSelection;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Field;
 
 class IconPicker extends Field

@@ -4,8 +4,10 @@ namespace Alexisgt01\CmsCore\Sections;
 
 use Alexisgt01\CmsCore\Filament\Forms\Components\IconPicker;
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\RichEditor;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\Cache;
 
 class SectionField
@@ -484,7 +486,7 @@ class SectionField
                     ->required(),
             ])
             ->createOptionUsing(fn (array $data): string => $data['color'])
-            ->createOptionAction(fn (Forms\Components\Actions\Action $action) => $action
+            ->createOptionAction(fn (Action $action) => $action
                 ->label('Personnalisée')
                 ->icon('heroicon-o-swatch')
                 ->modalHeading('Couleur personnalisée')
@@ -704,20 +706,20 @@ class SectionField
         }
 
         $url = Forms\Components\TextInput::make($this->name . '_url')
-            ->label(fn (Forms\Get $get): string => $get($this->name . '_link') === 'anchor'
+            ->label(fn (Get $get): string => $get($this->name . '_link') === 'anchor'
                 ? $label . ' — Ancre'
                 : $label . ' — URL')
             ->inputMode('url')
-            ->rule(fn (Forms\Get $get): string => $get($this->name . '_link') === 'anchor'
+            ->rule(fn (Get $get): string => $get($this->name . '_link') === 'anchor'
                 ? 'regex:/^#.+/'
                 : 'regex:/^(https?:\/\/|\/|#)/')
-            ->placeholder(fn (Forms\Get $get): string => $get($this->name . '_link') === 'anchor'
+            ->placeholder(fn (Get $get): string => $get($this->name . '_link') === 'anchor'
                 ? '#ma-section'
                 : '')
-            ->visible(fn (Forms\Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
+            ->visible(fn (Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
 
         if ($this->isRequired) {
-            $url->required(fn (Forms\Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
+            $url->required(fn (Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
         }
 
         if ($this->placeholderText !== null) {

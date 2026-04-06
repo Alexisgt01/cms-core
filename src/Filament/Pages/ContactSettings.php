@@ -55,9 +55,9 @@ class ContactSettings extends Page implements HasForms
                     ->maxLength(255)
                     ->placeholder('Pour la future route d\'ingestion')
                     ->suffixAction(
-                        \Filament\Forms\Components\Actions\Action::make('generate_inbound_secret')
+                        \Filament\Actions\Action::make('generate_inbound_secret')
                             ->icon('heroicon-o-arrow-path')
-                            ->action(fn (\Filament\Forms\Set $set) => $set('inbound_secret', Str::random(40))),
+                            ->action(fn (\Filament\Schemas\Components\Utilities\Set $set) => $set('inbound_secret', Str::random(40))),
                     ),
                 TextInput::make('retention_days')
                     ->label('Duree de retention (jours)')

@@ -10,11 +10,13 @@ use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\States\PageDraft;
 use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
-use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -72,7 +74,7 @@ class PageResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function (Forms\Set $set, ?string $state, ?string $old, Forms\Get $get): void {
+                                    ->afterStateUpdated(function (Set $set, ?string $state, ?string $old, Get $get): void {
                                         if (! $get('slug') || $get('slug') === Page::generateSlug($old ?? '')) {
                                             $set('slug', Page::generateSlug($state ?? ''));
                                         }
@@ -99,7 +101,7 @@ class PageResource extends Resource
                                     ->label('Position')
                                     ->numeric()
                                     ->default(0)
-                                    ->visible(fn (Forms\Get $get): bool => filled($get('parent_id'))),
+                                    ->visible(fn (Get $get): bool => filled($get('parent_id'))),
                                 Forms\Components\Toggle::make('is_home')
                                     ->label('Page d\'accueil'),
                                 Forms\Components\KeyValue::make('meta')
@@ -122,7 +124,7 @@ class PageResource extends Resource
                                     ->live(),
                                 Forms\Components\DateTimePicker::make('published_at')
                                     ->label('Date de publication')
-                                    ->visible(fn (Forms\Get $get): bool => $get('state') === PagePublished::getMorphClass())
+                                    ->visible(fn (Get $get): bool => $get('state') === PagePublished::getMorphClass())
                                     ->helperText('Laissez vide pour utiliser la date actuelle'),
                             ]),
 

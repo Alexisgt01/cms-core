@@ -2,10 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Set;
 use Illuminate\Support\Facades\Storage;
 use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Services\MediaService;

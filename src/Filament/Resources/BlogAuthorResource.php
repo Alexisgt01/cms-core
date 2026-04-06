@@ -7,11 +7,13 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 use Alexisgt01\CmsCore\Models\BlogAuthor;
-use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -73,7 +75,7 @@ class BlogAuthorResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function (Forms\Set $set, ?string $state, ?string $old, Forms\Get $get): void {
+                                    ->afterStateUpdated(function (Set $set, ?string $state, ?string $old, Get $get): void {
                                         if (! $get('slug') || $get('slug') === BlogAuthor::generateSlug($old ?? '')) {
                                             $set('slug', BlogAuthor::generateSlug($state ?? ''));
                                         }

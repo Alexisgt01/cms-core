@@ -14,14 +14,16 @@ use Alexisgt01\CmsCore\Models\BlogTag;
 use Alexisgt01\CmsCore\Models\States\Draft;
 use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
-use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Forms\Components\RichEditor;
+use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\RichEditor;
 use Illuminate\Database\Eloquent\Model;
 
 class BlogPostResource extends Resource
@@ -77,7 +79,7 @@ class BlogPostResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function (Forms\Set $set, ?string $state, ?string $old, Forms\Get $get): void {
+                                    ->afterStateUpdated(function (Set $set, ?string $state, ?string $old, Get $get): void {
                                         if (! $get('slug') || $get('slug') === BlogPost::generateSlug($old ?? '')) {
                                             $set('slug', BlogPost::generateSlug($state ?? ''));
                                         }
@@ -121,7 +123,7 @@ class BlogPostResource extends Resource
                                             ->required()
                                             ->maxLength(255)
                                             ->live(onBlur: true)
-                                            ->afterStateUpdated(function (Forms\Set $set, ?string $state): void {
+                                            ->afterStateUpdated(function (Set $set, ?string $state): void {
                                                 $set('slug', BlogTag::generateSlug($state ?? ''));
                                             }),
                                         Forms\Components\TextInput::make('slug')
@@ -200,11 +202,11 @@ class BlogPostResource extends Resource
                                     ->live(),
                                 Forms\Components\DateTimePicker::make('scheduled_for')
                                     ->label('Date de publication programmee')
-                                    ->visible(fn (Forms\Get $get): bool => $get('state') === Scheduled::getMorphClass())
-                                    ->required(fn (Forms\Get $get): bool => $get('state') === Scheduled::getMorphClass()),
+                                    ->visible(fn (Get $get): bool => $get('state') === Scheduled::getMorphClass())
+                                    ->required(fn (Get $get): bool => $get('state') === Scheduled::getMorphClass()),
                                 Forms\Components\DateTimePicker::make('published_at')
                                     ->label('Date de publication')
-                                    ->visible(fn (Forms\Get $get): bool => $get('state') === Published::getMorphClass())
+                                    ->visible(fn (Get $get): bool => $get('state') === Published::getMorphClass())
                                     ->helperText('Laissez vide pour utiliser la date actuelle'),
                             ]),
 

@@ -5,12 +5,13 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 use Alexisgt01\CmsCore\Filament\Resources\HookDeliveryResource\Pages;
 use Alexisgt01\CmsCore\Jobs\DeliverContactHookJob;
 use Alexisgt01\CmsCore\Models\HookDelivery;
+use Filament\Actions;
 use Filament\Forms;
 use Filament\Infolists;
-use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Actions;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -56,7 +57,7 @@ class HookDeliveryResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Informations')
+                Section::make('Informations')
                     ->schema([
                         Infolists\Components\TextEntry::make('event')
                             ->label('Evenement')
@@ -88,14 +89,14 @@ class HookDeliveryResource extends Resource
                             ->dateTime('d/m/Y H:i:s'),
                     ])
                     ->columns(4),
-                Infolists\Components\Section::make('Erreur')
+                Section::make('Erreur')
                     ->schema([
                         Infolists\Components\TextEntry::make('last_error')
                             ->label('')
                             ->placeholder('Aucune erreur'),
                     ])
                     ->collapsible(),
-                Infolists\Components\Section::make('Corps de la requete')
+                Section::make('Corps de la requete')
                     ->schema([
                         Infolists\Components\TextEntry::make('request_body')
                             ->label('')
@@ -103,7 +104,7 @@ class HookDeliveryResource extends Resource
                             ->copyable(),
                     ])
                     ->collapsible(),
-                Infolists\Components\Section::make('Corps de la reponse')
+                Section::make('Corps de la reponse')
                     ->schema([
                         Infolists\Components\TextEntry::make('response_body')
                             ->label('')

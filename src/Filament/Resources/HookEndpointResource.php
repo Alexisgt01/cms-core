@@ -4,10 +4,12 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Resources\HookEndpointResource\Pages;
 use Alexisgt01\CmsCore\Models\HookEndpoint;
-use Filament\Forms;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -75,9 +77,9 @@ class HookEndpointResource extends Resource
                     ->maxLength(255)
                     ->default(fn (): string => Str::random(40))
                     ->suffixAction(
-                        Forms\Components\Actions\Action::make('generate_secret')
+                        Action::make('generate_secret')
                             ->icon('heroicon-o-arrow-path')
-                            ->action(fn (Forms\Set $set) => $set('secret', Str::random(40))),
+                            ->action(fn (Set $set) => $set('secret', Str::random(40))),
                     ),
                 Forms\Components\Toggle::make('enabled')
                     ->label('Actif')

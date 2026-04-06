@@ -6,11 +6,13 @@ use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
 use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
 use Alexisgt01\CmsCore\Models\BlogTag;
-use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -66,7 +68,7 @@ class BlogTagResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function (Forms\Set $set, ?string $state, ?string $old, Forms\Get $get): void {
+                                    ->afterStateUpdated(function (Set $set, ?string $state, ?string $old, Get $get): void {
                                         if (! $get('slug') || $get('slug') === BlogTag::generateSlug($old ?? '')) {
                                             $set('slug', BlogTag::generateSlug($state ?? ''));
                                         }

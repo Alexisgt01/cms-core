@@ -4,10 +4,11 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Resources\RedirectResource\Pages;
 use Alexisgt01\CmsCore\Models\Redirect;
-use Filament\Forms;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -75,8 +76,8 @@ class RedirectResource extends Resource
                     ->maxLength(2048)
                     ->placeholder('https://example.com/nouvel-article ou /nouvel-article')
                     ->helperText('URL absolue ou chemin relatif')
-                    ->visible(fn (Forms\Get $get): bool => (int) $get('status_code') !== 410)
-                    ->required(fn (Forms\Get $get): bool => (int) $get('status_code') !== 410),
+                    ->visible(fn (Get $get): bool => (int) $get('status_code') !== 410)
+                    ->required(fn (Get $get): bool => (int) $get('status_code') !== 410),
                 Forms\Components\Toggle::make('is_active')
                     ->label('Active')
                     ->default(true),
