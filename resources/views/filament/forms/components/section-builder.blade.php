@@ -379,13 +379,8 @@
                         @if ($isAddable && $addBetweenAction(['afterItem' => $itemKey])->isVisible())
                             <li class="fi-fo-builder-add-between-items-ctn">
                                 <div class="fi-fo-builder-add-between-items">
-                                    <div class="fi-fo-builder-block-picker-ctn">
-                                        <button
-                                            type="button"
-                                            x-on:click.stop="openPicker('{{ $itemKey }}')"
-                                        >
-                                            {{ $addBetweenAction(['afterItem' => $itemKey]) }}
-                                        </button>
+                                    <div class="fi-fo-builder-block-picker-ctn" x-on:click.stop="openPicker('{{ $itemKey }}')">
+                                        {{ $addBetweenAction(['afterItem' => $itemKey]) }}
                                     </div>
                                 </div>
                             </li>
@@ -411,13 +406,8 @@
 
         {{-- Add section button --}}
         @if ($isAddable && $addAction->isVisible())
-            <div class="fi-fo-builder-block-picker-ctn">
-                <button
-                    type="button"
-                    x-on:click="openPicker()"
-                >
-                    {{ $addAction }}
-                </button>
+            <div class="fi-fo-builder-block-picker-ctn" x-on:click="openPicker()">
+                {{ $addAction }}
             </div>
         @endif
 
