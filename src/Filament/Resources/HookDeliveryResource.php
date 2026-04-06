@@ -10,6 +10,7 @@ use Filament\Infolists;
 use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -174,8 +175,8 @@ class HookDeliveryResource extends Resource
                         ->when($data['until'], fn (Builder $q, $date): Builder => $q->whereDate('created_at', '<=', $date))),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('replay')
+                Actions\ViewAction::make(),
+                Actions\Action::make('replay')
                     ->label('Relancer')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')

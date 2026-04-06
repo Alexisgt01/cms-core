@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Infolists;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -198,8 +199,8 @@ class ContactRequestResource extends Resource
                         ->when($data['until'], fn (Builder $q, $date): Builder => $q->whereDate('created_at', '<=', $date))),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('replay_hooks')
+                Actions\ViewAction::make(),
+                Actions\Action::make('replay_hooks')
                     ->label('Relancer les hooks')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
@@ -231,11 +232,11 @@ class ContactRequestResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\DeleteAction::make(),
+                Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

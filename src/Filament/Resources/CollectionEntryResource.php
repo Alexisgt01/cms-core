@@ -14,6 +14,7 @@ use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -260,20 +261,20 @@ class CollectionEntryResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
+                Actions\EditAction::make()
                     ->url(fn (CollectionEntry $record): string => static::getUrl('edit', [
                         'record' => $record,
                         'collectionType' => $record->collection_type,
                     ])),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                Actions\DeleteAction::make(),
+                Actions\RestoreAction::make(),
+                Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
+                    Actions\RestoreBulkAction::make(),
+                    Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

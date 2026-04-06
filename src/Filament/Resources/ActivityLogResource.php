@@ -4,6 +4,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Resources\ActivityLogResource\Pages;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Spatie\Activitylog\Models\Activity;
@@ -116,7 +117,7 @@ class ActivityLogResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
+                Actions\ViewAction::make()
                     ->modalContent(fn (Activity $record) => view('cms-core::filament.activity-log-detail', [
                         'activity' => $record,
                     ])),

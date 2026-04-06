@@ -14,6 +14,7 @@ use Filament\Forms;
 use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -225,8 +226,8 @@ class PageResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ReplicateAction::make()
+                Actions\EditAction::make(),
+                Actions\ReplicateAction::make()
                     ->label('Dupliquer')
                     ->excludeAttributes(['key', 'slug'])
                     ->beforeReplicaSaved(function (Page $replica): void {
@@ -238,15 +239,15 @@ class PageResource extends Resource
                     ->successRedirectUrl(fn (Page $replica): string => static::getUrl('edit', ['record' => $replica]))
                     ->successNotificationTitle('Page dupliquée')
                     ->visible(fn (): bool => auth()->user()?->can('create pages') ?? false),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                Actions\DeleteAction::make(),
+                Actions\RestoreAction::make(),
+                Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make(),
+                    Actions\RestoreBulkAction::make(),
+                    Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }
