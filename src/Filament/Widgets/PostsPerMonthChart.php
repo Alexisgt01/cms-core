@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\DB;
 
 class PostsPerMonthChart extends ChartWidget
 {
-    protected static ?string $heading = 'Articles publiés par mois';
+    protected ?string $heading = 'Articles publiés par mois';
 
     protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;
 
-    protected static ?string $maxHeight = '300px';
+    protected ?string $maxHeight = '300px';
 
     protected int|string|array $columnSpan = 'full';
 
