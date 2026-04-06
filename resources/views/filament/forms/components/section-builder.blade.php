@@ -108,6 +108,8 @@
                 }, { schemaComponent: '{{ $key }}' });
             },
         }"
+    >
+    <div
         {{
             $attributes
                 ->merge($getExtraAttributes(), escape: false)
@@ -418,6 +420,8 @@
                 </button>
             </div>
         @endif
+
+    </div>{{-- close fi-fo-builder --}}
 
         {{-- Section picker modal --}}
         @php
