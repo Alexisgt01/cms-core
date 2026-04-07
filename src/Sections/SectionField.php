@@ -7,7 +7,7 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\RichEditor;
-use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Get;
 use Illuminate\Support\Facades\Cache;
 
 class SectionField

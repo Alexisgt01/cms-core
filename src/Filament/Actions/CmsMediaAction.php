@@ -3,11 +3,11 @@
 namespace Alexisgt01\CmsCore\Filament\Actions;
 
 use Filament\Actions\Action;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
-use Filament\Schemas\Components\Group;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use FilamentTiptapEditor\TiptapEditor;
@@ -37,7 +37,7 @@ class CmsMediaAction extends Action
                 'lazy' => null,
             ])
             ->modalWidth('md')
-            ->mountUsing(function (TiptapEditor $component, ?Schema $schema, array $arguments) {
+            ->mountUsing(function (TiptapEditor $component, ?Form $form, array $arguments) {
                 $source = $arguments['src'] !== ''
                     ? $component->getDirectory() . Str::of($arguments['src'])
                         ->after($component->getDirectory())
@@ -47,7 +47,7 @@ class CmsMediaAction extends Action
                 $height = $arguments['height'] ?? '';
                 $ratio = ($width && $height && (int) $width > 0) ? (int) $height / (int) $width : 0;
 
-                $schema?->fill([
+                $form?->fill([
                     'src' => $source,
                     'alt' => $arguments['alt'] ?? '',
                     'title' => $arguments['title'] ?? '',

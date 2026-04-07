@@ -13,9 +13,8 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
-use Filament\Schemas;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Schema;
+use Filament\Forms\Get;
+use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,9 +27,9 @@ class CollectionEntryResource extends Resource
 
     protected static ?string $model = CollectionEntry::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Collections';
+    protected static ?string $navigationGroup = 'Collections';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -84,7 +83,7 @@ class CollectionEntryResource extends Resource
      * During Livewire update requests (AJAX POST), request()->query() is empty.
      * We fall back to the record (edit) or the Livewire #[Url] property (create/list).
      */
-    public static function resolveCollectionTypeKey(?Schema $form = null): string
+    public static function resolveCollectionTypeKey(?Form $form = null): string
     {
         // 1. From the record being edited
         if ($key = $form?->getRecord()?->collection_type) {
@@ -110,7 +109,7 @@ class CollectionEntryResource extends Resource
      *
      * @return class-string<\Alexisgt01\CmsCore\Collections\CollectionType>|null
      */
-    protected static function resolveCollectionType(?Schema $form = null): ?string
+    protected static function resolveCollectionType(?Form $form = null): ?string
     {
         $key = static::resolveCollectionTypeKey($form);
 
@@ -121,7 +120,7 @@ class CollectionEntryResource extends Resource
         return app(CollectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         $typeClass = static::resolveCollectionType($form);
         $collectionTypeKey = static::resolveCollectionTypeKey($form);
@@ -145,7 +144,7 @@ class CollectionEntryResource extends Resource
             }
 
             // Dynamic fields from blueprint, wrapped with data. statePath
-            $mainSchema[] = Schemas\Components\Group::make($typeClass::schema())
+            $mainSchema[] = Forms\Components\Group::make($typeClass::schema())
                 ->statePath('data');
 
             if ($typeClass::sortable()) {
@@ -181,12 +180,12 @@ class CollectionEntryResource extends Resource
                 ->default($collectionTypeKey);
         }
 
-        $tabs[] = Schemas\Components\Tabs\Tab::make($typeClass ? $typeClass::singularLabel() : 'Entree')
+        $tabs[] = Forms\Components\Tabs\Tab::make($typeClass ? $typeClass::singularLabel() : 'Entree')
             ->schema($mainSchema);
 
         // SEO tabs (conditional)
         if ($typeClass && $typeClass::hasSeo()) {
-            $tabs[] = Schemas\Components\Tabs\Tab::make('SEO')
+            $tabs[] = Forms\Components\Tabs\Tab::make('SEO')
                 ->schema([
                     Forms\Components\TextInput::make('h1')
                         ->label('H1')
@@ -199,21 +198,21 @@ class CollectionEntryResource extends Resource
                 ])
                 ->columns(2);
 
-            $tabs[] = Schemas\Components\Tabs\Tab::make('Open Graph')
+            $tabs[] = Forms\Components\Tabs\Tab::make('Open Graph')
                 ->schema(static::ogFields())
                 ->columns(2);
 
-            $tabs[] = Schemas\Components\Tabs\Tab::make('Twitter')
+            $tabs[] = Forms\Components\Tabs\Tab::make('Twitter')
                 ->schema(static::twitterFields())
                 ->columns(2);
 
-            $tabs[] = Schemas\Components\Tabs\Tab::make('Schema')
+            $tabs[] = Forms\Components\Tabs\Tab::make('Schema')
                 ->schema(static::schemaFields())
                 ->columns(2);
         }
 
         return $form->schema([
-            Schemas\Components\Tabs::make('CollectionEntry')
+            Forms\Components\Tabs::make('CollectionEntry')
                 ->tabs($tabs)
                 ->columnSpanFull(),
         ]);

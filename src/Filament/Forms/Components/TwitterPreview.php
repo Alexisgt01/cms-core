@@ -2,7 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
-use Filament\Schemas\Components\Component;
+use Filament\Forms\Components\Component;
 
 class TwitterPreview extends Component
 {

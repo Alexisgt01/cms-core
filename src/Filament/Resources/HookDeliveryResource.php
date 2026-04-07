@@ -10,8 +10,8 @@ use Filament\Forms;
 use Filament\Infolists;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
+use Filament\Infolists\Infolist;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,9 +21,9 @@ class HookDeliveryResource extends Resource
 {
     protected static ?string $model = HookDelivery::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
+    protected static ?string $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Deliveries';
 
@@ -53,11 +53,11 @@ class HookDeliveryResource extends Resource
         return false;
     }
 
-    public static function infolist(Schema $infolist): Schema
+    public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist
             ->schema([
-                Section::make('Informations')
+                Infolists\Components\Section::make('Informations')
                     ->schema([
                         Infolists\Components\TextEntry::make('event')
                             ->label('Evenement')
@@ -89,14 +89,14 @@ class HookDeliveryResource extends Resource
                             ->dateTime('d/m/Y H:i:s'),
                     ])
                     ->columns(4),
-                Section::make('Erreur')
+                Infolists\Components\Section::make('Erreur')
                     ->schema([
                         Infolists\Components\TextEntry::make('last_error')
                             ->label('')
                             ->placeholder('Aucune erreur'),
                     ])
                     ->collapsible(),
-                Section::make('Corps de la requete')
+                Infolists\Components\Section::make('Corps de la requete')
                     ->schema([
                         Infolists\Components\TextEntry::make('request_body')
                             ->label('')
@@ -104,7 +104,7 @@ class HookDeliveryResource extends Resource
                             ->copyable(),
                     ])
                     ->collapsible(),
-                Section::make('Corps de la reponse')
+                Infolists\Components\Section::make('Corps de la reponse')
                     ->schema([
                         Infolists\Components\TextEntry::make('response_body')
                             ->label('')

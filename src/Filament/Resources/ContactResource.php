@@ -5,8 +5,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource\Pages;
 use Alexisgt01\CmsCore\Models\Contact;
 use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Tables;
@@ -18,9 +17,9 @@ class ContactResource extends Resource
 {
     protected static ?string $model = Contact::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
+    protected static ?string $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Contacts';
 
@@ -50,13 +49,13 @@ class ContactResource extends Resource
         return auth()->user()?->can('delete contacts') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Schemas\Components\Tabs::make('Contact')
+                Forms\Components\Tabs::make('Contact')
                     ->tabs([
-                        Schemas\Components\Tabs\Tab::make('Informations')
+                        Forms\Components\Tabs\Tab::make('Informations')
                             ->icon('heroicon-o-user')
                             ->schema([
                                 Forms\Components\TextInput::make('email')
@@ -78,7 +77,7 @@ class ContactResource extends Resource
                                 Forms\Components\KeyValue::make('attribs')
                                     ->label('Attributs'),
                             ]),
-                        Schemas\Components\Tabs\Tab::make('Demandes')
+                        Forms\Components\Tabs\Tab::make('Demandes')
                             ->icon('heroicon-o-inbox')
                             ->schema([
                                 Forms\Components\Placeholder::make('requests_list')

@@ -21,9 +21,9 @@ class MediaLibrary extends Page
 {
     use WithFileUploads;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-photo';
+    protected static ?string $navigationIcon = 'heroicon-o-photo';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Médias';
+    protected static ?string $navigationGroup = 'Médias';
 
     protected static ?string $navigationLabel = 'Médiathèque';
 
@@ -33,7 +33,7 @@ class MediaLibrary extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected string $view = 'cms-core::filament.pages.media-library';
+    protected static string $view = 'cms-core::filament.pages.media-library';
 
     public ?int $currentFolderId = null;
 

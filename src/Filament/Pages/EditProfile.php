@@ -2,10 +2,10 @@
 
 namespace Alexisgt01\CmsCore\Filament\Pages;
 
-use Filament\Schemas\Components\Component;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
-use Filament\Auth\Pages\EditProfile as BaseEditProfile;
+use Filament\Forms\Form;
+use Filament\Pages\Auth\EditProfile as BaseEditProfile;
 
 class EditProfile extends BaseEditProfile
 {
@@ -27,7 +27,7 @@ class EditProfile extends BaseEditProfile
     }
 
     /**
-     * @return array<int | string, string | Schema>
+     * @return array<int | string, string | Form>
      */
     protected function getForms(): array
     {

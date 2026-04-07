@@ -4,7 +4,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use App\Models\User;
 use Filament\Forms;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Tables;
@@ -17,9 +17,9 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Administration';
 
     protected static ?int $navigationSort = 1;
 
@@ -43,7 +43,7 @@ class UserResource extends Resource
         return auth()->user()?->can('delete users') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([

@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 
 class Documentation extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
     protected static ?string $navigationLabel = 'Guide d\'utilisation';
 
@@ -15,7 +15,7 @@ class Documentation extends Page
 
     protected static ?string $slug = 'documentation';
 
-    protected string $view = 'cms-core::filament.pages.documentation';
+    protected static string $view = 'cms-core::filament.pages.documentation';
 
     protected static bool $shouldRegisterNavigation = false;
 

@@ -10,10 +10,9 @@ use Alexisgt01\CmsCore\Models\BlogAuthor;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Schemas;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Schema;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -24,9 +23,9 @@ class BlogAuthorResource extends Resource
 
     protected static ?string $model = BlogAuthor::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
+    protected static ?string $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Auteurs';
 
@@ -56,13 +55,13 @@ class BlogAuthorResource extends Resource
         return auth()->user()?->can('delete blog authors') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Schemas\Components\Tabs::make('Auteur')
+                Forms\Components\Tabs::make('Auteur')
                     ->tabs([
-                        Schemas\Components\Tabs\Tab::make('Identite')
+                        Forms\Components\Tabs\Tab::make('Identite')
                             ->schema([
                                 Forms\Components\Select::make('user_id')
                                     ->label('Utilisateur lie')
@@ -104,7 +103,7 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Bio & Reseaux')
+                        Forms\Components\Tabs\Tab::make('Bio & Reseaux')
                             ->schema([
                                 Forms\Components\Textarea::make('bio')
                                     ->label('Biographie')
@@ -133,7 +132,7 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('SEO')
+                        Forms\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 ...static::seoKeywordFields(),
                                 ...static::seoIndexingFields(),
@@ -143,18 +142,18 @@ class BlogAuthorResource extends Resource
                             ])
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Contenu SEO')
+                        Forms\Components\Tabs\Tab::make('Contenu SEO')
                             ->schema(static::contentSeoFields()),
 
-                        Schemas\Components\Tabs\Tab::make('Open Graph')
+                        Forms\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Twitter')
+                        Forms\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Schema')
+                        Forms\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])
