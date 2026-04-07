@@ -3,6 +3,7 @@
 namespace Alexisgt01\CmsCore\Sections;
 
 use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\Hidden;
 use InvalidArgumentException;
 
 class SectionRegistry
@@ -50,6 +51,7 @@ class SectionRegistry
 
     /**
      * All registered types as Filament Builder\Block instances (cached in memory).
+     * Includes a special `__global` block for global section references.
      *
      * @return array<int, Block>
      */
@@ -62,6 +64,14 @@ class SectionRegistry
         $this->cachedBlocks = array_values(
             array_map(fn (string $class) => $class::toBlock(), $this->types)
         );
+
+        // Add a hidden __global block for global section references
+        $this->cachedBlocks[] = Block::make('__global')
+            ->label('Section globale')
+            ->icon('heroicon-o-globe-alt')
+            ->schema([
+                Hidden::make('global_section_id'),
+            ]);
 
         return $this->cachedBlocks;
     }

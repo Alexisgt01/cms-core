@@ -220,6 +220,73 @@ if (! function_exists('media_url_build_options')) {
     }
 }
 
+if (! function_exists('resolve_sections')) {
+    /**
+     * Resolve page sections, replacing global section references with their actual data.
+     *
+     * Returns a normalized array where each entry has 'type' (the real section type key)
+     * and 'data' (the field values). Global sections also include 'global' => true and
+     * 'global_section_id'.
+     *
+     * @param  \Alexisgt01\CmsCore\Models\Page  $page
+     * @return array<int, array{type: string, data: array<string, mixed>, global?: bool, global_section_id?: int}>
+     */
+    function resolve_sections(\Alexisgt01\CmsCore\Models\Page $page): array
+    {
+        $sections = $page->sections ?? [];
+
+        if (empty($sections)) {
+            return [];
+        }
+
+        // Collect all global section IDs for batch loading
+        $globalIds = [];
+
+        foreach ($sections as $section) {
+            if (($section['type'] ?? '') === '__global') {
+                $id = $section['data']['global_section_id'] ?? null;
+
+                if ($id) {
+                    $globalIds[] = $id;
+                }
+            }
+        }
+
+        // Batch load global sections
+        $globalSections = ! empty($globalIds)
+            ? \Alexisgt01\CmsCore\Models\GlobalSection::whereIn('id', $globalIds)->get()->keyBy('id')
+            : collect();
+
+        $resolved = [];
+
+        foreach ($sections as $section) {
+            if (($section['type'] ?? '') === '__global') {
+                $id = $section['data']['global_section_id'] ?? null;
+                $global = $id ? $globalSections->get($id) : null;
+
+                if ($global) {
+                    $resolved[] = [
+                        'type' => $global->section_type,
+                        'data' => $global->data ?? [],
+                        'global' => true,
+                        'global_section_id' => $global->id,
+                    ];
+                }
+
+                // Skip silently if global section was deleted
+                continue;
+            }
+
+            $resolved[] = [
+                'type' => $section['type'] ?? '',
+                'data' => $section['data'] ?? [],
+            ];
+        }
+
+        return $resolved;
+    }
+}
+
 if (! function_exists('cms_feature')) {
     /**
      * Check if a CMS feature is enabled.

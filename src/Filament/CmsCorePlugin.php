@@ -20,6 +20,7 @@ use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 use Alexisgt01\CmsCore\Filament\Resources\CollectionEntryResource;
 use Alexisgt01\CmsCore\Filament\Resources\ContactRequestResource;
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource;
+use Alexisgt01\CmsCore\Filament\Resources\GlobalSectionResource;
 use Alexisgt01\CmsCore\Filament\Resources\HookDeliveryResource;
 use Alexisgt01\CmsCore\Filament\Resources\HookEndpointResource;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource;
@@ -105,6 +106,10 @@ class CmsCorePlugin implements Plugin
 
             if (cms_feature('pages_templates')) {
                 $resources[] = SectionTemplateResource::class;
+            }
+
+            if (cms_feature('pages_global_sections')) {
+                $resources[] = GlobalSectionResource::class;
             }
         }
 

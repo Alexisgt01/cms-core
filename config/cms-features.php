@@ -34,6 +34,7 @@ return [
     'blog_tags' => true,
     'pages_sections' => true,
     'pages_templates' => true,
+    'pages_global_sections' => true,
     'contact_webhooks' => true,
     'contact_deliveries' => true,
     'administration_permissions' => true,

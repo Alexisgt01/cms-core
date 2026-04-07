@@ -2,9 +2,11 @@
 
 namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
+use Alexisgt01\CmsCore\Filament\Resources\GlobalSectionResource;
+use Alexisgt01\CmsCore\Models\GlobalSection;
 use Alexisgt01\CmsCore\Models\SectionTemplate;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
-use Filament\Actions\Action;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -19,6 +21,9 @@ class SectionBuilder extends Builder
 
     /** @var array<int, array<string, mixed>>|null */
     protected ?array $cachedTemplates = null;
+
+    /** @var array<int, array<string, mixed>>|null */
+    protected ?array $cachedGlobalSections = null;
 
     protected function setUp(): void
     {
@@ -53,11 +58,59 @@ class SectionBuilder extends Builder
                         ->success()
                         ->send();
                 }),
+            fn (): Action => Action::make('convertToGlobal')
+                ->icon('heroicon-o-globe-alt')
+                ->label('Convertir en section globale')
+                ->form([
+                    TextInput::make('name')
+                        ->label('Nom de la section globale')
+                        ->required()
+                        ->maxLength(255),
+                ])
+                ->action(function (array $arguments, array $data, SectionBuilder $component): void {
+                    $items = $component->getState();
+                    $item = $items[$arguments['item']] ?? null;
+
+                    if (! $item || ($item['type'] ?? '') === '__global') {
+                        return;
+                    }
+
+                    $globalSection = GlobalSection::create([
+                        'name' => $data['name'],
+                        'section_type' => $item['type'],
+                        'data' => $item['data'] ?? [],
+                    ]);
+
+                    // Replace the section with a global reference
+                    $items[$arguments['item']] = [
+                        'type' => '__global',
+                        'data' => ['global_section_id' => $globalSection->id],
+                    ];
+
+                    $component->state($items);
+                    $component->callAfterStateUpdated();
+
+                    Notification::make()
+                        ->title('Section convertie en globale')
+                        ->success()
+                        ->send();
+                })
+                ->visible(function (array $arguments, SectionBuilder $component): bool {
+                    if (! cms_feature('pages_global_sections')) {
+                        return false;
+                    }
+
+                    $items = $component->getState();
+                    $item = $items[$arguments['item']] ?? null;
+
+                    return $item && ($item['type'] ?? '') !== '__global';
+                }),
         ]);
 
         $this->registerActions([
             fn (SectionBuilder $component): Action => $this->getAddFromTemplateAction(),
             fn (SectionBuilder $component): Action => $this->getDeleteTemplateAction(),
+            fn (SectionBuilder $component): Action => $this->getAddGlobalSectionAction(),
         ]);
     }
 
@@ -202,5 +255,138 @@ class SectionBuilder extends Builder
                     ->send();
             })
             ->livewireClickHandlerEnabled(false);
+    }
+
+    protected function getAddGlobalSectionAction(): Action
+    {
+        return Action::make('addGlobalSection')
+            ->action(function (array $arguments, SectionBuilder $component): void {
+                $globalSection = GlobalSection::find($arguments['globalSectionId'] ?? null);
+
+                if (! $globalSection) {
+                    return;
+                }
+
+                $newUuid = $component->generateUuid();
+                $afterItem = $arguments['afterItem'] ?? null;
+
+                $newItem = [
+                    'type' => '__global',
+                    'data' => ['global_section_id' => $globalSection->id],
+                ];
+
+                if ($afterItem) {
+                    $items = [];
+
+                    foreach ($component->getState() ?? [] as $key => $item) {
+                        $items[$key] = $item;
+
+                        if ($key === $afterItem) {
+                            if ($newUuid) {
+                                $items[$newUuid] = $newItem;
+                            } else {
+                                $items[] = $newItem;
+                                $newUuid = array_key_last($items);
+                            }
+                        }
+                    }
+
+                    $component->state($items);
+                } else {
+                    $items = $component->getState();
+
+                    if ($newUuid) {
+                        $items[$newUuid] = $newItem;
+                    } else {
+                        $items[] = $newItem;
+                        $newUuid = array_key_last($items);
+                    }
+
+                    $component->state($items);
+                }
+
+                $component->callAfterStateUpdated();
+            })
+            ->livewireClickHandlerEnabled(false);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getGlobalSections(): array
+    {
+        if ($this->cachedGlobalSections !== null) {
+            return $this->cachedGlobalSections;
+        }
+
+        if (! cms_feature('pages_global_sections')) {
+            $this->cachedGlobalSections = [];
+
+            return $this->cachedGlobalSections;
+        }
+
+        $registry = app(SectionRegistry::class);
+        $registeredKeys = array_keys($registry->all());
+
+        $this->cachedGlobalSections = GlobalSection::query()
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (GlobalSection $section) => in_array($section->section_type, $registeredKeys))
+            ->map(function (GlobalSection $section) use ($registry) {
+                $typeClass = $registry->resolve($section->section_type);
+
+                return [
+                    'id' => $section->id,
+                    'name' => $section->name,
+                    'section_type' => $section->section_type,
+                    'type_label' => $typeClass ? $typeClass::label() : $section->section_type,
+                    'type_icon' => $typeClass ? $typeClass::icon() : 'heroicon-o-squares-2x2',
+                ];
+            })
+            ->values()
+            ->all();
+
+        return $this->cachedGlobalSections;
+    }
+
+    /**
+     * Check if an item is a global section reference.
+     */
+    public function isGlobalSection(array $item): bool
+    {
+        return ($item['type'] ?? '') === '__global';
+    }
+
+    /**
+     * Resolve a global section from an item's data.
+     */
+    public function resolveGlobalSection(array $item): ?array
+    {
+        if (! $this->isGlobalSection($item)) {
+            return null;
+        }
+
+        $globalSectionId = $item['data']['global_section_id'] ?? null;
+
+        if (! $globalSectionId) {
+            return null;
+        }
+
+        $registry = app(SectionRegistry::class);
+        $globalSection = GlobalSection::find($globalSectionId);
+
+        if (! $globalSection) {
+            return null;
+        }
+
+        $typeClass = $registry->resolve($globalSection->section_type);
+
+        return [
+            'id' => $globalSection->id,
+            'name' => $globalSection->name,
+            'section_type' => $globalSection->section_type,
+            'type_label' => $typeClass ? $typeClass::label() : $globalSection->section_type,
+            'type_icon' => $typeClass ? $typeClass::icon() : 'heroicon-o-squares-2x2',
+        ];
     }
 }

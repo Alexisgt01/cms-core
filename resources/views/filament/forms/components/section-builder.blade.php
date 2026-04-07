@@ -1,9 +1,9 @@
 @php
-    use Filament\Actions\Action;
+    use Filament\Forms\Components\Actions\Action;
     use Filament\Support\Enums\Alignment;
 
     $fieldWrapperView = $getFieldWrapperView();
-    $items = $getItems();
+    $items = $getChildComponentContainers();
     $blockPickerBlocks = $getBlockPickerBlocks();
     $blockPickerColumns = $getBlockPickerColumns();
     $blockPickerWidth = $getBlockPickerWidth();
@@ -11,7 +11,6 @@
     $hasInteractiveBlockPreviews = $hasInteractiveBlockPreviews();
 
     $addAction = $getAction($getAddActionName());
-    $addActionAlignment = $getAddActionAlignment();
     $addBetweenAction = $getAction($getAddBetweenActionName());
     $cloneAction = $getAction($getCloneActionName());
     $collapseAllAction = $getAction($getCollapseAllActionName());
@@ -37,13 +36,16 @@
     $key = $getKey();
     $statePath = $getStatePath();
 
-    $blockLabelHeadingTag = $getHeadingTag();
     $isBlockLabelTruncated = $isBlockLabelTruncated();
     $labelBetweenItems = $getLabelBetweenItems();
 
     // Expandable sections: detect trait on Livewire component
     $supportsExpandable = method_exists($this, 'isSectionExpanded');
     $expandedSections = $supportsExpandable ? $this->expandedSections : [];
+
+    // Global section resolver closure (component is accessible via $field in Filament v3)
+    $sectionBuilderComponent = $field;
+    $resolveGlobalSection = fn (array $rawState) => $sectionBuilderComponent->resolveGlobalSection($rawState);
 
     // Sync known UUIDs to auto-expand newly added sections
     if ($supportsExpandable && count($items)) {
@@ -81,31 +83,39 @@
 
             addType(typeKey) {
                 if (this.afterItemUuid) {
-                    $wire.mountAction('addBetween', {
+                    $wire.mountFormComponentAction('{{ $statePath }}', 'addBetween', {
                         block: typeKey,
                         afterItem: this.afterItemUuid,
-                    }, { schemaComponent: '{{ $key }}' });
+                    });
                 } else {
-                    $wire.mountAction('add', {
+                    $wire.mountFormComponentAction('{{ $statePath }}', 'add', {
                         block: typeKey,
-                    }, { schemaComponent: '{{ $key }}' });
+                    });
                 }
                 this.pickerOpen = false;
             },
 
             addFromTemplate(templateId) {
-                $wire.mountAction('addFromTemplate', {
+                $wire.mountFormComponentAction('{{ $statePath }}', 'addFromTemplate', {
                     templateId: templateId,
                     afterItem: this.afterItemUuid,
-                }, { schemaComponent: '{{ $key }}' });
+                });
                 this.pickerOpen = false;
             },
 
             deleteTemplate(templateId) {
                 this.pickerOpen = false;
-                $wire.mountAction('deleteTemplate', {
+                $wire.mountFormComponentAction('{{ $statePath }}', 'deleteTemplate', {
                     templateId: templateId,
-                }, { schemaComponent: '{{ $key }}' });
+                });
+            },
+
+            addGlobalSection(globalSectionId) {
+                $wire.mountFormComponentAction('{{ $statePath }}', 'addGlobalSection', {
+                    globalSectionId: globalSectionId,
+                    afterItem: this.afterItemUuid,
+                });
+                this.pickerOpen = false;
             },
         }"
     >
@@ -148,52 +158,49 @@
             <ul
                 x-sortable
                 data-sortable-animation-duration="{{ $getReorderAnimationDuration() }}"
-                x-on:end.stop="
-                    $wire.mountAction(
-                        'reorder',
-                        { items: $event.target.sortable.toArray() },
-                        { schemaComponent: '{{ $key }}' },
-                    )
-                "
+                wire:end.stop="{{ 'mountFormComponentAction(\'' . $statePath . '\', \'reorder\', { items: $event.target.sortable.toArray() })' }}"
                 class="fi-fo-builder-items"
             >
                 @php
                     $hasBlockLabels = $hasBlockLabels();
                     $hasBlockIcons = $hasBlockIcons();
                     $hasBlockNumbers = $hasBlockNumbers();
-                    $hasBlockHeaders = $hasBlockHeaders();
                 @endphp
 
                 @foreach ($items as $itemKey => $item)
                     @php
+                        $rawState = $item->getRawState();
+                        $isGlobalItem = ($rawState['type'] ?? '') === '__global';
+                        $globalInfo = $isGlobalItem ? $resolveGlobalSection($rawState) : null;
+
                         $visibleExtraItemActions = array_filter(
                             $extraItemActions,
                             fn (Action $action): bool => $action(['item' => $itemKey])->isVisible(),
                         );
                         $cloneAction = $cloneAction(['item' => $itemKey]);
-                        $cloneActionIsVisible = $isCloneable && $cloneAction->isVisible();
+                        $cloneActionIsVisible = ! $isGlobalItem && $isCloneable && $cloneAction->isVisible();
                         $deleteAction = $deleteAction(['item' => $itemKey]);
                         $deleteActionIsVisible = $isDeletable && $deleteAction->isVisible();
                         $editAction = $editAction(['item' => $itemKey]);
-                        $editActionIsVisible = $hasBlockPreviews && $editAction->isVisible();
+                        $editActionIsVisible = ! $isGlobalItem && $hasBlockPreviews && $editAction->isVisible();
                         $moveDownAction = $moveDownAction(['item' => $itemKey])->disabled($loop->last);
                         $moveDownActionIsVisible = $isReorderableWithButtons && $moveDownAction->isVisible();
                         $moveUpAction = $moveUpAction(['item' => $itemKey])->disabled($loop->first);
                         $moveUpActionIsVisible = $isReorderableWithButtons && $moveUpAction->isVisible();
                         $reorderActionIsVisible = $isReorderableWithDragAndDrop && $reorderAction->isVisible();
-                        $hasItemHeader = $hasBlockHeaders && ($reorderActionIsVisible || $moveUpActionIsVisible || $moveDownActionIsVisible || $hasBlockIcons || $hasBlockLabels || $editActionIsVisible || $cloneActionIsVisible || $deleteActionIsVisible || $isCollapsible || $visibleExtraItemActions);
-                        $isExpanded = $supportsExpandable ? in_array($itemKey, $expandedSections, true) : ! $isCollapsed($item);
+                        $hasItemHeader = $reorderActionIsVisible || $moveUpActionIsVisible || $moveDownActionIsVisible || $hasBlockIcons || $hasBlockLabels || $editActionIsVisible || $cloneActionIsVisible || $deleteActionIsVisible || $isCollapsible || $visibleExtraItemActions || $isGlobalItem;
+                        $isExpanded = $isGlobalItem ? false : ($supportsExpandable ? in_array($itemKey, $expandedSections, true) : ! $isCollapsed($item));
                     @endphp
 
                     <li
                         wire:ignore.self
-                        wire:key="{{ $item->getLivewireKey() }}.item"
+                        wire:key="{{ $this->getId() }}.{{ $item->getStatePath() }}.{{ $field::class }}.item"
                         x-data="{
-                            isCollapsed: @if ($supportsExpandable) @js(! $isExpanded) @elseif ($persistCollapsed) $persist(@js($isCollapsed($item))).as(`builder-${@js($key)}-${@js($itemKey)}-isCollapsed`) @else @js($isCollapsed($item)) @endif,
+                            isCollapsed: @if ($isGlobalItem) true @elseif ($supportsExpandable) @js(! $isExpanded) @elseif ($persistCollapsed) $persist(@js($isCollapsed($item))).as(`builder-${@js($key)}-${@js($itemKey)}-isCollapsed`) @else @js($isCollapsed($item)) @endif,
                         }"
-                        x-on:builder-expand.window="$event.detail === '{{ $statePath }}' && (isCollapsed = false)"
+                        x-on:builder-expand.window="$event.detail === '{{ $statePath }}' && (isCollapsed = {{ $isGlobalItem ? 'true' : 'false' }})"
                         x-on:builder-collapse.window="$event.detail === '{{ $statePath }}' && (isCollapsed = true)"
-                        x-on:expand="isCollapsed = false"
+                        x-on:expand="isCollapsed = {{ $isGlobalItem ? 'true' : 'false' }}"
                         x-sortable-item="{{ $itemKey }}"
                         {{
                             $item->getParentComponent()->getExtraAttributeBag()
@@ -203,8 +210,73 @@
                                 ])
                         }}
                         x-bind:class="{ 'fi-collapsed': isCollapsed }"
+                        @if ($isGlobalItem) style="border-color: rgb(34 197 94 / 0.4); background-color: rgb(34 197 94 / 0.03);" @endif
                     >
-                        @if ($hasItemHeader)
+                        @if ($isGlobalItem)
+                            {{-- Global section: locked header --}}
+                            <div class="fi-fo-builder-item-header">
+                                @if ($reorderActionIsVisible || $moveUpActionIsVisible || $moveDownActionIsVisible)
+                                    <ul class="fi-fo-builder-item-header-start-actions">
+                                        @if ($reorderActionIsVisible)
+                                            <li x-on:click.stop>
+                                                {{ $reorderAction->extraAttributes(['x-sortable-handle' => true], merge: true) }}
+                                            </li>
+                                        @endif
+
+                                        @if ($moveUpActionIsVisible || $moveDownActionIsVisible)
+                                            <li x-on:click.stop>
+                                                {{ $moveUpAction }}
+                                            </li>
+                                            <li x-on:click.stop>
+                                                {{ $moveDownAction }}
+                                            </li>
+                                        @endif
+                                    </ul>
+                                @endif
+
+                                @if ($globalInfo)
+                                    <x-filament::icon :icon="$globalInfo['type_icon']" class="fi-fo-builder-item-header-icon" />
+
+                                    <p class="fi-fo-builder-item-header-label" style="display: flex; align-items: center; gap: 8px;">
+                                        {{ $globalInfo['name'] }}
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; background-color: rgb(34 197 94 / 0.1); color: rgb(22 163 74);">
+                                            <x-filament::icon icon="heroicon-m-globe-alt" class="h-3 w-3" />
+                                            Globale
+                                        </span>
+                                    </p>
+                                @else
+                                    <x-filament::icon icon="heroicon-o-globe-alt" class="fi-fo-builder-item-header-icon" />
+
+                                    <p class="fi-fo-builder-item-header-label" style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="color: rgb(156 163 175);">Section globale supprimee</span>
+                                    </p>
+                                @endif
+
+                                <ul class="fi-fo-builder-item-header-end-actions">
+                                    @if ($globalInfo)
+                                        <li x-on:click.stop>
+                                            <a
+                                                href="{{ \Alexisgt01\CmsCore\Filament\Resources\GlobalSectionResource::getUrl('edit', ['record' => $globalInfo['id']]) }}"
+                                                target="_blank"
+                                                class="fi-btn fi-btn-size-sm fi-color-gray"
+                                                style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; color: rgb(107 114 128); transition: all 150ms; text-decoration: none;"
+                                                onmouseover="this.style.color='rgb(79 70 229)'"
+                                                onmouseout="this.style.color='rgb(107 114 128)'"
+                                            >
+                                                <x-filament::icon icon="heroicon-m-pencil-square" class="h-4 w-4" />
+                                                Modifier
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                    @if ($deleteActionIsVisible)
+                                        <li x-on:click.stop>
+                                            {{ $deleteAction }}
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        @elseif ($hasItemHeader)
                             <div
                                 @if ($isCollapsible)
                                     x-on:click.stop="
@@ -250,11 +322,11 @@
                                 @endphp
 
                                 @if ($hasBlockIcons && filled($blockIcon))
-                                    {{ \Filament\Support\generate_icon_html($blockIcon, attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['fi-fo-builder-item-header-icon'])) }}
+                                    <x-filament::icon :icon="$blockIcon" class="fi-fo-builder-item-header-icon" />
                                 @endif
 
                                 @if ($hasBlockLabels)
-                                    <{{ $blockLabelHeadingTag }}
+                                    <p
                                         @class([
                                             'fi-fo-builder-item-header-label',
                                             'fi-truncated' => $isBlockLabelTruncated,
@@ -265,7 +337,7 @@
                                         @if ($hasBlockNumbers)
                                             {{ $loop->iteration }}
                                         @endif
-                                    </{{ $blockLabelHeadingTag }}>
+                                    </p>
                                 @endif
 
                                 @if ($editActionIsVisible || $cloneActionIsVisible || $deleteActionIsVisible || $isCollapsible || $visibleExtraItemActions)
@@ -354,14 +426,14 @@
                                         <div
                                             class="fi-fo-builder-item-preview-edit-overlay"
                                             role="button"
-                                            x-on:click.stop="{{ '$wire.mountAction(\'edit\', { item: \'' . $itemKey . '\' }, { schemaComponent: \'' . $key . '\' })' }}"
+                                            x-on:click.stop="{{ '$wire.mountFormComponentAction(\'' . $statePath . '\', \'edit\', { item: \'' . $itemKey . '\' })' }}"
                                         ></div>
                                     @endif
                                 @else
                                     {{ $item }}
                                 @endif
                             </div>
-                        @else
+                        @elseif (! $isGlobalItem)
                             {{-- Placeholder shown while loading collapsed section --}}
                             <div
                                 x-show="! isCollapsed"
@@ -417,6 +489,7 @@
         @php
             $sectionTypes = $getSectionTypeDefinitions();
             $templates = $getTemplates();
+            $globalSections = $getGlobalSections();
         @endphp
 
         <template x-teleport="body">
@@ -454,7 +527,7 @@
                             x-on:click="pickerOpen = false"
                             class="text-gray-400 transition hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                         >
-                            {{ \Filament\Support\generate_icon_html('heroicon-m-x-mark', attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['h-5 w-5'])) }}
+                            <x-filament::icon icon="heroicon-m-x-mark" class="h-5 w-5" />
                         </button>
                     </div>
 
@@ -462,7 +535,7 @@
                     <div class="border-b border-gray-200 px-6 py-3 dark:border-white/10">
                         <div class="relative">
                             <div class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-                                {{ \Filament\Support\generate_icon_html('heroicon-m-magnifying-glass', attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['h-5 w-5'])) }}
+                                <x-filament::icon icon="heroicon-m-magnifying-glass" class="h-5 w-5" />
                             </div>
                             <input
                                 x-ref="searchInput"
@@ -503,7 +576,7 @@
                                                 <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-white/10 dark:text-gray-400">{{ $types->count() }}</span>
                                             </span>
                                             <div class="text-gray-400 transition-transform duration-200 dark:text-gray-500" x-bind:class="{ 'rotate-180': isCategoryOpen('{{ $catSlug }}') }">
-                                                {{ \Filament\Support\generate_icon_html('heroicon-m-chevron-down', attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['h-4 w-4'])) }}
+                                                <x-filament::icon icon="heroicon-m-chevron-down" class="h-4 w-4" />
                                             </div>
                                         </button>
                                         <div
@@ -520,7 +593,7 @@
                                                         class="group flex items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-primary-50 dark:hover:bg-primary-500/10"
                                                     >
                                                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-primary-100 group-hover:text-primary-600 dark:bg-white/10 dark:text-gray-400 dark:group-hover:bg-primary-500/20 dark:group-hover:text-primary-400">
-                                                            {{ \Filament\Support\generate_icon_html($type['icon'], attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['h-4 w-4'])) }}
+                                                            <x-filament::icon :icon="$type['icon']" class="h-4 w-4" />
                                                         </div>
                                                         <div class="min-w-0 flex-1">
                                                             <p class="text-sm font-medium text-gray-950 dark:text-white">
@@ -558,7 +631,7 @@
                                             class="flex flex-1 items-start gap-3"
                                         >
                                             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-primary-100 group-hover:text-primary-600 dark:bg-white/10 dark:text-gray-400 dark:group-hover:bg-primary-500/20 dark:group-hover:text-primary-400">
-                                                {{ \Filament\Support\generate_icon_html($template['type_icon'], attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['h-5 w-5'])) }}
+                                                <x-filament::icon :icon="$template['type_icon']" class="h-5 w-5" />
                                             </div>
                                             <div class="min-w-0 flex-1">
                                                 <p class="text-sm font-medium text-gray-950 dark:text-white">
@@ -575,15 +648,45 @@
                                             class="absolute right-2 top-2 rounded p-1 text-gray-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                                             title="Supprimer le modele"
                                         >
-                                            {{ \Filament\Support\generate_icon_html('heroicon-m-trash', attributes: (new \Illuminate\View\ComponentAttributeBag)->class(['h-4 w-4'])) }}
+                                            <x-filament::icon icon="heroicon-m-trash" class="h-4 w-4" />
                                         </button>
                                     </div>
                                 @endforeach
                             </div>
                         @endif
 
+                        {{-- Global sections --}}
+                        @if (count($globalSections) > 0)
+                            <h4 class="mb-3 mt-6 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Sections globales
+                            </h4>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                @foreach ($globalSections as $globalSection)
+                                    <button
+                                        type="button"
+                                        x-show="search === '' || '{{ strtolower(e($globalSection['name'] . ' ' . $globalSection['type_label'])) }}'.includes(search.toLowerCase())"
+                                        x-on:click="addGlobalSection({{ $globalSection['id'] }})"
+                                        class="group relative flex items-start gap-3 rounded-lg border-2 border-green-300 p-3 text-left transition hover:border-green-500 hover:bg-green-50 dark:border-green-700 dark:hover:border-green-500 dark:hover:bg-green-500/10"
+                                    >
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-600 transition group-hover:bg-green-200 dark:bg-green-500/20 dark:text-green-400 dark:group-hover:bg-green-500/30">
+                                            <x-filament::icon :icon="$globalSection['type_icon']" class="h-5 w-5" />
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-medium text-gray-950 dark:text-white">
+                                                {{ $globalSection['name'] }}
+                                            </p>
+                                            <p class="mt-0.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                                <x-filament::icon icon="heroicon-m-globe-alt" class="h-3 w-3 text-green-500" />
+                                                {{ $globalSection['type_label'] }}
+                                            </p>
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+
                         {{-- Empty state --}}
-                        @if (count($sectionTypes) === 0 && count($templates) === 0)
+                        @if (count($sectionTypes) === 0 && count($templates) === 0 && count($globalSections) === 0)
                             <div class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Aucune section disponible
                             </div>

@@ -1521,7 +1521,7 @@ return [
 - **Config** — `config/cms-sections.php` (publiable via `cms-core-config`)
 - **Stockage** — colonne JSON `sections` sur la table `pages`, stocke `[{type, data}, ...]`
 - **Onglet Sections** — automatiquement visible dans PageResource quand au moins un type est enregistre
-- **Migration** — 900003 (ajout colonne sections), 900004 (section_templates)
+- **Migration** — 900003 (ajout colonne sections), 900004 (section_templates), 900005 (global_sections)
 
 ### SectionBuilder (composant Filament personnalise)
 
@@ -1546,6 +1546,18 @@ La resource **Modeles de section** (nav group "Contenu") offre un CRUD complet p
 - **Suppression** — depuis la liste ou la page d'edition
 
 Les permissions reutilisent celles des pages (view/create/edit/delete pages).
+
+### Sections globales
+
+Les **sections globales** permettent de creer des sections partagees entre plusieurs pages. Contrairement aux modeles (qui copient les donnees), une section globale est une **reference unique** : une modification s'applique partout.
+
+- **Table `global_sections`** — name, section_type, data (JSON)
+- **Stockage cote page** ��� `{ "type": "__global", "data": { "global_section_id": ID } }`
+- **Resource admin** — `GlobalSectionResource` (nav group "Contenu", label "Sections globales")
+- **Integration dans SectionBuilder** — zone "Sections globales" dans le modal, affichage verrouille avec badge vert dans le builder, lien vers edition, action de conversion
+- **Helper `resolve_sections($page)`** — resout les references globales (batch load), retourne un tableau normalise `[{type, data, global?, global_section_id?}]`
+- **Feature toggle** — cle `pages_global_sections` (activee par defaut)
+- **Permissions** — reutilise celles des pages (view/create/edit/delete pages)
 
 ## SEO Helper
 

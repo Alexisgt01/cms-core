@@ -32,6 +32,7 @@ Everything lives in `packages/cms/core/`. The host app at the root is a sandbox 
 | `HookEndpoint` | `contact_hook_endpoints` | Webhook configuration, casts enabled/events/backoff/headers, hasMany HookDelivery, acceptsEvent() method |
 | `HookDelivery` | `contact_hook_deliveries` | Webhook delivery tracking, casts next_retry_at datetime, belongsTo HookEndpoint + ContactRequest |
 | `SectionTemplate` | `section_templates` | Reusable section templates with pre-filled data. Fields: name, section_type, data (JSON cast). Managed through SectionBuilder UI (save/load/delete) and SectionTemplateResource (CRUD with dynamic form fields per SectionType) |
+| `GlobalSection` | `global_sections` | Shared section instances referenced by multiple pages. Fields: name, section_type, data (JSON cast). Unlike templates (copy), global sections are referenced: one edit updates all pages. Pages store `{ "type": "__global", "data": { "global_section_id": ID } }`. Managed through GlobalSectionResource and integrated in SectionBuilder |
 
 ## State Machine (spatie/laravel-model-states)
 
@@ -120,6 +121,13 @@ contact_event('newsletter', ['email' => 'sub@example.com'], [
     'form_id' => 'footer-newsletter',
     'meta' => ['ip' => request()->ip()],
 ]);
+```
+
+```php
+// resolve_sections() — resolve page sections with global section references
+$sections = resolve_sections($page);
+// Returns normalized array: [{type, data}, {type, data, global: true, global_section_id: 5}, ...]
+// Global sections are batch-loaded. Deleted global sections are silently skipped.
 ```
 
 ```php
@@ -220,6 +228,7 @@ State is a JSON object compatible with `IconSelection::toArray()`.
 | HookEndpointResource | Contact | HookEndpoint | full CRUD for contact hooks |
 | HookDeliveryResource | Contact | HookDelivery | read-only, replay action |
 | SectionTemplateResource | Contenu | SectionTemplate | view/create/edit/delete pages (reuses page permissions) |
+| GlobalSectionResource | Contenu | GlobalSection | view/create/edit/delete pages (reuses page permissions) |
 
 ## Filament Pages
 
@@ -434,6 +443,7 @@ cms_feature('contact_webhooks'); // child of 'contact'
 | `blog_tags` | BlogTagResource |
 | `pages_sections` | SectionCatalog page |
 | `pages_templates` | SectionTemplateResource |
+| `pages_global_sections` | GlobalSectionResource |
 | `contact_webhooks` | HookEndpointResource |
 | `contact_deliveries` | HookDeliveryResource |
 | `administration_permissions` | PermissionResource |
@@ -529,8 +539,9 @@ Custom Filament Builder component extending `Filament\Forms\Components\Builder` 
 - **Section templates**: save any section as a reusable template (stores type + data in `section_templates` table). Templates appear in the modal alongside regular types. Templates with unregistered types are auto-filtered.
 - **Actions**: `addFromTemplate` (add block with pre-filled data), `saveAsTemplate` (per-block extra item action, icon bookmark), `deleteTemplate` (with confirmation modal).
 - **View**: `cms-core::filament.forms.components.section-builder` (Alpine.js modal with teleport to body, search filtering, responsive grid)
+- **Global sections**: `getGlobalSections()` returns registered global sections. Modal picker includes a "Sections globales" zone with green-bordered cards. Global sections render as locked blocks (badge "Globale", no editable fields, link to edit in GlobalSectionResource). `convertToGlobal` extra item action creates a GlobalSection and replaces the block with a `__global` reference. `addGlobalSection` registered action inserts a global reference.
 - **Deferred rendering**: Section form HTML is only rendered server-side for expanded sections. Collapsed sections show a lightweight header only, drastically reducing Livewire payload size and server render time. Requires `HasExpandableSections` trait on the Livewire page component.
-- **Memoized data**: `getSectionTypeDefinitions()` and `getTemplates()` are cached per render cycle.
+- **Memoized data**: `getSectionTypeDefinitions()`, `getTemplates()` and `getGlobalSections()` are cached per render cycle.
 
 ### HasExpandableSections Trait (`src/Filament/Concerns/HasExpandableSections.php`)
 Used by EditPage and CreatePage for PageResource. Provides:
@@ -629,4 +640,5 @@ Test files in host app `tests/Feature/` and `tests/Feature/Filament/`:
 - `CollectionTest.php` — CollectionType (methods, schema, definition), CollectionRegistry (register/resolve, definitions, rejection), migration columns, permissions, model CRUD, field accessor, scopes, SoftDeletes, slug generation, state machine, casts, config, Filament resource access, dynamic nav items, helpers (collection_entries/collection_entry), SeoResolver with CollectionEntry
 - `ContactTest.php` — Migrations (5 tables), permissions (14), ContactSetting singleton, Contact CRUD/upsert/casts/relations, ContactRequest states (new→processed→archived, transitions), pipeline (contact_event, idempotency, tag merge, hook dispatch, event filtering), HookEndpoint (CRUD, acceptsEvent, casts), HookDelivery (creation, relations), Job (success/failed/retry, HMAC signature), commands (retry-hooks, contact-purge), Filament resource access, helper
 - `DocumentationAndReleasesTest.php` — Migration (user_release_views table, unique constraint, cascade delete), DocumentationService (load/find/sort/render markdown), ReleaseService (load/find/sort/unread detection/markAllAsRead/per-user tracking), Filament pages (access for super_admin/editor, guest redirect, no sidebar nav), ReleasePopup Livewire component (show/dismiss/mark read), user menu items registration, release content integrity
+- `GlobalSectionTest.php` — GlobalSection model (CRUD, casts), GlobalSectionResource (access/permissions, pages usage detection), resolve_sections() helper (normal/global/deleted/batch), feature toggle (default, parent disable, independent disable), SectionRegistry __global block, CmsCorePlugin conditional registration
 - `FeatureTogglesTest.php` — Migration (features column), SiteSetting cast, cms_feature() helper (defaults, DB read, parent/child hierarchy, config fallback, DB override), CmsCorePlugin conditional registration (resolveResources/resolvePages for all modules: blog, contact, pages, media, SEO, collections, dashboards, administration), SiteSettings page (Fonctionnalités tab), config keys

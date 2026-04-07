@@ -134,6 +134,44 @@ Si vous avez configuré une section de manière précise et souhaitez la réutil
 
 ---
 
+### 🌍 Sections globales
+
+Les **sections globales** sont des sections partagées entre plusieurs pages. Contrairement aux modèles qui copient les données, une section globale est une **référence unique** : modifiez-la une seule fois, et le changement s'applique partout où elle est utilisée.
+
+#### Créer une section globale
+
+1. Accédez à **Contenu → Sections globales**
+2. Cliquez sur **Créer une section globale**
+3. Choisissez le **type de section**
+4. Donnez-lui un **nom** explicite (ex : « CTA Contact Footer »)
+5. Remplissez les champs de la section
+6. Enregistrez
+
+#### Utiliser une section globale dans une page
+
+1. Dans l'onglet **Sections** de votre page, cliquez sur **Ajouter une section**
+2. En bas de la fenêtre modale, retrouvez la zone **Sections globales**
+3. Cliquez sur la section globale souhaitée pour l'ajouter
+
+La section apparaît avec un **badge vert « Globale »** et ne peut pas être modifiée directement depuis la page. Un lien **Modifier** ouvre la section globale dans un nouvel onglet.
+
+#### Modifier une section globale
+
+Rendez-vous dans **Contenu → Sections globales**, éditez la section souhaitée. En haut du formulaire, un indicateur montre combien de pages utilisent cette section.
+
+> ⚠️ **Attention** : Toute modification d'une section globale impacte immédiatement toutes les pages qui l'utilisent.
+
+#### Convertir une section existante en section globale
+
+1. Cliquez sur l'icône **⋮** (menu d'actions) d'une section existante
+2. Sélectionnez **Convertir en section globale**
+3. Donnez un nom à la nouvelle section globale
+4. La section est créée et remplacée par une référence globale sur la page
+
+> 💡 **Astuce** : Les sections globales sont idéales pour les éléments répétitifs comme les appels à l'action, les formulaires de contact en pied de page, ou les bannières promotionnelles.
+
+---
+
 ### 📑 Catalogue de sections
 
 Le **Catalogue de sections** est accessible depuis le menu **Contenu → Catalogue de sections**. Il vous permet de visualiser toutes les sections disponibles sous forme de grille, avec une description de chacune.
