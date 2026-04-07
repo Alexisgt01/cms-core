@@ -449,13 +449,15 @@
 
                     @if (! $loop->last)
                         @if ($isAddable && $addBetweenAction(['afterItem' => $itemKey])->isVisible())
-                            <li class="fi-fo-builder-add-between-items-ctn">
-                                <div class="fi-fo-builder-add-between-items">
-                                    <div class="fi-fo-builder-block-picker-ctn" x-on:click.stop="openPicker('{{ $itemKey }}')">
-                                        <div style="pointer-events: none;">
-                                            {{ $addBetweenAction(['afterItem' => $itemKey]) }}
-                                        </div>
-                                    </div>
+                            <li class="relative -top-2 !mt-0 h-0">
+                                <div class="flex w-full justify-center opacity-0 transition duration-75 hover:opacity-100">
+                                    <button
+                                        type="button"
+                                        x-on:click.stop="openPicker('{{ $itemKey }}')"
+                                        class="rounded-lg bg-white p-1 shadow-sm ring-1 ring-gray-950/10 transition hover:bg-gray-50 dark:bg-gray-900 dark:ring-white/20 dark:hover:bg-white/5"
+                                    >
+                                        <x-filament::icon icon="heroicon-m-plus" class="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                    </button>
                                 </div>
                             </li>
                         @elseif (filled($labelBetweenItems))
@@ -480,10 +482,8 @@
 
         {{-- Add section button --}}
         @if ($isAddable && $addAction->isVisible())
-            <div class="fi-fo-builder-block-picker-ctn" x-on:click="openPicker()">
-                <div style="pointer-events: none;">
-                    {{ $addAction }}
-                </div>
+            <div class="fi-fo-builder-block-picker-ctn" x-on:click.stop="openPicker()">
+                {{ $addAction }}
             </div>
         @endif
 
