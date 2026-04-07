@@ -15,7 +15,7 @@ class Documentation extends Page
 
     protected static ?string $slug = 'documentation';
 
-    protected static string $view = 'cms-core::filament.pages.documentation';
+    protected string $view = 'cms-core::filament.pages.documentation';
 
     protected static bool $shouldRegisterNavigation = false;
 

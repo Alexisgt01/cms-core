@@ -19,7 +19,7 @@ class SectionCatalog extends Page
 
     protected static ?int $navigationSort = 2;
 
-    protected static string $view = 'cms-core::filament.pages.section-catalog';
+    protected string $view = 'cms-core::filament.pages.section-catalog';
 
     public static function canAccess(): bool
     {

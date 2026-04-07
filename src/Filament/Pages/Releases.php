@@ -15,7 +15,7 @@ class Releases extends Page
 
     protected static ?string $slug = 'releases';
 
-    protected static string $view = 'cms-core::filament.pages.releases';
+    protected string $view = 'cms-core::filament.pages.releases';
 
     protected static bool $shouldRegisterNavigation = false;
 

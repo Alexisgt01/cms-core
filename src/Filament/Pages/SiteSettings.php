@@ -32,7 +32,7 @@ class SiteSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 98;
 
-    protected static string $view = 'cms-core::filament.pages.site-settings';
+    protected string $view = 'cms-core::filament.pages.site-settings';
 
     /** @var array<string, mixed> */
     public array $data = [];

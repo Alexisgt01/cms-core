@@ -33,7 +33,7 @@ class MediaLibrary extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static string $view = 'cms-core::filament.pages.media-library';
+    protected string $view = 'cms-core::filament.pages.media-library';
 
     public ?int $currentFolderId = null;
 

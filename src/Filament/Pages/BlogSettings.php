@@ -35,7 +35,7 @@ class BlogSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 99;
 
-    protected static string $view = 'cms-core::filament.pages.blog-settings';
+    protected string $view = 'cms-core::filament.pages.blog-settings';
 
     /** @var array<string, mixed> */
     public array $data = [];

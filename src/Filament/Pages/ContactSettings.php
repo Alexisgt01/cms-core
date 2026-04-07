@@ -26,7 +26,7 @@ class ContactSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 99;
 
-    protected static string $view = 'cms-core::filament.pages.contact-settings';
+    protected string $view = 'cms-core::filament.pages.contact-settings';
 
     /** @var array<string, mixed> */
     public array $data = [];
