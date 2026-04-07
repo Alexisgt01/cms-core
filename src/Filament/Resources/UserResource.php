@@ -2,24 +2,24 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
-use Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 use App\Models\User;
-use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?int $navigationSort = 1;
 
@@ -43,7 +43,7 @@ class UserResource extends Resource
         return auth()->user()?->can('delete users') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

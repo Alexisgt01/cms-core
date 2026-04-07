@@ -7,7 +7,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Str;
@@ -16,9 +16,9 @@ class ContactSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Parametres';
 
@@ -26,7 +26,7 @@ class ContactSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 99;
 
-    protected static string $view = 'cms-core::filament.pages.contact-settings';
+    protected string $view = 'cms-core::filament.pages.contact-settings';
 
     /** @var array<string, mixed> */
     public array $data = [];
@@ -43,7 +43,7 @@ class ContactSettings extends Page implements HasForms
         $this->form->fill($settings->toArray());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([

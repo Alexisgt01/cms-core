@@ -2,11 +2,11 @@
 
 namespace Alexisgt01\CmsCore\Services;
 
-use Alexisgt01\CmsCore\Models\CmsMedia;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Alexisgt01\CmsCore\Models\CmsMedia;
 
 class UnsplashClient
 {
@@ -17,11 +17,11 @@ class UnsplashClient
      */
     public function search(string $query, int $page = 1, int $perPage = 24): array
     {
-        $cacheKey = 'unsplash_search_'.md5("{$query}_{$page}_{$perPage}");
+        $cacheKey = 'unsplash_search_' . md5("{$query}_{$page}_{$perPage}");
 
         return Cache::remember($cacheKey, 300, function () use ($query, $page, $perPage): array {
             $response = Http::withHeaders([
-                'Authorization' => 'Client-ID '.config('cms-media.unsplash.access_key'),
+                'Authorization' => 'Client-ID ' . config('cms-media.unsplash.access_key'),
             ])->get("{$this->baseUrl}/search/photos", [
                 'query' => $query,
                 'page' => $page,
@@ -63,9 +63,9 @@ class UnsplashClient
         $imageContent = Http::get($imageUrl)->body();
 
         $extension = 'jpg';
-        $fileName = ($photo['id'] ?? 'unsplash').'.'.$extension;
+        $fileName = ($photo['id'] ?? 'unsplash') . '.' . $extension;
 
-        $tmpPath = 'tmp-uploads/'.$fileName;
+        $tmpPath = 'tmp-uploads/' . $fileName;
         Storage::disk('public')->put($tmpPath, $imageContent);
 
         $fullPath = Storage::disk('public')->path($tmpPath);
@@ -91,7 +91,7 @@ class UnsplashClient
         }
 
         Http::withHeaders([
-            'Authorization' => 'Client-ID '.config('cms-media.unsplash.access_key'),
+            'Authorization' => 'Client-ID ' . config('cms-media.unsplash.access_key'),
         ])->get($downloadLocation);
     }
 }

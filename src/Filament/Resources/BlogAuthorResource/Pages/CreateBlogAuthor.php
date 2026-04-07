@@ -2,8 +2,8 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 
-use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
 use Filament\Resources\Pages\CreateRecord;
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
 
 class CreateBlogAuthor extends CreateRecord
 {

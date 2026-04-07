@@ -11,10 +11,11 @@ use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\DB;
 
 class BlogStatsOverview extends BaseWidget
 {
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 1;
 
@@ -22,9 +23,9 @@ class BlogStatsOverview extends BaseWidget
     {
         $postCounts = BlogPost::query()
             ->selectRaw('count(*) as total')
-            ->selectRaw('sum(case when state = ? then 1 else 0 end) as published', [Published::class])
-            ->selectRaw('sum(case when state = ? then 1 else 0 end) as scheduled', [Scheduled::class])
-            ->selectRaw('sum(case when state = ? then 1 else 0 end) as draft', [Draft::class])
+            ->selectRaw("sum(case when state = ? then 1 else 0 end) as published", [Published::class])
+            ->selectRaw("sum(case when state = ? then 1 else 0 end) as scheduled", [Scheduled::class])
+            ->selectRaw("sum(case when state = ? then 1 else 0 end) as draft", [Draft::class])
             ->first();
 
         $publishedLast30 = BlogPost::query()
@@ -38,7 +39,7 @@ class BlogStatsOverview extends BaseWidget
 
         return [
             Stat::make('Articles publiés', $postCounts->published ?? 0)
-                ->description($publishedLast30.' ces 30 derniers jours')
+                ->description($publishedLast30 . ' ces 30 derniers jours')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success')
                 ->icon('heroicon-o-document-check'),

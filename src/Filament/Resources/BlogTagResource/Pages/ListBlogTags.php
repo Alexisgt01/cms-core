@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
 
-use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 
 class ListBlogTags extends ListRecords
 {

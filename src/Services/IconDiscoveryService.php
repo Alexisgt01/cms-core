@@ -142,7 +142,7 @@ class IconDiscoveryService
                 $files = $this->getIconFilesFromPath($path);
 
                 foreach ($files as $iconFile) {
-                    $canonicalName = $prefix.'-'.$iconFile;
+                    $canonicalName = $prefix . '-' . $iconFile;
                     [$variant, $label] = $this->parseVariantAndLabel($iconFile, $variantKeys);
 
                     $manifest[] = [
@@ -180,7 +180,7 @@ class IconDiscoveryService
             }
 
             $icons[] = (string) Str::of($file->getPathname())
-                ->after($path.DIRECTORY_SEPARATOR)
+                ->after($path . DIRECTORY_SEPARATOR)
                 ->replace(DIRECTORY_SEPARATOR, '.')
                 ->basename('.svg');
         }
@@ -195,7 +195,7 @@ class IconDiscoveryService
     protected function parseVariantAndLabel(string $iconFile, array $variantKeys): array
     {
         foreach ($variantKeys as $variantKey) {
-            $variantPrefix = $variantKey.'-';
+            $variantPrefix = $variantKey . '-';
             if (str_starts_with($iconFile, $variantPrefix)) {
                 return [$variantKey, substr($iconFile, strlen($variantPrefix))];
             }

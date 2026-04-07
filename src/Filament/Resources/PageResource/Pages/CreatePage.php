@@ -33,7 +33,7 @@ class CreatePage extends CreateRecord
         $record = static::getModel()::create($data);
 
         if (! empty($sections)) {
-            $cacheKey = "page_sections:{$record->id}:".now()->timestamp;
+            $cacheKey = "page_sections:{$record->id}:" . now()->timestamp;
             Cache::put($cacheKey, json_encode($sections, JSON_UNESCAPED_UNICODE), 300);
 
             SavePageSectionsJob::dispatch($record->id, $cacheKey);

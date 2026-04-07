@@ -2,8 +2,6 @@
 
 namespace Alexisgt01\CmsCore\Models;
 
-use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
-use Alexisgt01\CmsCore\Models\States\PostState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,6 +9,8 @@ use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
+use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
+use Alexisgt01\CmsCore\Models\States\PostState;
 
 class BlogPost extends Model
 {
@@ -68,7 +68,7 @@ class BlogPost extends Model
         $i = 1;
 
         while (static::query()->where('slug', $slug)->exists()) {
-            $slug = $original.'-'.$i;
+            $slug = $original . '-' . $i;
             $i++;
         }
 

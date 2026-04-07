@@ -2,12 +2,12 @@
 
 namespace Alexisgt01\CmsCore\Models;
 
-use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogSetting extends Model
 {

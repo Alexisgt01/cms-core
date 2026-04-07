@@ -2,8 +2,8 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
 
-use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 use Filament\Resources\Pages\CreateRecord;
+use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 
 class CreateBlogTag extends CreateRecord
 {

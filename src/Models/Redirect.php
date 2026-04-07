@@ -11,7 +11,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Redirect extends Model
 {
     use LogsActivity;
-
     protected $guarded = ['id'];
 
     protected $table = 'redirects';

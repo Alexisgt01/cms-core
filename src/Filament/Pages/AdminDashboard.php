@@ -19,9 +19,9 @@ class AdminDashboard extends Dashboard
 
     protected static ?string $title = 'Administration';
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'Tableaux de bord';
+    protected static string|\UnitEnum|null $navigationGroup = 'Tableaux de bord';
 
     protected static ?int $navigationSort = -2;
 
@@ -63,7 +63,7 @@ class AdminDashboard extends Dashboard
 
                         Notification::make()
                             ->title('Email envoye')
-                            ->body('Un email de test a ete envoye a '.$data['email'])
+                            ->body('Un email de test a ete envoye a ' . $data['email'])
                             ->success()
                             ->send();
                     } catch (\Throwable $e) {

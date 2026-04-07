@@ -2,15 +2,15 @@
 
 namespace Alexisgt01\CmsCore\Filament\Widgets;
 
-use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 use App\Models\User;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
 class LatestUsersTable extends BaseWidget
 {
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;
 

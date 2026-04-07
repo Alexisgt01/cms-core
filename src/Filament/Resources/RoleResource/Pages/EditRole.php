@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\RoleResource\Pages;
 
-use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
 
 class EditRole extends EditRecord
 {

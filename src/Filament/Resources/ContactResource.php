@@ -4,10 +4,11 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource\Pages;
 use Alexisgt01\CmsCore\Models\Contact;
-use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,9 +18,9 @@ class ContactResource extends Resource
 {
     protected static ?string $model = Contact::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Contacts';
 
@@ -49,13 +50,13 @@ class ContactResource extends Resource
         return auth()->user()?->can('delete contacts') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Contact')
+                Schemas\Components\Tabs::make('Contact')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Informations')
+                        Schemas\Components\Tabs\Tab::make('Informations')
                             ->icon('heroicon-o-user')
                             ->schema([
                                 Forms\Components\TextInput::make('email')
@@ -77,13 +78,13 @@ class ContactResource extends Resource
                                 Forms\Components\KeyValue::make('attribs')
                                     ->label('Attributs'),
                             ]),
-                        Forms\Components\Tabs\Tab::make('Demandes')
+                        Schemas\Components\Tabs\Tab::make('Demandes')
                             ->icon('heroicon-o-inbox')
                             ->schema([
                                 Forms\Components\Placeholder::make('requests_list')
                                     ->label('')
                                     ->content(fn (?Contact $record): string => $record
-                                        ? $record->requests()->count().' demande(s)'
+                                        ? $record->requests()->count() . ' demande(s)'
                                         : '0 demande(s)'),
                             ]),
                     ])

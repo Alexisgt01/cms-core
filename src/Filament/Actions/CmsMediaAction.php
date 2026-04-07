@@ -2,19 +2,19 @@
 
 namespace Alexisgt01\CmsCore\Filament\Actions;
 
-use Alexisgt01\CmsCore\Services\MediaService;
 use Filament\Actions\Action;
+use Filament\Schemas\Schema;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Group;
+use Filament\Schemas\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Alexisgt01\CmsCore\Services\MediaService;
 
 class CmsMediaAction extends Action
 {
@@ -39,7 +39,7 @@ class CmsMediaAction extends Action
             ->modalWidth('md')
             ->mountUsing(function (TiptapEditor $component, ?Form $form, array $arguments) {
                 $source = $arguments['src'] !== ''
-                    ? $component->getDirectory().Str::of($arguments['src'])
+                    ? $component->getDirectory() . Str::of($arguments['src'])
                         ->after($component->getDirectory())
                     : null;
 
@@ -59,7 +59,7 @@ class CmsMediaAction extends Action
             })->modalHeading(function (TiptapEditor $component, array $arguments) {
                 $context = blank($arguments['src'] ?? null) ? 'insert' : 'update';
 
-                return trans('filament-tiptap-editor::media-modal.heading.'.$context);
+                return trans('filament-tiptap-editor::media-modal.heading.' . $context);
             })->form(function (TiptapEditor $component) {
                 return [
                     FileUpload::make('src')

@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 
-use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 
 class EditUser extends EditRecord
 {

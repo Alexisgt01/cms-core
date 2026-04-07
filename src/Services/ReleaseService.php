@@ -13,7 +13,7 @@ class ReleaseService
 
     public function __construct()
     {
-        $this->releasesPath = __DIR__.'/../../resources/releases';
+        $this->releasesPath = __DIR__ . '/../../resources/releases';
     }
 
     /**
@@ -21,7 +21,7 @@ class ReleaseService
      */
     public function all(): Collection
     {
-        $files = glob($this->releasesPath.'/*.md');
+        $files = glob($this->releasesPath . '/*.md');
 
         if (! $files) {
             return collect();
@@ -121,7 +121,7 @@ class ReleaseService
         return [
             'slug' => $meta['slug'],
             'version' => $meta['version'],
-            'title' => $meta['title'] ?? 'Version '.$meta['version'],
+            'title' => $meta['title'] ?? 'Version ' . $meta['version'],
             'date' => $meta['date'] ?? '',
             'content' => Str::markdown($parsed['content']),
         ];

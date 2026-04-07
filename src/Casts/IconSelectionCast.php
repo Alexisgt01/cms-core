@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Casts;
 
-use Alexisgt01\CmsCore\ValueObjects\IconSelection;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
+use Alexisgt01\CmsCore\ValueObjects\IconSelection;
 
 /**
  * @implements CastsAttributes<IconSelection|null, IconSelection|array<string, mixed>|null>

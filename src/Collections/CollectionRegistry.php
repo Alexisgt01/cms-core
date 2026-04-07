@@ -18,7 +18,7 @@ class CollectionRegistry
     {
         if (! is_subclass_of($typeClass, CollectionType::class)) {
             throw new InvalidArgumentException(
-                "Class {$typeClass} must extend ".CollectionType::class
+                "Class {$typeClass} must extend " . CollectionType::class
             );
         }
 

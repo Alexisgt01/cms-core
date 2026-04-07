@@ -2,6 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
+use Alexisgt01\CmsCore\Filament\Resources\GlobalSectionResource;
 use Alexisgt01\CmsCore\Models\GlobalSection;
 use Alexisgt01\CmsCore\Models\SectionTemplate;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\ActionSize;
 
 class SectionBuilder extends Builder
 {

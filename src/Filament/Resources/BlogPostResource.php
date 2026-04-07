@@ -16,11 +16,12 @@ use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Form;
+use Filament\Resources\Resource;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -31,9 +32,9 @@ class BlogPostResource extends Resource
 
     protected static ?string $model = BlogPost::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Blog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Articles';
 
@@ -63,15 +64,15 @@ class BlogPostResource extends Resource
         return auth()->user()?->can('delete blog posts') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         $settings = BlogSetting::instance();
 
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Article')
+                Schemas\Components\Tabs::make('Article')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Contenu')
+                        Schemas\Components\Tabs\Tab::make('Contenu')
                             ->schema([
                                 Forms\Components\TextInput::make('title')
                                     ->label('Titre')
@@ -166,7 +167,7 @@ class BlogPostResource extends Resource
                                     ->default(false),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Images & Auteur')
+                        Schemas\Components\Tabs\Tab::make('Images & Auteur')
                             ->schema([
                                 ...self::buildFeaturedImageFields($settings),
                                 Forms\Components\Select::make('author_id')
@@ -182,7 +183,7 @@ class BlogPostResource extends Resource
                                     ->helperText('Laissez vide pour un calcul automatique'),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Publication')
+                        Schemas\Components\Tabs\Tab::make('Publication')
                             ->schema([
                                 Forms\Components\Select::make('state')
                                     ->label('Statut')
@@ -209,7 +210,7 @@ class BlogPostResource extends Resource
                                     ->helperText('Laissez vide pour utiliser la date actuelle'),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('SEO')
+                        Schemas\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 ...static::seoKeywordFields(),
                                 ...static::seoIndexingFields(),
@@ -219,15 +220,15 @@ class BlogPostResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Open Graph')
+                        Schemas\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Twitter')
+                        Schemas\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Schema')
+                        Schemas\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])
@@ -244,7 +245,7 @@ class BlogPostResource extends Resource
         $fields = [];
 
         for ($i = 0; $i < $max; $i++) {
-            $label = $max === 1 ? 'Image a la une' : 'Image a la une '.($i + 1);
+            $label = $max === 1 ? 'Image a la une' : 'Image a la une ' . ($i + 1);
             $fields[] = MediaPicker::make("featured_images.{$i}")
                 ->label($label);
         }
@@ -339,7 +340,7 @@ class BlogPostResource extends Resource
             $options[$root->id] = $root->name;
 
             foreach ($root->children->sortBy('position')->sortBy('name') as $child) {
-                $options[$child->id] = '— '.$child->name;
+                $options[$child->id] = '— ' . $child->name;
             }
         }
 

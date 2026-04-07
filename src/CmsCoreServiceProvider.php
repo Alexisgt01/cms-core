@@ -2,13 +2,35 @@
 
 namespace Alexisgt01\CmsCore;
 
-use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
+use App\Models\User;
+use Filament\Panel;
+use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Alexisgt01\CmsCore\Filament\CmsCorePlugin;
+use Alexisgt01\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
+use Alexisgt01\CmsCore\Policies\CollectionEntryPolicy;
+use Alexisgt01\CmsCore\Policies\ContactPolicy;
+use Alexisgt01\CmsCore\Policies\ContactRequestPolicy;
+use Alexisgt01\CmsCore\Policies\HookDeliveryPolicy;
+use Alexisgt01\CmsCore\Policies\HookEndpointPolicy;
+use Alexisgt01\CmsCore\Policies\PermissionPolicy;
+use Alexisgt01\CmsCore\Policies\RolePolicy;
+use Alexisgt01\CmsCore\Policies\PagePolicy;
+use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Console\Commands\MakeAdminCommand;
-use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
+use Alexisgt01\CmsCore\Console\Commands\GenerateSitemap;
 use Alexisgt01\CmsCore\Console\Commands\PurgeActivityLog;
 use Alexisgt01\CmsCore\Console\Commands\PurgeContactDataCommand;
+use Alexisgt01\CmsCore\Console\Commands\PublishScheduledPosts;
 use Alexisgt01\CmsCore\Console\Commands\RetryContactHooksCommand;
-use Alexisgt01\CmsCore\Filament\CmsCorePlugin;
 use Alexisgt01\CmsCore\Filament\Widgets\AdminStatsOverview;
 use Alexisgt01\CmsCore\Filament\Widgets\BlogStatsOverview;
 use Alexisgt01\CmsCore\Filament\Widgets\LatestPostsTable;
@@ -17,7 +39,6 @@ use Alexisgt01\CmsCore\Filament\Widgets\PostsPerMonthChart;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRedirects;
 use Alexisgt01\CmsCore\Http\Middleware\HandleRestrictedAccess;
 use Alexisgt01\CmsCore\Livewire\ReleasePopup;
-use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Models\CollectionEntry;
 use Alexisgt01\CmsCore\Models\Contact;
 use Alexisgt01\CmsCore\Models\ContactRequest;
@@ -25,43 +46,22 @@ use Alexisgt01\CmsCore\Models\HookDelivery;
 use Alexisgt01\CmsCore\Models\HookEndpoint;
 use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Models\SiteSetting;
-use Alexisgt01\CmsCore\Policies\CmsMediaPolicy;
-use Alexisgt01\CmsCore\Policies\CollectionEntryPolicy;
-use Alexisgt01\CmsCore\Policies\ContactPolicy;
-use Alexisgt01\CmsCore\Policies\ContactRequestPolicy;
-use Alexisgt01\CmsCore\Policies\HookDeliveryPolicy;
-use Alexisgt01\CmsCore\Policies\HookEndpointPolicy;
-use Alexisgt01\CmsCore\Policies\PagePolicy;
-use Alexisgt01\CmsCore\Policies\PermissionPolicy;
-use Alexisgt01\CmsCore\Policies\RolePolicy;
-use Alexisgt01\CmsCore\Policies\UserPolicy;
 use Alexisgt01\CmsCore\Services\ContactPipeline;
 use Alexisgt01\CmsCore\Services\IconDiscoveryService;
 use Alexisgt01\CmsCore\Services\UnsplashClient;
-use App\Models\User;
-use Filament\Panel;
-use Illuminate\Auth\Events\Login;
-use Illuminate\Auth\Events\Logout;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class CmsCoreServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-core.php', 'cms-core');
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-media.php', 'cms-media');
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-icons.php', 'cms-icons');
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-sections.php', 'cms-sections');
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-collections.php', 'cms-collections');
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-contacts.php', 'cms-contacts');
-        $this->mergeConfigFrom(__DIR__.'/../config/cms-features.php', 'cms-features');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-core.php', 'cms-core');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-media.php', 'cms-media');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-icons.php', 'cms-icons');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-sections.php', 'cms-sections');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-collections.php', 'cms-collections');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-contacts.php', 'cms-contacts');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cms-features.php', 'cms-features');
 
         $this->app->singleton(ContactPipeline::class);
 
@@ -96,17 +96,17 @@ class CmsCoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'cms-core');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'cms-core');
 
         $this->publishes([
-            __DIR__.'/../config/cms-core.php' => config_path('cms-core.php'),
-            __DIR__.'/../config/cms-media.php' => config_path('cms-media.php'),
-            __DIR__.'/../config/cms-icons.php' => config_path('cms-icons.php'),
-            __DIR__.'/../config/cms-sections.php' => config_path('cms-sections.php'),
-            __DIR__.'/../config/cms-collections.php' => config_path('cms-collections.php'),
-            __DIR__.'/../config/cms-contacts.php' => config_path('cms-contacts.php'),
-            __DIR__.'/../config/cms-features.php' => config_path('cms-features.php'),
+            __DIR__ . '/../config/cms-core.php' => config_path('cms-core.php'),
+            __DIR__ . '/../config/cms-media.php' => config_path('cms-media.php'),
+            __DIR__ . '/../config/cms-icons.php' => config_path('cms-icons.php'),
+            __DIR__ . '/../config/cms-sections.php' => config_path('cms-sections.php'),
+            __DIR__ . '/../config/cms-collections.php' => config_path('cms-collections.php'),
+            __DIR__ . '/../config/cms-contacts.php' => config_path('cms-contacts.php'),
+            __DIR__ . '/../config/cms-features.php' => config_path('cms-features.php'),
         ], 'cms-core-config');
 
         Gate::policy(User::class, UserPolicy::class);
@@ -185,7 +185,7 @@ class CmsCoreServiceProvider extends ServiceProvider
     protected function registerRoutes(): void
     {
         Route::middleware(['web', 'auth'])
-            ->prefix(config('cms-core.path', 'admin').'/cms/api')
+            ->prefix(config('cms-core.path', 'admin') . '/cms/api')
             ->group(function (): void {
                 Route::get('unsplash/search', function (Request $request) {
                     if (! $request->user()?->can('create media')) {

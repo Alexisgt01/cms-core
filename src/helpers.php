@@ -45,7 +45,7 @@ if (! function_exists('media_url')) {
             $keyBin = hex2bin($key);
             $saltBin = hex2bin($salt);
             $signature = rtrim(strtr(base64_encode(
-                hash_hmac('sha256', $saltBin.$path, $keyBin, true)
+                hash_hmac('sha256', $saltBin . $path, $keyBin, true)
             ), '+/', '-_'), '=');
 
             return "{$baseUrl}/{$signature}{$path}";
@@ -85,23 +85,23 @@ if (! function_exists('cms_icon')) {
             $faClass = \Alexisgt01\CmsCore\ValueObjects\IconSelection::toFontAwesomeClass($icon);
 
             if ($faClass !== null) {
-                $classes = trim($faClass.($class !== '' ? ' '.$class : ''));
+                $classes = trim($faClass . ($class !== '' ? ' ' . $class : ''));
                 $attrs = '';
                 foreach ($attributes as $key => $value) {
                     if ($key !== 'width' && $key !== 'height') {
-                        $attrs .= ' '.e($key).'="'.e($value).'"';
+                        $attrs .= ' ' . e($key) . '="' . e($value) . '"';
                     }
                 }
 
-                return '<i class="'.e($classes).'"'.$attrs.'></i>';
+                return '<i class="' . e($classes) . '"' . $attrs . '></i>';
             }
         }
 
         // SVG mode (default) or non-FA icon fallback
         $icon = match (true) {
-            str_starts_with($icon, 'fa-solid fa-') => 'fas-'.substr($icon, 12),
-            str_starts_with($icon, 'fa-regular fa-') => 'far-'.substr($icon, 14),
-            str_starts_with($icon, 'fa-brands fa-') => 'fab-'.substr($icon, 13),
+            str_starts_with($icon, 'fa-solid fa-')  => 'fas-' . substr($icon, 12),
+            str_starts_with($icon, 'fa-regular fa-') => 'far-' . substr($icon, 14),
+            str_starts_with($icon, 'fa-brands fa-')  => 'fab-' . substr($icon, 13),
             default => $icon,
         };
 
@@ -228,6 +228,7 @@ if (! function_exists('resolve_sections')) {
      * and 'data' (the field values). Global sections also include 'global' => true and
      * 'global_section_id'.
      *
+     * @param  \Alexisgt01\CmsCore\Models\Page  $page
      * @return array<int, array{type: string, data: array<string, mixed>, global?: bool, global_section_id?: int}>
      */
     function resolve_sections(\Alexisgt01\CmsCore\Models\Page $page): array

@@ -18,6 +18,6 @@ class CmsMedia extends Media
 
     public function getUrlAttribute(): string
     {
-        return Storage::disk($this->disk)->url($this->id.'/'.$this->file_name);
+        return Storage::disk($this->disk)->url($this->id . '/' . $this->file_name);
     }
 }

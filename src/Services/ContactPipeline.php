@@ -62,7 +62,7 @@ class ContactPipeline
         $name = $payload['name'] ?? null;
 
         if ($name === null && isset($payload['first_name'])) {
-            $name = trim(($payload['first_name'] ?? '').' '.($payload['last_name'] ?? ''));
+            $name = trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
         }
 
         $contact = Contact::upsertByEmail($email, [

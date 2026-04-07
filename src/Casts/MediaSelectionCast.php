@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Casts;
 
-use Alexisgt01\CmsCore\ValueObjects\MediaSelection;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
+use Alexisgt01\CmsCore\ValueObjects\MediaSelection;
 
 /**
  * @implements CastsAttributes<MediaSelection|null, MediaSelection|array<string, mixed>|null>

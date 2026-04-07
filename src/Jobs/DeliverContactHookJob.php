@@ -56,7 +56,7 @@ class DeliverContactHookJob implements ShouldQueue
         ], JSON_THROW_ON_ERROR);
 
         $timestamp = time();
-        $signature = hash_hmac('sha256', $timestamp.'.'.$body, $endpoint->secret);
+        $signature = hash_hmac('sha256', $timestamp . '.' . $body, $endpoint->secret);
 
         $maxBodyLog = (int) config('cms-contacts.max_body_log_size', 4096);
 
@@ -87,7 +87,7 @@ class DeliverContactHookJob implements ShouldQueue
             if ($response->successful()) {
                 $delivery->update(['status' => 'success']);
             } else {
-                $this->handleFailure($delivery, $endpoint, 'HTTP '.$response->status());
+                $this->handleFailure($delivery, $endpoint, 'HTTP ' . $response->status());
             }
         } catch (\Throwable $e) {
             $this->handleFailure($delivery, $endpoint, $e->getMessage());

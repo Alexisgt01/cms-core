@@ -7,9 +7,9 @@ use Alexisgt01\CmsCore\Models\HookEndpoint;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
+use Filament\Forms\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -19,9 +19,9 @@ class HookEndpointResource extends Resource
 {
     protected static ?string $model = HookEndpoint::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-link';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-link';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Webhooks';
 
@@ -51,7 +51,7 @@ class HookEndpointResource extends Resource
         return auth()->user()?->can('delete contact hooks') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

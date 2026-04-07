@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\UserResource\Pages;
 
-use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Alexisgt01\CmsCore\Filament\Resources\UserResource;
 
 class ListUsers extends ListRecords
 {
