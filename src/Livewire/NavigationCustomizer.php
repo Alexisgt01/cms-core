@@ -32,7 +32,7 @@ class NavigationCustomizer extends Component
         $settings->features = $features;
         $settings->save();
 
-        $this->js('setTimeout(() => window.location.reload(), 100)');
+        $this->redirect(request()->url());
     }
 
     public function render(): View

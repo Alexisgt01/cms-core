@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div class="space-y-4">
+    <div class="space-y-4" x-on:open-url.window="window.open($event.detail.url, '_blank')">
         {{-- Navigation --}}
         <div class="flex items-center justify-between">
             <nav class="flex items-center gap-1 text-sm">

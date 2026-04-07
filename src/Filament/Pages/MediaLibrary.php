@@ -649,9 +649,7 @@ class MediaLibrary extends Page
                 } else {
                     $url = "{$baseUrl}/unsafe{$path}";
                 }
-                $escapedUrl = \Illuminate\Support\Js::from($url);
-
-                $this->js("window.open({$escapedUrl}, '_blank')");
+                $this->dispatch('open-url', url: $url);
             })
             ->visible(fn (): bool => config('cms-media.proxy.url') !== null && config('cms-media.proxy.url') !== '');
     }
