@@ -23,9 +23,9 @@ class BlogAuthorResource extends Resource
 
     protected static ?string $model = BlogAuthor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Blog';
+    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Auteurs';
 

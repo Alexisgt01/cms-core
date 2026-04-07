@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 
 class Releases extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-sparkles';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
 
     protected static ?string $navigationLabel = 'Nouveautes';
 

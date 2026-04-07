@@ -21,9 +21,9 @@ class MediaLibrary extends Page
 {
     use WithFileUploads;
 
-    protected static ?string $navigationIcon = 'heroicon-o-photo';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-photo';
 
-    protected static ?string $navigationGroup = 'Médias';
+    protected static string|\UnitEnum|null $navigationGroup = 'Médias';
 
     protected static ?string $navigationLabel = 'Médiathèque';
 

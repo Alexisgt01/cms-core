@@ -19,9 +19,9 @@ class HookEndpointResource extends Resource
 {
     protected static ?string $model = HookEndpoint::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-link';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-link';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Webhooks';
 

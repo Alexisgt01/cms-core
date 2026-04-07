@@ -18,9 +18,9 @@ class GlobalSectionResource extends Resource
 {
     protected static ?string $model = GlobalSection::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static ?string $navigationGroup = 'Contenu';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Sections globales';
 

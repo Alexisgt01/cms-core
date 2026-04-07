@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 
 class Documentation extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-book-open';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
 
     protected static ?string $navigationLabel = 'Guide d\'utilisation';
 

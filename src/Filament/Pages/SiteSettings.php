@@ -22,9 +22,9 @@ class SiteSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-8-tooth';
 
-    protected static ?string $navigationGroup = 'Administration';
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Parametres du site';
 

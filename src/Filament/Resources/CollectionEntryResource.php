@@ -27,9 +27,9 @@ class CollectionEntryResource extends Resource
 
     protected static ?string $model = CollectionEntry::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup = 'Collections';
+    protected static string|\UnitEnum|null $navigationGroup = 'Collections';
 
     public static function shouldRegisterNavigation(): bool
     {

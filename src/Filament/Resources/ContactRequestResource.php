@@ -23,9 +23,9 @@ class ContactRequestResource extends Resource
 {
     protected static ?string $model = ContactRequest::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-inbox';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox';
 
-    protected static ?string $navigationGroup = 'Contact';
+    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Demandes';
 
