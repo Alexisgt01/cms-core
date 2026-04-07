@@ -8,6 +8,7 @@ use Alexisgt01\CmsCore\Models\HookDelivery;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Infolists;
+use Filament\Schemas;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -56,7 +57,7 @@ class HookDeliveryResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Informations')
+                Schemas\Components\Section::make('Informations')
                     ->schema([
                         Infolists\Components\TextEntry::make('event')
                             ->label('Evenement')
@@ -88,14 +89,14 @@ class HookDeliveryResource extends Resource
                             ->dateTime('d/m/Y H:i:s'),
                     ])
                     ->columns(4),
-                Infolists\Components\Section::make('Erreur')
+                Schemas\Components\Section::make('Erreur')
                     ->schema([
                         Infolists\Components\TextEntry::make('last_error')
                             ->label('')
                             ->placeholder('Aucune erreur'),
                     ])
                     ->collapsible(),
-                Infolists\Components\Section::make('Corps de la requete')
+                Schemas\Components\Section::make('Corps de la requete')
                     ->schema([
                         Infolists\Components\TextEntry::make('request_body')
                             ->label('')
@@ -103,7 +104,7 @@ class HookDeliveryResource extends Resource
                             ->copyable(),
                     ])
                     ->collapsible(),
-                Infolists\Components\Section::make('Corps de la reponse')
+                Schemas\Components\Section::make('Corps de la reponse')
                     ->schema([
                         Infolists\Components\TextEntry::make('response_body')
                             ->label('')

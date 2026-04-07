@@ -10,6 +10,7 @@ use Alexisgt01\CmsCore\Models\HookEndpoint;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Infolists;
+use Filament\Schemas;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -73,7 +74,7 @@ class ContactRequestResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Informations')
+                Schemas\Components\Section::make('Informations')
                     ->schema([
                         Infolists\Components\TextEntry::make('type')
                             ->label('Type')
@@ -107,7 +108,7 @@ class ContactRequestResource extends Resource
                             ->dateTime('d/m/Y H:i:s'),
                     ])
                     ->columns(3),
-                Infolists\Components\Section::make('Payload')
+                Schemas\Components\Section::make('Payload')
                     ->schema([
                         Infolists\Components\TextEntry::make('payload')
                             ->label('')
@@ -116,7 +117,7 @@ class ContactRequestResource extends Resource
                             })
                             ->html(),
                     ]),
-                Infolists\Components\Section::make('Meta')
+                Schemas\Components\Section::make('Meta')
                     ->schema([
                         Infolists\Components\TextEntry::make('meta')
                             ->label('')
