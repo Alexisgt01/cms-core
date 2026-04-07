@@ -14,7 +14,7 @@ use Filament\Forms;
 use Filament\Schemas;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
