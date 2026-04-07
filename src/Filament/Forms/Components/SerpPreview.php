@@ -2,7 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Filament\Forms\Components;
 
-use Filament\Forms\Components\Component;
+use Filament\Schemas\Components\Component;
 
 class SerpPreview extends Component
 {

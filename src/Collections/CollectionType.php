@@ -90,7 +90,7 @@ abstract class CollectionType
     /**
      * Convert fields() to Filament form component array.
      *
-     * @return array<int, \Filament\Forms\Components\Component>
+     * @return array<int, \Filament\Schemas\Components\Component>
      */
     public static function schema(): array
     {
