@@ -83,38 +83,38 @@
 
             addType(typeKey) {
                 if (this.afterItemUuid) {
-                    $wire.mountFormComponentAction('{{ $statePath }}', 'addBetween', {
+                    $wire.mountAction('addBetween', {
                         block: typeKey,
                         afterItem: this.afterItemUuid,
-                    });
+                    }, { schemaComponent: '{{ $key }}' });
                 } else {
-                    $wire.mountFormComponentAction('{{ $statePath }}', 'add', {
+                    $wire.mountAction('add', {
                         block: typeKey,
-                    });
+                    }, { schemaComponent: '{{ $key }}' });
                 }
                 this.pickerOpen = false;
             },
 
             addFromTemplate(templateId) {
-                $wire.mountFormComponentAction('{{ $statePath }}', 'addFromTemplate', {
+                $wire.mountAction('addFromTemplate', {
                     templateId: templateId,
                     afterItem: this.afterItemUuid,
-                });
+                }, { schemaComponent: '{{ $key }}' });
                 this.pickerOpen = false;
             },
 
             deleteTemplate(templateId) {
                 this.pickerOpen = false;
-                $wire.mountFormComponentAction('{{ $statePath }}', 'deleteTemplate', {
+                $wire.mountAction('deleteTemplate', {
                     templateId: templateId,
-                });
+                }, { schemaComponent: '{{ $key }}' });
             },
 
             addGlobalSection(globalSectionId) {
-                $wire.mountFormComponentAction('{{ $statePath }}', 'addGlobalSection', {
+                $wire.mountAction('addGlobalSection', {
                     globalSectionId: globalSectionId,
                     afterItem: this.afterItemUuid,
-                });
+                }, { schemaComponent: '{{ $key }}' });
                 this.pickerOpen = false;
             },
         }"
@@ -158,7 +158,7 @@
             <ul
                 x-sortable
                 data-sortable-animation-duration="{{ $getReorderAnimationDuration() }}"
-                wire:end.stop="{{ 'mountFormComponentAction(\'' . $statePath . '\', \'reorder\', { items: $event.target.sortable.toArray() })' }}"
+                wire:end.stop="{{ 'mountAction(\'reorder\', { items: $event.target.sortable.toArray() }, { schemaComponent: \'' . $key . '\' })' }}"
                 class="fi-fo-builder-items"
             >
                 @php
@@ -426,7 +426,7 @@
                                         <div
                                             class="fi-fo-builder-item-preview-edit-overlay"
                                             role="button"
-                                            x-on:click.stop="{{ '$wire.mountFormComponentAction(\'' . $statePath . '\', \'edit\', { item: \'' . $itemKey . '\' })' }}"
+                                            x-on:click.stop="{{ '$wire.mountAction(\'edit\', { item: \'' . $itemKey . '\' }, { schemaComponent: \'' . $key . '\' })' }}"
                                         ></div>
                                     @endif
                                 @else

@@ -1,5 +1,6 @@
 @php
     $statePath = $getStatePath();
+    $key = $getKey();
     $state = $getState();
     $isDisabled = $isDisabled();
     $availableSets = $field->getAvailableSets();
@@ -100,17 +101,17 @@
             },
 
             selectIcon(icon) {
-                $wire.mountFormComponentAction('{{ $statePath }}', 'selectIcon', {
+                $wire.mountAction('selectIcon', {
                     name: icon.name,
                     set: icon.set,
                     variant: icon.variant,
                     label: icon.label,
-                });
+                }, { schemaComponent: '{{ $key }}' });
                 this.open = false;
             },
 
             clearSelection() {
-                $wire.mountFormComponentAction('{{ $statePath }}', 'clear');
+                $wire.mountAction('clear', {}, { schemaComponent: '{{ $key }}' });
             },
         }"
         class="w-full"

@@ -1,5 +1,6 @@
 @php
     $statePath = $getStatePath();
+    $key = $getKey();
     $state = $getState();
     $isDisabled = $isDisabled();
     $libraryMedia = $field->getLibraryMedia();
@@ -62,40 +63,40 @@
             },
 
             selectFromLibrary(id) {
-                $wire.mountFormComponentAction('{{ $statePath }}', 'selectFromLibrary', { id: id });
+                $wire.mountAction('selectFromLibrary', { id: id }, { schemaComponent: '{{ $key }}' });
                 this.open = false;
             },
 
             downloadUnsplash(photo) {
                 this.unsplashDownloading = photo.id;
                 this.selectedUnsplashPhoto = null;
-                $wire.mountFormComponentAction('{{ $statePath }}', 'selectFromUnsplash', { photo: photo });
+                $wire.mountAction('selectFromUnsplash', { photo: photo }, { schemaComponent: '{{ $key }}' });
                 this.open = false;
                 this.unsplashDownloading = null;
             },
 
             useUnsplashUrl(photo) {
                 this.selectedUnsplashPhoto = null;
-                $wire.mountFormComponentAction('{{ $statePath }}', 'useUnsplashUrl', { photo: photo });
+                $wire.mountAction('useUnsplashUrl', { photo: photo }, { schemaComponent: '{{ $key }}' });
                 this.open = false;
             },
 
             openUpload() {
                 this.open = false;
-                $wire.mountFormComponentAction('{{ $statePath }}', 'uploadFromPicker');
+                $wire.mountAction('uploadFromPicker', {}, { schemaComponent: '{{ $key }}' });
             },
 
             importFromUrl() {
                 if (!this.importUrl.trim()) return;
                 this.isImporting = true;
-                $wire.mountFormComponentAction('{{ $statePath }}', 'importFromUrl', { url: this.importUrl });
+                $wire.mountAction('importFromUrl', { url: this.importUrl }, { schemaComponent: '{{ $key }}' });
                 this.open = false;
                 this.isImporting = false;
                 this.importUrl = '';
             },
 
             clearSelection() {
-                $wire.mountFormComponentAction('{{ $statePath }}', 'clear');
+                $wire.mountAction('clear', {}, { schemaComponent: '{{ $key }}' });
             },
 
             isImage(url) {
