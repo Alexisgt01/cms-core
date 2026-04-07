@@ -15,7 +15,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -60,7 +60,7 @@ class PageResource extends Resource
         return auth()->user()?->can('delete pages') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

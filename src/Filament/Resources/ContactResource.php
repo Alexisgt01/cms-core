@@ -5,7 +5,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource\Pages;
 use Alexisgt01\CmsCore\Models\Contact;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Tables;
@@ -49,7 +49,7 @@ class ContactResource extends Resource
         return auth()->user()?->can('delete contacts') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

@@ -12,7 +12,7 @@ use Filament\Forms;
 use Filament\Infolists;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Infolists\Infolist;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -55,7 +55,7 @@ class ContactRequestResource extends Resource
         return auth()->user()?->can('delete contact requests') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

@@ -10,7 +10,7 @@ use Filament\Forms;
 use Filament\Infolists;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Infolists\Infolist;
 use Filament\Tables;
 use Filament\Tables\Table;

@@ -4,7 +4,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Actions;
 use Filament\Tables;
@@ -43,7 +43,7 @@ class UserResource extends Resource
         return auth()->user()?->can('delete users') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         return $form
             ->schema([

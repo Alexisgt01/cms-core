@@ -14,7 +14,7 @@ use Filament\Forms;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
 use Filament\Forms\Get;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -120,7 +120,7 @@ class CollectionEntryResource extends Resource
         return app(CollectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         $typeClass = static::resolveCollectionType($form);
         $collectionTypeKey = static::resolveCollectionTypeKey($form);

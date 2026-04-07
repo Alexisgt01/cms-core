@@ -8,7 +8,7 @@ use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -70,7 +70,7 @@ class GlobalSectionResource extends Resource
         return app(SectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $form): Schema
     {
         $typeClass = static::resolveSectionType($form);
         $sectionTypeKey = $form?->getRecord()?->section_type ?? request()->query('sectionType', '');
