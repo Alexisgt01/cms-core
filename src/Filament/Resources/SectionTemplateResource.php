@@ -55,7 +55,7 @@ class SectionTemplateResource extends Resource
      *
      * @return class-string<\Alexisgt01\CmsCore\Sections\SectionType>|null
      */
-    protected static function resolveSectionType(?Form $form = null): ?string
+    protected static function resolveSectionType(?Schema $form = null): ?string
     {
         $key = request()->query('sectionType');
 

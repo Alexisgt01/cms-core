@@ -84,7 +84,7 @@ class CollectionEntryResource extends Resource
      * During Livewire update requests (AJAX POST), request()->query() is empty.
      * We fall back to the record (edit) or the Livewire #[Url] property (create/list).
      */
-    public static function resolveCollectionTypeKey(?Form $form = null): string
+    public static function resolveCollectionTypeKey(?Schema $form = null): string
     {
         // 1. From the record being edited
         if ($key = $form?->getRecord()?->collection_type) {
@@ -110,7 +110,7 @@ class CollectionEntryResource extends Resource
      *
      * @return class-string<\Alexisgt01\CmsCore\Collections\CollectionType>|null
      */
-    protected static function resolveCollectionType(?Form $form = null): ?string
+    protected static function resolveCollectionType(?Schema $form = null): ?string
     {
         $key = static::resolveCollectionTypeKey($form);
 

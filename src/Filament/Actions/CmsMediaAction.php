@@ -37,7 +37,7 @@ class CmsMediaAction extends Action
                 'lazy' => null,
             ])
             ->modalWidth('md')
-            ->mountUsing(function (TiptapEditor $component, ?Form $form, array $arguments) {
+            ->mountUsing(function (TiptapEditor $component, ?Schema $form, array $arguments) {
                 $source = $arguments['src'] !== ''
                     ? $component->getDirectory() . Str::of($arguments['src'])
                         ->after($component->getDirectory())
