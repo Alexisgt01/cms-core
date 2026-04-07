@@ -3,7 +3,7 @@
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
-use Alexisgt01\CmsCore\Filament\Schemas\Components\SectionBuilder;
+use Alexisgt01\CmsCore\Filament\Forms\Components\SectionBuilder;
 use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 use Alexisgt01\CmsCore\Models\Page;
