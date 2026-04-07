@@ -5,6 +5,7 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 use Alexisgt01\CmsCore\Filament\Resources\ContactResource\Pages;
 use Alexisgt01\CmsCore\Models\Contact;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Actions;
@@ -53,9 +54,9 @@ class ContactResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Contact')
+                Schemas\Components\Tabs::make('Contact')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Informations')
+                        Schemas\Components\Tabs\Tab::make('Informations')
                             ->icon('heroicon-o-user')
                             ->schema([
                                 Forms\Components\TextInput::make('email')
@@ -77,7 +78,7 @@ class ContactResource extends Resource
                                 Forms\Components\KeyValue::make('attribs')
                                     ->label('Attributs'),
                             ]),
-                        Forms\Components\Tabs\Tab::make('Demandes')
+                        Schemas\Components\Tabs\Tab::make('Demandes')
                             ->icon('heroicon-o-inbox')
                             ->schema([
                                 Forms\Components\Placeholder::make('requests_list')

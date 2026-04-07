@@ -3,7 +3,7 @@
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
-use Alexisgt01\CmsCore\Filament\Forms\Components\SectionBuilder;
+use Alexisgt01\CmsCore\Filament\Schemas\Components\SectionBuilder;
 use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 use Alexisgt01\CmsCore\Models\Page;
@@ -12,6 +12,7 @@ use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Resources\Resource;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -64,9 +65,9 @@ class PageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Page')
+                Schemas\Components\Tabs::make('Page')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Page')
+                        Schemas\Components\Tabs\Tab::make('Page')
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nom')
@@ -127,7 +128,7 @@ class PageResource extends Resource
                                     ->helperText('Laissez vide pour utiliser la date actuelle'),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Sections')
+                        Schemas\Components\Tabs\Tab::make('Sections')
                             ->schema([
                                 SectionBuilder::make('sections')
                                     ->label('Sections')
@@ -140,7 +141,7 @@ class PageResource extends Resource
                             ])
                             ->visible(fn () => count(app(SectionRegistry::class)->all()) > 0),
 
-                        Forms\Components\Tabs\Tab::make('SEO')
+                        Schemas\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 Forms\Components\TextInput::make('h1')
                                     ->label('H1')
@@ -154,15 +155,15 @@ class PageResource extends Resource
                             ])
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Open Graph')
+                        Schemas\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Twitter')
+                        Schemas\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Schema')
+                        Schemas\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])

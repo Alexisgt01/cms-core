@@ -6,6 +6,7 @@ use Alexisgt01\CmsCore\Filament\Resources\SectionTemplateResource\Pages;
 use Alexisgt01\CmsCore\Models\SectionTemplate;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Actions;
@@ -118,7 +119,7 @@ class SectionTemplateResource extends Resource
 
         // Dynamic fields from the SectionType blueprint
         if ($typeClass) {
-            $schema[] = Forms\Components\Group::make($typeClass::schema())
+            $schema[] = Schemas\Components\Group::make($typeClass::schema())
                 ->statePath('data');
         }
 

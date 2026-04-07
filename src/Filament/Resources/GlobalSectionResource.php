@@ -8,6 +8,7 @@ use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Schemas;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -131,7 +132,7 @@ class GlobalSectionResource extends Resource
 
         // Dynamic fields from the SectionType blueprint
         if ($typeClass) {
-            $schema[] = Forms\Components\Group::make($typeClass::schema())
+            $schema[] = Schemas\Components\Group::make($typeClass::schema())
                 ->statePath('data');
         }
 
