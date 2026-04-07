@@ -37,7 +37,7 @@ class ListSectionTemplates extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $this->redirect(
-                        SectionTemplateResource::getUrl('create') . '?sectionType=' . $data['section_type'],
+                        SectionTemplateResource::getUrl('create').'?sectionType='.$data['section_type'],
                     );
                 })
                 ->visible(fn (): bool => auth()->user()?->can('create pages') ?? false),

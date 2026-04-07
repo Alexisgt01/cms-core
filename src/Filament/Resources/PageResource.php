@@ -3,7 +3,7 @@
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
 use Alexisgt01\CmsCore\Filament\Concerns\HasSeoFields;
-use Alexisgt01\CmsCore\Filament\Schemas\Components\SectionBuilder;
+use Alexisgt01\CmsCore\Filament\Forms\Components\SectionBuilder;
 use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Resources\PageResource\Pages;
 use Alexisgt01\CmsCore\Models\Page;
@@ -12,11 +12,10 @@ use Alexisgt01\CmsCore\Models\States\PagePublished;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas;
-use Filament\Resources\Resource;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,9 +28,9 @@ class PageResource extends Resource
 
     protected static ?string $model = Page::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
+    protected static ?string $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Pages';
 
@@ -61,13 +60,13 @@ class PageResource extends Resource
         return auth()->user()?->can('delete pages') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Schemas\Components\Tabs::make('Page')
+                Forms\Components\Tabs::make('Page')
                     ->tabs([
-                        Schemas\Components\Tabs\Tab::make('Page')
+                        Forms\Components\Tabs\Tab::make('Page')
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nom')
@@ -128,7 +127,7 @@ class PageResource extends Resource
                                     ->helperText('Laissez vide pour utiliser la date actuelle'),
                             ]),
 
-                        Schemas\Components\Tabs\Tab::make('Sections')
+                        Forms\Components\Tabs\Tab::make('Sections')
                             ->schema([
                                 SectionBuilder::make('sections')
                                     ->label('Sections')
@@ -141,7 +140,7 @@ class PageResource extends Resource
                             ])
                             ->visible(fn () => count(app(SectionRegistry::class)->all()) > 0),
 
-                        Schemas\Components\Tabs\Tab::make('SEO')
+                        Forms\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 Forms\Components\TextInput::make('h1')
                                     ->label('H1')
@@ -155,15 +154,15 @@ class PageResource extends Resource
                             ])
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Open Graph')
+                        Forms\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Twitter')
+                        Forms\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Schema')
+                        Forms\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])
@@ -278,7 +277,7 @@ class PageResource extends Resource
                 if ($current && $child->id === $current->id) {
                     continue;
                 }
-                $options[$child->id] = '— ' . $child->name;
+                $options[$child->id] = '— '.$child->name;
             }
         }
 

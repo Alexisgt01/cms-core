@@ -327,7 +327,7 @@ class SectionField
             $text->maxLength($this->maxLengthValue);
         }
 
-        $level = Forms\Components\Select::make($this->name . '_level')
+        $level = Forms\Components\Select::make($this->name.'_level')
             ->label('Niveau')
             ->options([
                 'h1' => 'H1',
@@ -466,7 +466,7 @@ class SectionField
                 $shortGroup = str_replace(' — ', ' · ', $group);
 
                 foreach ($items as $value => $label) {
-                    $flatOptions[$value] = self::colorOptionHtml($value, $shortGroup . ' · ' . $label);
+                    $flatOptions[$value] = self::colorOptionHtml($value, $shortGroup.' · '.$label);
                 }
             } else {
                 $flatOptions[$group] = self::colorOptionHtml($group, $items);
@@ -529,14 +529,14 @@ class SectionField
             $swatch = '<span class="w-3 h-3 shrink-0 rounded-full border border-gray-300 dark:border-gray-600" style="background:repeating-conic-gradient(#d1d5db 0% 25%,transparent 0% 50%) 50%/6px 6px"></span>';
         } elseif (preg_match('/^#[0-9A-Fa-f]{3,8}$/', $color)) {
             $border = self::isLightHex($color) ? 'border:1px solid #d1d5db;' : '';
-            $swatch = '<span class="w-3 h-3 shrink-0 rounded-full" style="background:' . e($color) . ';' . $border . '"></span>';
+            $swatch = '<span class="w-3 h-3 shrink-0 rounded-full" style="background:'.e($color).';'.$border.'"></span>';
         }
 
         if ($swatch === '') {
             return e($label);
         }
 
-        return '<span class="flex items-center gap-1.5">' . $swatch . '<span>' . e($label) . '</span></span>';
+        return '<span class="flex items-center gap-1.5">'.$swatch.'<span>'.e($label).'</span></span>';
     }
 
     private static function isLightHex(string $hex): bool
@@ -544,7 +544,7 @@ class SectionField
         $hex = ltrim($hex, '#');
 
         if (strlen($hex) === 3) {
-            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
         }
 
         if (strlen($hex) < 6) {
@@ -563,8 +563,8 @@ class SectionField
      */
     private function buildLink(): array
     {
-        $url = Forms\Components\TextInput::make($this->name . '_url')
-            ->label(($this->labelText ?? $this->name) . ' — URL')
+        $url = Forms\Components\TextInput::make($this->name.'_url')
+            ->label(($this->labelText ?? $this->name).' — URL')
             ->inputMode('url')
             ->rule('url');
 
@@ -576,8 +576,8 @@ class SectionField
             $url->placeholder($this->placeholderText);
         }
 
-        $label = Forms\Components\TextInput::make($this->name . '_label')
-            ->label(($this->labelText ?? $this->name) . ' — Libelle');
+        $label = Forms\Components\TextInput::make($this->name.'_label')
+            ->label(($this->labelText ?? $this->name).' — Libelle');
 
         return [$url, $label];
     }
@@ -690,7 +690,7 @@ class SectionField
     {
         $label = $this->labelText ?? $this->name;
 
-        $link = Forms\Components\Select::make($this->name . '_link')
+        $link = Forms\Components\Select::make($this->name.'_link')
             ->label($label)
             ->options(fn (): array => static::resolveUrlOptions())
             ->searchable()
@@ -705,29 +705,29 @@ class SectionField
             $link->helperText($this->helperTextValue);
         }
 
-        $url = Forms\Components\TextInput::make($this->name . '_url')
-            ->label(fn (Get $get): string => $get($this->name . '_link') === 'anchor'
-                ? $label . ' — Ancre'
-                : $label . ' — URL')
+        $url = Forms\Components\TextInput::make($this->name.'_url')
+            ->label(fn (Get $get): string => $get($this->name.'_link') === 'anchor'
+                ? $label.' — Ancre'
+                : $label.' — URL')
             ->inputMode('url')
-            ->rule(fn (Get $get): string => $get($this->name . '_link') === 'anchor'
+            ->rule(fn (Get $get): string => $get($this->name.'_link') === 'anchor'
                 ? 'regex:/^#.+/'
                 : 'regex:/^(https?:\/\/|\/|#)/')
-            ->placeholder(fn (Get $get): string => $get($this->name . '_link') === 'anchor'
+            ->placeholder(fn (Get $get): string => $get($this->name.'_link') === 'anchor'
                 ? '#ma-section'
                 : '')
-            ->visible(fn (Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
+            ->visible(fn (Get $get): bool => in_array($get($this->name.'_link'), ['external', 'anchor'], true));
 
         if ($this->isRequired) {
-            $url->required(fn (Get $get): bool => in_array($get($this->name . '_link'), ['external', 'anchor'], true));
+            $url->required(fn (Get $get): bool => in_array($get($this->name.'_link'), ['external', 'anchor'], true));
         }
 
         if ($this->placeholderText !== null) {
             $url->placeholder($this->placeholderText);
         }
 
-        $labelField = Forms\Components\TextInput::make($this->name . '_label')
-            ->label($label . ' — Libelle');
+        $labelField = Forms\Components\TextInput::make($this->name.'_label')
+            ->label($label.' — Libelle');
 
         return [$link, $url, $labelField];
     }
@@ -778,13 +778,13 @@ class SectionField
         $pageOptions = [];
 
         foreach ($pages as $root) {
-            $slug = '/' . ltrim($root->slug, '/');
-            $pageOptions['page:' . $root->id] = $root->name . '  (' . $slug . ')';
+            $slug = '/'.ltrim($root->slug, '/');
+            $pageOptions['page:'.$root->id] = $root->name.'  ('.$slug.')';
             $pageSlugs[] = $slug;
 
             foreach ($root->children->sortBy('name') as $child) {
-                $childSlug = '/' . ltrim($child->slug, '/');
-                $pageOptions['page:' . $child->id] = '— ' . $child->name . '  (' . $childSlug . ')';
+                $childSlug = '/'.ltrim($child->slug, '/');
+                $pageOptions['page:'.$child->id] = '— '.$child->name.'  ('.$childSlug.')';
                 $pageSlugs[] = $childSlug;
             }
         }
@@ -808,7 +808,7 @@ class SectionField
                 continue;
             }
 
-            $uri = '/' . ltrim($route->uri(), '/');
+            $uri = '/'.ltrim($route->uri(), '/');
 
             if (str_contains($uri, '{')) {
                 continue;
@@ -828,7 +828,7 @@ class SectionField
                 continue;
             }
 
-            $routeOptions['route:' . $name] = $name . '  (' . $uri . ')';
+            $routeOptions['route:'.$name] = $name.'  ('.$uri.')';
         }
 
         if ($routeOptions !== []) {

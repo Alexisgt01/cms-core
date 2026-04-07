@@ -11,11 +11,10 @@ use Alexisgt01\CmsCore\Models\States\EntryDraft;
 use Alexisgt01\CmsCore\Models\States\EntryPublished;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Resource;
-use Filament\Forms\Get;
-use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,9 +27,9 @@ class CollectionEntryResource extends Resource
 
     protected static ?string $model = CollectionEntry::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Collections';
+    protected static ?string $navigationGroup = 'Collections';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -70,7 +69,7 @@ class CollectionEntryResource extends Resource
             $items[] = NavigationItem::make($typeClass::label())
                 ->icon($typeClass::icon())
                 ->group('Collections')
-                ->url(static::getUrl('index') . '?collectionType=' . $key)
+                ->url(static::getUrl('index').'?collectionType='.$key)
                 ->isActiveWhen(fn () => request()->query('collectionType') === $key)
                 ->sort($sort++);
         }
@@ -121,7 +120,7 @@ class CollectionEntryResource extends Resource
         return app(CollectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         $typeClass = static::resolveCollectionType($form);
         $collectionTypeKey = static::resolveCollectionTypeKey($form);
@@ -140,12 +139,12 @@ class CollectionEntryResource extends Resource
                         ignoreRecord: true,
                         modifyRuleUsing: fn ($rule) => $rule->where('collection_type', $collectionTypeKey),
                     )
-                    ->placeholder('Genere automatiquement depuis ' . $typeClass::slugFrom())
+                    ->placeholder('Genere automatiquement depuis '.$typeClass::slugFrom())
                     ->helperText('Laissez vide pour generer automatiquement');
             }
 
             // Dynamic fields from blueprint, wrapped with data. statePath
-            $mainSchema[] = Schemas\Components\Group::make($typeClass::schema())
+            $mainSchema[] = Forms\Components\Group::make($typeClass::schema())
                 ->statePath('data');
 
             if ($typeClass::sortable()) {
@@ -181,12 +180,12 @@ class CollectionEntryResource extends Resource
                 ->default($collectionTypeKey);
         }
 
-        $tabs[] = Schemas\Components\Tabs\Tab::make($typeClass ? $typeClass::singularLabel() : 'Entree')
+        $tabs[] = Forms\Components\Tabs\Tab::make($typeClass ? $typeClass::singularLabel() : 'Entree')
             ->schema($mainSchema);
 
         // SEO tabs (conditional)
         if ($typeClass && $typeClass::hasSeo()) {
-            $tabs[] = Schemas\Components\Tabs\Tab::make('SEO')
+            $tabs[] = Forms\Components\Tabs\Tab::make('SEO')
                 ->schema([
                     Forms\Components\TextInput::make('h1')
                         ->label('H1')
@@ -199,21 +198,21 @@ class CollectionEntryResource extends Resource
                 ])
                 ->columns(2);
 
-            $tabs[] = Schemas\Components\Tabs\Tab::make('Open Graph')
+            $tabs[] = Forms\Components\Tabs\Tab::make('Open Graph')
                 ->schema(static::ogFields())
                 ->columns(2);
 
-            $tabs[] = Schemas\Components\Tabs\Tab::make('Twitter')
+            $tabs[] = Forms\Components\Tabs\Tab::make('Twitter')
                 ->schema(static::twitterFields())
                 ->columns(2);
 
-            $tabs[] = Schemas\Components\Tabs\Tab::make('Schema')
+            $tabs[] = Forms\Components\Tabs\Tab::make('Schema')
                 ->schema(static::schemaFields())
                 ->columns(2);
         }
 
         return $form->schema([
-            Schemas\Components\Tabs::make('CollectionEntry')
+            Forms\Components\Tabs::make('CollectionEntry')
                 ->tabs($tabs)
                 ->columnSpanFull(),
         ]);
@@ -225,10 +224,10 @@ class CollectionEntryResource extends Resource
         $titleField = $typeClass ? $typeClass::slugFrom() : 'title';
 
         $columns = [
-            Tables\Columns\TextColumn::make('data.' . $titleField)
+            Tables\Columns\TextColumn::make('data.'.$titleField)
                 ->label($typeClass ? $typeClass::singularLabel() : 'Titre')
                 ->searchable(query: function (Builder $query, string $search) use ($titleField): Builder {
-                    return $query->where('data->' . $titleField, 'like', "%{$search}%");
+                    return $query->where('data->'.$titleField, 'like', "%{$search}%");
                 })
                 ->limit(50),
             Tables\Columns\TextColumn::make('slug')

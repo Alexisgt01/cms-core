@@ -34,7 +34,7 @@ class ListCollectionEntries extends ListRecords
 
         if ($collectionType) {
             $action = Actions\CreateAction::make()
-                ->url(static::$resource::getUrl('create') . '?collectionType=' . $collectionType);
+                ->url(static::$resource::getUrl('create').'?collectionType='.$collectionType);
 
             if ($typeClass && $typeClass::maxEntries() > 0) {
                 $currentCount = static::$resource::getEloquentQuery()->count();

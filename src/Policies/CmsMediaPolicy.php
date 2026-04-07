@@ -2,8 +2,8 @@
 
 namespace Alexisgt01\CmsCore\Policies;
 
-use App\Models\User;
 use Alexisgt01\CmsCore\Models\CmsMedia;
+use App\Models\User;
 
 class CmsMediaPolicy
 {

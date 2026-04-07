@@ -2,12 +2,12 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource\Pages;
 
+use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
+use Alexisgt01\CmsCore\Models\BlogAuthor;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
-use Alexisgt01\CmsCore\Filament\Resources\BlogAuthorResource;
-use Alexisgt01\CmsCore\Models\BlogAuthor;
 
 class ListBlogAuthors extends ListRecords
 {
@@ -37,7 +37,7 @@ class ListBlogAuthors extends ListRecords
                                 ->whereNotIn('id', $existingUserIds)
                                 ->get(['id', 'first_name', 'last_name', 'email'])
                                 ->mapWithKeys(fn (User $user): array => [
-                                    $user->id => trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) . ' (' . $user->email . ')',
+                                    $user->id => trim(($user->first_name ?? '').' '.($user->last_name ?? '')).' ('.$user->email.')',
                                 ])
                                 ->toArray();
                         })
@@ -46,7 +46,7 @@ class ListBlogAuthors extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = User::findOrFail($data['user_id']);
-                    $displayName = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: $user->email;
+                    $displayName = trim(($user->first_name ?? '').' '.($user->last_name ?? '')) ?: $user->email;
 
                     BlogAuthor::create([
                         'user_id' => $user->id,

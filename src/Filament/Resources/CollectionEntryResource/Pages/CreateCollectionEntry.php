@@ -32,7 +32,7 @@ class CreateCollectionEntry extends CreateRecord
 
         if ($typeClass && $typeClass::hasSlug() && empty($data['slug'])) {
             $sourceField = $typeClass::slugFrom();
-            $sourceValue = data_get($data, 'data.' . $sourceField, '');
+            $sourceValue = data_get($data, 'data.'.$sourceField, '');
 
             if ($sourceValue) {
                 $data['slug'] = CollectionEntry::generateSlug($sourceValue, $data['collection_type']);
@@ -46,6 +46,6 @@ class CreateCollectionEntry extends CreateRecord
     {
         $collectionType = $this->data['collection_type'] ?? $this->collectionType ?? '';
 
-        return static::$resource::getUrl('index') . '?collectionType=' . $collectionType;
+        return static::$resource::getUrl('index').'?collectionType='.$collectionType;
     }
 }

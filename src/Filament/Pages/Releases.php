@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 
 class Releases extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
+    protected static ?string $navigationIcon = 'heroicon-o-sparkles';
 
     protected static ?string $navigationLabel = 'Nouveautes';
 
@@ -15,7 +15,7 @@ class Releases extends Page
 
     protected static ?string $slug = 'releases';
 
-    protected string $view = 'cms-core::filament.pages.releases';
+    protected static string $view = 'cms-core::filament.pages.releases';
 
     protected static bool $shouldRegisterNavigation = false;
 

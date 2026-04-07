@@ -4,11 +4,9 @@ namespace Alexisgt01\CmsCore\Filament\Concerns;
 
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 use Alexisgt01\CmsCore\Filament\Forms\Components\OgPreview;
-use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Forms\Components\TwitterPreview;
 use Alexisgt01\CmsCore\Models\BlogSetting;
 use Filament\Forms;
-use Filament\Schemas;
 use Filament\Forms\Components\RichEditor;
 
 trait HasSeoFields
@@ -62,9 +60,9 @@ trait HasSeoFields
         ];
     }
 
-    protected static function robotsFieldset(): Schemas\Components\Fieldset
+    protected static function robotsFieldset(): Forms\Components\Fieldset
     {
-        return Schemas\Components\Fieldset::make('Robots')
+        return Forms\Components\Fieldset::make('Robots')
             ->schema([
                 Forms\Components\Toggle::make('robots_index')
                     ->label('Index'),
@@ -113,12 +111,12 @@ trait HasSeoFields
                 ->label('Locale OG')
                 ->placeholder($settings->og_locale ?? 'fr_FR')
                 ->maxLength(10)
-                ->helperText('Defaut : ' . ($settings->og_locale ?? 'fr_FR')),
+                ->helperText('Defaut : '.($settings->og_locale ?? 'fr_FR')),
             Forms\Components\TextInput::make('og_site_name')
                 ->label('Nom du site OG')
                 ->placeholder($settings->og_site_name ?? '')
                 ->maxLength(255)
-                ->helperText($settings->og_site_name ? 'Defaut : ' . $settings->og_site_name : ''),
+                ->helperText($settings->og_site_name ? 'Defaut : '.$settings->og_site_name : ''),
             Forms\Components\TextInput::make('og_title')
                 ->label('Titre OG')
                 ->maxLength(255),
@@ -158,12 +156,12 @@ trait HasSeoFields
                 ->label('Compte @site')
                 ->placeholder($settings->twitter_site ?? '@monsite')
                 ->maxLength(255)
-                ->helperText($settings->twitter_site ? 'Defaut : ' . $settings->twitter_site : ''),
+                ->helperText($settings->twitter_site ? 'Defaut : '.$settings->twitter_site : ''),
             Forms\Components\TextInput::make('twitter_creator')
                 ->label('Compte @createur')
                 ->placeholder($settings->twitter_creator ?? '@auteur')
                 ->maxLength(255)
-                ->helperText($settings->twitter_creator ? 'Defaut : ' . $settings->twitter_creator : ''),
+                ->helperText($settings->twitter_creator ? 'Defaut : '.$settings->twitter_creator : ''),
             Forms\Components\TextInput::make('twitter_title')
                 ->label('Titre Twitter')
                 ->maxLength(255),
@@ -196,7 +194,7 @@ trait HasSeoFields
                         if ($value !== null && $value !== '') {
                             json_decode(is_string($value) ? $value : '');
                             if (json_last_error() !== JSON_ERROR_NONE) {
-                                $fail('Le JSON-LD n\'est pas valide : ' . json_last_error_msg());
+                                $fail('Le JSON-LD n\'est pas valide : '.json_last_error_msg());
                             }
                         }
                     };

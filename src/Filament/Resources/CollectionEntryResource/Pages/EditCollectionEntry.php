@@ -40,6 +40,6 @@ class EditCollectionEntry extends EditRecord
     {
         $collectionType = $this->record->collection_type ?? $this->collectionType ?? '';
 
-        return static::$resource::getUrl('index') . '?collectionType=' . $collectionType;
+        return static::$resource::getUrl('index').'?collectionType='.$collectionType;
     }
 }

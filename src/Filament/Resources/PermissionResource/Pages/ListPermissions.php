@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\PermissionResource\Pages;
 
+use Alexisgt01\CmsCore\Filament\Resources\PermissionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Alexisgt01\CmsCore\Filament\Resources\PermissionResource;
 
 class ListPermissions extends ListRecords
 {

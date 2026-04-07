@@ -6,9 +6,9 @@ use Alexisgt01\CmsCore\Filament\Resources\RedirectResource\Pages;
 use Alexisgt01\CmsCore\Models\Redirect;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Resources\Resource;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -17,9 +17,9 @@ class RedirectResource extends Resource
 {
     protected static ?string $model = Redirect::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-uturn-right';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-right';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'SEO';
+    protected static ?string $navigationGroup = 'SEO';
 
     protected static ?string $navigationLabel = 'Redirections';
 
@@ -49,7 +49,7 @@ class RedirectResource extends Resource
         return auth()->user()?->can('delete redirects') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([

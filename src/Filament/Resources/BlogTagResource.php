@@ -8,11 +8,10 @@ use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
 use Alexisgt01\CmsCore\Models\BlogTag;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas;
-use Filament\Resources\Resource;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -23,9 +22,9 @@ class BlogTagResource extends Resource
 
     protected static ?string $model = BlogTag::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
+    protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
+    protected static ?string $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Tags';
 
@@ -55,13 +54,13 @@ class BlogTagResource extends Resource
         return auth()->user()?->can('delete blog tags') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Schemas\Components\Tabs::make('Tag')
+                Forms\Components\Tabs::make('Tag')
                     ->tabs([
-                        Schemas\Components\Tabs\Tab::make('Informations')
+                        Forms\Components\Tabs\Tab::make('Informations')
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Nom')
@@ -89,7 +88,7 @@ class BlogTagResource extends Resource
                             ])
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('SEO')
+                        Forms\Components\Tabs\Tab::make('SEO')
                             ->schema([
                                 ...static::seoKeywordFields(),
                                 ...static::seoIndexingFields(),
@@ -99,18 +98,18 @@ class BlogTagResource extends Resource
                             ])
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Contenu SEO')
+                        Forms\Components\Tabs\Tab::make('Contenu SEO')
                             ->schema(static::contentSeoFields()),
 
-                        Schemas\Components\Tabs\Tab::make('Open Graph')
+                        Forms\Components\Tabs\Tab::make('Open Graph')
                             ->schema(static::ogFields())
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Twitter')
+                        Forms\Components\Tabs\Tab::make('Twitter')
                             ->schema(static::twitterFields())
                             ->columns(2),
 
-                        Schemas\Components\Tabs\Tab::make('Schema')
+                        Forms\Components\Tabs\Tab::make('Schema')
                             ->schema(static::schemaFields())
                             ->columns(2),
                     ])

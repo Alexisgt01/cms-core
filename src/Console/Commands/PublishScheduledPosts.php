@@ -2,10 +2,10 @@
 
 namespace Alexisgt01\CmsCore\Console\Commands;
 
-use Illuminate\Console\Command;
 use Alexisgt01\CmsCore\Models\BlogPost;
 use Alexisgt01\CmsCore\Models\States\Published;
 use Alexisgt01\CmsCore\Models\States\Scheduled;
+use Illuminate\Console\Command;
 
 class PublishScheduledPosts extends Command
 {

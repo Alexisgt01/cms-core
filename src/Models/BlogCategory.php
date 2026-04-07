@@ -2,6 +2,7 @@
 
 namespace Alexisgt01\CmsCore\Models;
 
+use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,11 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogCategory extends Model
 {
     use LogsActivity;
+
     protected $guarded = ['id'];
 
     /**
@@ -74,7 +75,7 @@ class BlogCategory extends Model
         $i = 1;
 
         while (static::query()->where('slug', $slug)->exists()) {
-            $slug = $original . '-' . $i;
+            $slug = $original.'-'.$i;
             $i++;
         }
 

@@ -107,7 +107,7 @@ class CollectionEntry extends Model
         $i = 1;
 
         while (static::query()->where('collection_type', $collectionType)->where('slug', $slug)->exists()) {
-            $slug = $original . '-' . $i;
+            $slug = $original.'-'.$i;
             $i++;
         }
 

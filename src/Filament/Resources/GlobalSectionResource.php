@@ -8,8 +8,7 @@ use Alexisgt01\CmsCore\Models\Page;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
 use Filament\Actions;
 use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -19,9 +18,9 @@ class GlobalSectionResource extends Resource
 {
     protected static ?string $model = GlobalSection::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
+    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
+    protected static ?string $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Sections globales';
 
@@ -71,7 +70,7 @@ class GlobalSectionResource extends Resource
         return app(SectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         $typeClass = static::resolveSectionType($form);
         $sectionTypeKey = $form?->getRecord()?->section_type ?? request()->query('sectionType', '');
@@ -102,7 +101,7 @@ class GlobalSectionResource extends Resource
                         return 'Cette section n\'est utilisee sur aucune page.';
                     }
 
-                    return $pages->count() . ' page(s) : ' . $pages->pluck('name')->implode(', ');
+                    return $pages->count().' page(s) : '.$pages->pluck('name')->implode(', ');
                 })
                 ->columnSpanFull();
         } else {
@@ -132,7 +131,7 @@ class GlobalSectionResource extends Resource
 
         // Dynamic fields from the SectionType blueprint
         if ($typeClass) {
-            $schema[] = Schemas\Components\Group::make($typeClass::schema())
+            $schema[] = Forms\Components\Group::make($typeClass::schema())
                 ->statePath('data');
         }
 

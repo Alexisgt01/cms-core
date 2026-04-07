@@ -2,13 +2,13 @@
 
 namespace Alexisgt01\CmsCore\Services;
 
+use Alexisgt01\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Models\CmsMediaFolder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Alexisgt01\CmsCore\Models\CmsMedia;
-use Alexisgt01\CmsCore\Models\CmsMediaFolder;
 
 class MediaService
 {
@@ -61,10 +61,10 @@ class MediaService
                 str_contains($mimeType, 'pdf') => 'pdf',
                 default => 'bin',
             };
-            $filename .= '.' . $ext;
+            $filename .= '.'.$ext;
         }
 
-        $tmpPath = 'tmp-uploads/' . Str::random(16) . '_' . $filename;
+        $tmpPath = 'tmp-uploads/'.Str::random(16).'_'.$filename;
         Storage::disk('public')->put($tmpPath, $response->body());
 
         $fullPath = Storage::disk('public')->path($tmpPath);

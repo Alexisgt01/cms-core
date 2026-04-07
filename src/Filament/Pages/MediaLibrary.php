@@ -2,6 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Pages;
 
+use Alexisgt01\CmsCore\Models\CmsMedia;
+use Alexisgt01\CmsCore\Models\CmsMediaFolder;
+use Alexisgt01\CmsCore\Services\MediaService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -13,17 +16,14 @@ use Filament\Pages\Page;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
-use Alexisgt01\CmsCore\Models\CmsMedia;
-use Alexisgt01\CmsCore\Models\CmsMediaFolder;
-use Alexisgt01\CmsCore\Services\MediaService;
 
 class MediaLibrary extends Page
 {
     use WithFileUploads;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-photo';
+    protected static ?string $navigationIcon = 'heroicon-o-photo';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Médias';
+    protected static ?string $navigationGroup = 'Médias';
 
     protected static ?string $navigationLabel = 'Médiathèque';
 
@@ -33,7 +33,7 @@ class MediaLibrary extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected string $view = 'cms-core::filament.pages.media-library';
+    protected static string $view = 'cms-core::filament.pages.media-library';
 
     public ?int $currentFolderId = null;
 
@@ -439,7 +439,7 @@ class MediaLibrary extends Page
         return Action::make('bulkDelete')
             ->requiresConfirmation()
             ->modalHeading('Supprimer les médias sélectionnés')
-            ->modalDescription(fn (): string => count($this->selectedMediaIds) . ' média(s) seront supprimé(s). Cette action est irréversible.')
+            ->modalDescription(fn (): string => count($this->selectedMediaIds).' média(s) seront supprimé(s). Cette action est irréversible.')
             ->modalSubmitActionLabel('Supprimer')
             ->color('danger')
             ->action(function (): void {
@@ -643,7 +643,7 @@ class MediaLibrary extends Page
                     $keyBin = hex2bin($key);
                     $saltBin = hex2bin($salt);
                     $signature = rtrim(strtr(base64_encode(
-                        hash_hmac('sha256', $saltBin . $path, $keyBin, true)
+                        hash_hmac('sha256', $saltBin.$path, $keyBin, true)
                     ), '+/', '-_'), '=');
                     $url = "{$baseUrl}/{$signature}{$path}";
                 } else {
@@ -661,7 +661,7 @@ class MediaLibrary extends Page
         $media = CmsMedia::findOrFail($id);
         $this->authorize('view', $media);
 
-        return Storage::disk($media->disk)->download($media->id . '/' . $media->file_name);
+        return Storage::disk($media->disk)->download($media->id.'/'.$media->file_name);
     }
 
     // ── View Data ───────────────────────────────────────────────

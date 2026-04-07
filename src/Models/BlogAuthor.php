@@ -2,18 +2,19 @@
 
 namespace Alexisgt01\CmsCore\Models;
 
+use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
-use App\Models\User;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Alexisgt01\CmsCore\Casts\MediaSelectionCast;
 
 class BlogAuthor extends Model
 {
     use LogsActivity;
+
     protected $guarded = ['id'];
 
     /**
@@ -61,7 +62,7 @@ class BlogAuthor extends Model
         $i = 1;
 
         while (static::query()->where('slug', $slug)->exists()) {
-            $slug = $original . '-' . $i;
+            $slug = $original.'-'.$i;
             $i++;
         }
 

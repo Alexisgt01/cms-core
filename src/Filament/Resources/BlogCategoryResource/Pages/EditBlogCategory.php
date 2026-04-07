@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource\Pages;
 
+use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Alexisgt01\CmsCore\Filament\Resources\BlogCategoryResource;
 
 class EditBlogCategory extends EditRecord
 {

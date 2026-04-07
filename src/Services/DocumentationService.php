@@ -11,7 +11,7 @@ class DocumentationService
 
     public function __construct()
     {
-        $this->docsPath = __DIR__ . '/../../resources/docs';
+        $this->docsPath = __DIR__.'/../../resources/docs';
     }
 
     /**
@@ -19,7 +19,7 @@ class DocumentationService
      */
     public function all(): Collection
     {
-        $files = glob($this->docsPath . '/*.md');
+        $files = glob($this->docsPath.'/*.md');
 
         if (! $files) {
             return collect();

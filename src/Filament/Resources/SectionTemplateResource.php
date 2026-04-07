@@ -5,11 +5,10 @@ namespace Alexisgt01\CmsCore\Filament\Resources;
 use Alexisgt01\CmsCore\Filament\Resources\SectionTemplateResource\Pages;
 use Alexisgt01\CmsCore\Models\SectionTemplate;
 use Alexisgt01\CmsCore\Sections\SectionRegistry;
-use Filament\Forms;
-use Filament\Schemas;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -18,9 +17,9 @@ class SectionTemplateResource extends Resource
 {
     protected static ?string $model = SectionTemplate::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bookmark';
+    protected static ?string $navigationIcon = 'heroicon-o-bookmark';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
+    protected static ?string $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Modeles de section';
 
@@ -70,7 +69,7 @@ class SectionTemplateResource extends Resource
         return app(SectionRegistry::class)->resolve($key);
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         $typeClass = static::resolveSectionType($form);
         $sectionTypeKey = $form?->getRecord()?->section_type ?? request()->query('sectionType', '');
@@ -119,7 +118,7 @@ class SectionTemplateResource extends Resource
 
         // Dynamic fields from the SectionType blueprint
         if ($typeClass) {
-            $schema[] = Schemas\Components\Group::make($typeClass::schema())
+            $schema[] = Forms\Components\Group::make($typeClass::schema())
                 ->statePath('data');
         }
 

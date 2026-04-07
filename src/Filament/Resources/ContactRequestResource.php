@@ -9,10 +9,11 @@ use Alexisgt01\CmsCore\Models\HookDelivery;
 use Alexisgt01\CmsCore\Models\HookEndpoint;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,9 +23,9 @@ class ContactRequestResource extends Resource
 {
     protected static ?string $model = ContactRequest::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox';
+    protected static ?string $navigationIcon = 'heroicon-o-inbox';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contact';
+    protected static ?string $navigationGroup = 'Contact';
 
     protected static ?string $navigationLabel = 'Demandes';
 
@@ -54,7 +55,7 @@ class ContactRequestResource extends Resource
         return auth()->user()?->can('delete contact requests') ?? false;
     }
 
-    public static function form(Schema $form): Schema
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -69,7 +70,7 @@ class ContactRequestResource extends Resource
             ]);
     }
 
-    public static function infolist(Schema $infolist): Schema
+    public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist
             ->schema([
@@ -258,7 +259,7 @@ class ContactRequestResource extends Resource
                 $val = nl2br(e((string) $value));
             }
 
-            $lines[] = '<div style="margin-bottom: 0.5rem;"><strong>' . $label . ' :</strong> ' . $val . '</div>';
+            $lines[] = '<div style="margin-bottom: 0.5rem;"><strong>'.$label.' :</strong> '.$val.'</div>';
         }
 
         return implode('', $lines);

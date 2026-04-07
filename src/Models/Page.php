@@ -101,7 +101,7 @@ class Page extends Model
         $i = 1;
 
         while (static::query()->where('slug', $slug)->exists()) {
-            $slug = $original . '-' . $i;
+            $slug = $original.'-'.$i;
             $i++;
         }
 

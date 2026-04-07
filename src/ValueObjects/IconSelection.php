@@ -82,15 +82,15 @@ class IconSelection implements \JsonSerializable
             $faClass = self::toFontAwesomeClass($this->name);
 
             if ($faClass !== null) {
-                $classes = trim($faClass . ($class !== '' ? ' ' . $class : ''));
+                $classes = trim($faClass.($class !== '' ? ' '.$class : ''));
                 $attrs = '';
                 foreach ($attributes as $key => $value) {
                     if ($key !== 'width' && $key !== 'height') {
-                        $attrs .= ' ' . e($key) . '="' . e($value) . '"';
+                        $attrs .= ' '.e($key).'="'.e($value).'"';
                     }
                 }
 
-                return '<i class="' . e($classes) . '"' . $attrs . '></i>';
+                return '<i class="'.e($classes).'"'.$attrs.'></i>';
             }
         }
 
@@ -106,9 +106,9 @@ class IconSelection implements \JsonSerializable
             str_starts_with($name, 'fa-solid fa-'),
             str_starts_with($name, 'fa-regular fa-'),
             str_starts_with($name, 'fa-brands fa-') => $name,
-            str_starts_with($name, 'fas-') => 'fa-solid fa-' . substr($name, 4),
-            str_starts_with($name, 'far-') => 'fa-regular fa-' . substr($name, 4),
-            str_starts_with($name, 'fab-') => 'fa-brands fa-' . substr($name, 4),
+            str_starts_with($name, 'fas-') => 'fa-solid fa-'.substr($name, 4),
+            str_starts_with($name, 'far-') => 'fa-regular fa-'.substr($name, 4),
+            str_starts_with($name, 'fab-') => 'fa-brands fa-'.substr($name, 4),
             default => null,
         };
     }

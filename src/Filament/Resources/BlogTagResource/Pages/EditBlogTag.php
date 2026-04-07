@@ -2,9 +2,9 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\BlogTagResource\Pages;
 
+use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Alexisgt01\CmsCore\Filament\Resources\BlogTagResource;
 
 class EditBlogTag extends EditRecord
 {

@@ -37,7 +37,7 @@ class ListGlobalSections extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $this->redirect(
-                        GlobalSectionResource::getUrl('create') . '?sectionType=' . $data['section_type'],
+                        GlobalSectionResource::getUrl('create').'?sectionType='.$data['section_type'],
                     );
                 })
                 ->visible(fn (): bool => auth()->user()?->can('create pages') ?? false),

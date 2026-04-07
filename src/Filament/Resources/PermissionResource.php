@@ -2,19 +2,19 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources;
 
+use Alexisgt01\CmsCore\Filament\Resources\PermissionResource\Pages;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Spatie\Permission\Models\Permission;
-use Alexisgt01\CmsCore\Filament\Resources\PermissionResource\Pages;
 
 class PermissionResource extends Resource
 {
     protected static ?string $model = Permission::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-key';
+    protected static ?string $navigationIcon = 'heroicon-o-key';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Administration';
 
     protected static ?int $navigationSort = 3;
 

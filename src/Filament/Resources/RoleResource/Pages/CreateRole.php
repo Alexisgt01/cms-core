@@ -2,8 +2,8 @@
 
 namespace Alexisgt01\CmsCore\Filament\Resources\RoleResource\Pages;
 
-use Filament\Resources\Pages\CreateRecord;
 use Alexisgt01\CmsCore\Filament\Resources\RoleResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateRole extends CreateRecord
 {

@@ -23,7 +23,7 @@ class SectionRegistry
     {
         if (! is_subclass_of($typeClass, SectionType::class)) {
             throw new InvalidArgumentException(
-                "Class {$typeClass} must extend " . SectionType::class
+                "Class {$typeClass} must extend ".SectionType::class
             );
         }
 

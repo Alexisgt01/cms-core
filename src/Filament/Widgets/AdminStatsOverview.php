@@ -2,16 +2,16 @@
 
 namespace Alexisgt01\CmsCore\Filament\Widgets;
 
-use App\Models\User;
 use Alexisgt01\CmsCore\Models\CmsMedia;
 use Alexisgt01\CmsCore\Models\CmsMediaFolder;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Spatie\Permission\Models\Role;
 
 class AdminStatsOverview extends BaseWidget
 {
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected static ?int $sort = 1;
 

@@ -61,7 +61,7 @@ class EditPage extends EditRecord
         $record->update($data);
 
         if ($sections !== null) {
-            $cacheKey = "page_sections:{$record->id}:" . now()->timestamp;
+            $cacheKey = "page_sections:{$record->id}:".now()->timestamp;
             Cache::put($cacheKey, json_encode($sections, JSON_UNESCAPED_UNICODE), 300);
 
             SavePageSectionsJob::dispatch($record->id, $cacheKey);

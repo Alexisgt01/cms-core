@@ -9,9 +9,9 @@ use Filament\Pages\Page;
 
 class SectionCatalog extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Contenu';
+    protected static ?string $navigationGroup = 'Contenu';
 
     protected static ?string $navigationLabel = 'Sections';
 
@@ -19,7 +19,7 @@ class SectionCatalog extends Page
 
     protected static ?int $navigationSort = 2;
 
-    protected string $view = 'cms-core::filament.pages.section-catalog';
+    protected static string $view = 'cms-core::filament.pages.section-catalog';
 
     public static function canAccess(): bool
     {
@@ -48,7 +48,7 @@ class SectionCatalog extends Page
                 'description' => $typeClass::description(),
                 'fields_count' => count($typeClass::fields()),
                 'templates_count' => $templateCounts[$key] ?? 0,
-                'create_template_url' => SectionTemplateResource::getUrl('create') . '?sectionType=' . $key,
+                'create_template_url' => SectionTemplateResource::getUrl('create').'?sectionType='.$key,
             ];
         }
 

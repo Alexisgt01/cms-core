@@ -5,17 +5,16 @@ namespace Alexisgt01\CmsCore\Filament\Widgets;
 use Alexisgt01\CmsCore\Models\BlogPost;
 use Alexisgt01\CmsCore\Models\States\Published;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\DB;
 
 class PostsPerMonthChart extends ChartWidget
 {
-    protected ?string $heading = 'Articles publiés par mois';
+    protected static ?string $heading = 'Articles publiés par mois';
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected static ?int $sort = 2;
 
-    protected ?string $maxHeight = '300px';
+    protected static ?string $maxHeight = '300px';
 
     protected int|string|array $columnSpan = 'full';
 

@@ -4,16 +4,16 @@ namespace Alexisgt01\CmsCore\Filament\Pages;
 
 use Alexisgt01\CmsCore\Filament\Forms\Components\MediaPicker;
 use Alexisgt01\CmsCore\Models\SiteSetting;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Schemas\Components\Tabs;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Hash;
@@ -22,9 +22,9 @@ class SiteSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-8-tooth';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Administration';
 
     protected static ?string $navigationLabel = 'Parametres du site';
 
@@ -32,7 +32,7 @@ class SiteSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 98;
 
-    protected string $view = 'cms-core::filament.pages.site-settings';
+    protected static string $view = 'cms-core::filament.pages.site-settings';
 
     /** @var array<string, mixed> */
     public array $data = [];
@@ -52,7 +52,7 @@ class SiteSettings extends Page implements HasForms
         $this->form->fill($data);
     }
 
-    public function form(Schema $form): Schema
+    public function form(Form $form): Form
     {
         return $form
             ->schema([

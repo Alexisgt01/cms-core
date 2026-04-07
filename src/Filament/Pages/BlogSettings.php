@@ -8,16 +8,16 @@ use Alexisgt01\CmsCore\Filament\Forms\Components\SerpPreview;
 use Alexisgt01\CmsCore\Filament\Forms\Components\TwitterPreview;
 use Alexisgt01\CmsCore\Models\BlogAuthor;
 use Alexisgt01\CmsCore\Models\BlogSetting;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Schemas\Components\Tabs;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
@@ -25,9 +25,9 @@ class BlogSettings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Blog';
+    protected static ?string $navigationGroup = 'Blog';
 
     protected static ?string $navigationLabel = 'Paramètres';
 
@@ -35,7 +35,7 @@ class BlogSettings extends Page implements HasForms
 
     protected static ?int $navigationSort = 99;
 
-    protected string $view = 'cms-core::filament.pages.blog-settings';
+    protected static string $view = 'cms-core::filament.pages.blog-settings';
 
     /** @var array<string, mixed> */
     public array $data = [];
@@ -52,7 +52,7 @@ class BlogSettings extends Page implements HasForms
         $this->form->fill($settings->toArray());
     }
 
-    public function form(Schema $form): Schema
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -362,7 +362,7 @@ class BlogSettings extends Page implements HasForms
                                             if ($value !== null && $value !== '') {
                                                 json_decode(is_string($value) ? $value : '');
                                                 if (json_last_error() !== JSON_ERROR_NONE) {
-                                                    $fail('Le JSON-LD n\'est pas valide : ' . json_last_error_msg());
+                                                    $fail('Le JSON-LD n\'est pas valide : '.json_last_error_msg());
                                                 }
                                             }
                                         };
